@@ -1,0 +1,47 @@
+<section class="default-setup-content">
+	Do stuff here
+</section>
+
+{%- style -%}
+	.page-assist-content {}
+{%- endstyle -%}
+
+{% javascript %}
+	class DefaultSetup extends HTMLElement {
+		constructor() {
+			super();
+		}
+		connectedCallback() {
+			
+		}
+		disconnectedCallback() {
+			
+		}
+	}
+	customElements.define('default-setup', DefaultSetup);
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Default setup",
+  "tag": "section",
+  "class": "default-setup",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [],
+  "blocks": [
+	  {
+		"type": "@app"
+	  }
+  ],
+  "max_blocks": 5,
+  "presets": [
+	{
+	  "name": "Default setup section for theme",
+	  "category": "Homework",
+	  "blocks": []
+	}
+  ]
+}
+{% endschema %}

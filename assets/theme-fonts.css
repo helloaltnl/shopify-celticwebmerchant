@@ -1,0 +1,52 @@
+@font-face {
+	font-family: 'Absara Sans Pro';
+	src: url('{{ "AbsaraSansPro-Bold.woff2" | asset_url }}') format('woff2'),
+		 url('{{ "AbsaraSansPro-Bold.woff" | asset_url }}') format('woff');
+	font-weight: bold;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Absara Sans Pro';
+	src: url('{{ "AbsaraSansPro-BoldItalic.woff2" | asset_url }}') format('woff2'),
+		 url('{{ "AbsaraSansPro-BoldItalic.woff" | asset_url }}') format('woff');
+	font-weight: bold;
+	font-style: italic;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Absara Sans Pro';
+	src: url('{{ "AbsaraSansPro-Italic.woff2" | asset_url }}') format('woff2'),
+		url('{{ "AbsaraSansPro-Italic.woff" | asset_url }}') format('woff');
+	font-weight: normal;
+	font-style: italic;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Absara Sans Pro';
+	src: url('{{ "AbsaraSansPro-Regular.woff2" | asset_url }}') format('woff2'),
+		 url('{{ "AbsaraSansPro-Regular.woff" | asset_url }}') format('woff');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Absara Pro';
+	src: url('{{ "AbsaraPro-Bold.woff2" | asset_url }}') format('woff2'),
+		 url('{{ "AbsaraPro-Bold.woff" | asset_url }}') format('woff');
+	font-weight: bold;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Absara Pro';
+	src: url('{{ "AbsaraPro-Medium.woff2" | asset_url }}') format('woff2'),
+		 url('{{ "AbsaraPro-Medium.woff" | asset_url }}') format('woff');
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}

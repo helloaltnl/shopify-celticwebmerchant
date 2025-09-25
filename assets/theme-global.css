@@ -1,0 +1,157 @@
+:root{
+	--theme-color-black: #111111;
+	--theme-color-brown: #2e130d;
+	--theme-color-blue: #0f1f38;
+	--theme-color-blue-opacity: rgba(15,31,56,0.9);
+	--theme-color-green: #243406;
+	--theme-color-orange: #f05a22;
+	--theme-color-red: #FF4136;
+	--theme-color-grey: #f8f8f8;
+	--theme-color-white: #FFFFFF;
+	--theme-color-alert: #FF0000;
+	
+	--theme-font-size-min: 16;
+	--theme-font-size-max: 21;
+	--theme-font-view-min: 576;
+	--theme-font-view-max: 1640;
+	
+	--theme-page-width-alignsmall: 40em;
+	--theme-page-width-align: 60em;
+	--theme-page-width-alignwide: 80em;
+	--theme-page-width-alignfull: 100%;
+	--theme-page-padding: 2em;
+}
+html {}
+body {
+	font-family: 'Absara Sans Pro', sans-serif!important;
+	font-size: clamp(
+		calc(var(--theme-font-size-min) * 1px), 
+		calc((var(--theme-font-size-min) * 1px) + (var(--theme-font-size-max) - var(--theme-font-size-min)) * ((100vw - (var(--theme-font-view-min) * 1px)) / var(--theme-font-view-max))), 
+		calc(var(--theme-font-size-max) * 1px) 
+	)!important; 
+	line-height: 1.6em!important; 
+	* , *::before, *::after {
+		-webkit-font-smoothing: antialiased; 
+		-moz-osx-font-smoothing: grayscale; 
+		-webkit-box-sizing: border-box; 
+		-moz-box-sizing: border-box; 
+		-ms-box-sizing: border-box; 
+		-o-box-sizing: border-box; 
+		box-sizing: border-box;
+	}
+	& .alignsmall {
+		max-width: min( 
+			calc( 100% - ( 2 * var(--theme-page-padding) ) ), 
+			var(--theme-page-width-alignsmall, 30em) 
+		); margin-left: auto; margin-right: auto;
+		&.is-constrained {
+			max-width: min( 
+				calc( 100% ), 
+				calc( var(--theme-page-width-alignsmall, 30em) + ( 2 * var(--theme-page-padding) ) )
+			);
+			padding-left:var(--theme-page-padding); 
+			padding-right:var(--theme-page-padding); 
+		}
+	}
+	& .align {
+		max-width: min( 
+			calc(100% - ( 2 * var(--theme-page-padding) ) ), 
+			var(--theme-page-width-align, 50em) 
+		); margin-left: auto; margin-right: auto;
+		&.is-constrained {
+			max-width: min( 
+				calc( 100% ), 
+				calc( var(--theme-page-width-align, 50em) + ( 2 * var(--theme-page-padding) ) )
+			);
+			padding-left:var(--theme-page-padding); 
+			padding-right:var(--theme-page-padding); 
+		}
+	}
+	& .alignwide {
+		max-width: min( 
+			calc(100% - ( 2 * var(--theme-page-padding) ) ), 
+			var(--theme-page-width-alignwide, 70em) 
+		); margin-left: auto; margin-right: auto;
+		&.is-constrained {
+			max-width: min( 
+				calc( 100% ), 
+				calc( var(--theme-page-width-alignwide, 70em) + ( 2 * var(--theme-page-padding) ) )
+			);
+			padding-left:var(--theme-page-padding); 
+			padding-right:var(--theme-page-padding); 
+		}
+	}
+	& .alignfull {
+		max-width: var(--theme-page-width-alignfull, 100%); 
+		margin-left: auto; margin-right: auto;
+		&.is-constrained {
+			max-width: 100%; 
+			padding-left:var(--theme-page-padding); 
+			padding-right:var(--theme-page-padding); 
+		}
+	}
+	& .is-flex, & .is-flex-columns, & .is-flex-rows {
+		display: flex; gap: 2rem; flex-wrap: wrap;
+		& > li {
+			flex: 1 1 min-content;
+		}
+		&.is-flex-columns {
+			flex-direction: row;
+		}
+		&.is-flex-rows {
+			flex-direction: column;
+		}
+		&.is-flex-nowrap {
+			flex-wrap: nowrap;
+		}
+	}
+	& .is-grid, & .is-grid-layout {
+		  display: grid; 
+		  grid-template-columns: repeat(auto-fit, minmax( 
+			  min( 
+				  296px, 
+				  calc(100% - ( 2 * var(--theme-page-padding) ) ) 
+			  ), 
+			  1fr
+		  )); 
+		  column-gap: 1em; row-gap: 1em;
+		  & > li {
+			  display:inline-block; overflow: hidden;
+		  }
+	}
+	& .is-button {
+		display:inline-flex; gap: 0.5em; flex-wrap: nowrap;
+		justify-content: center; align-items: center;
+		text-decoration: none;
+		& > i {
+			display:inline-block; 
+			width:1em; height:1em; line-height: inherit;
+			align-content: center;
+			& > svg {
+				display:block; 
+				width:1em; max-width:100%; max-height:100%; 
+			}
+		}
+		& > span {
+			display:block; 
+		}
+	}
+	& .is-list-unstyled { list-style: none; padding: 0; margin:0; }
+	& > header { position: sticky; top:0; z-index: 100; transition: transform 175ms ease-in-out;}
+	& > main {}
+	& > footer {}
+	
+	&.is-scrolled-down {
+		& > header {
+			transform: translateY(-2em);
+			& > .block-header-bottom { opacity: 0; pointer-events: none;}
+		}
+	}
+	
+	@media only screen and (max-width: 640px) {
+		
+	}
+	
+	
+	
+}

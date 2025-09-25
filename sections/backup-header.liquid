@@ -1,0 +1,646 @@
+{%- liquid
+  for block in section.blocks
+    if block.type == '@app'
+      assign has_app_block = true
+    endif
+  endfor
+-%}
+
+{%- liquid
+  assign social_links = false
+  assign localization_forms = false
+
+  if settings.social_twitter_link != blank or settings.social_facebook_link != blank or settings.social_pinterest_link != blank or settings.social_instagram_link != blank or settings.social_youtube_link != blank or settings.social_vimeo_link != blank or settings.social_tiktok_link != blank or settings.social_tumblr_link != blank or settings.social_snapchat_link != blank
+    assign social_links = true
+  endif
+
+  if localization.available_countries.size > 1 and section.settings.enable_country_selector or section.settings.enable_language_selector and localization.available_languages.size > 1
+    assign localization_forms = true
+  endif
+-%}
+<page-header>
+  <section id="theme-header" class="section-header-content {% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %}">
+
+    <section class="bottom">
+      
+    </section>
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when '@app' -%}
+          {% render block %}
+      {%- endcase -%}
+    {%- endfor -%}
+    {%- if settings.cart_type == "notification" -%}
+      {%- render 'cart-notification', color_scheme: section.settings.color_scheme, desktop_menu_type: section.settings.menu_type_desktop -%}
+    {%- endif -%}
+  </section>
+</page-header>
+{%- style -%}
+#theme-header{
+  z-index: 100;
+  & > section {}
+  & > section.top {
+    background-color: var(--theme-color-brown); color:var(--theme-color-white); height:5em;
+    & > section.misc{
+      display:flex; flex-wrap: nowrap; flex-direction: row; justify-content: space-between; align-items: center; column-gap: 1em; height:2em;
+      & nav#shop-usps {
+        font-size: 0.8em; opacity: 0.6;
+      }
+    }
+    & > section.site{
+      display:flex; flex-wrap: nowrap; flex-direction: row; justify-content: space-between; align-items: center; column-gap: 2em; height:3em;
+      & > figure#site-logo {
+        flex-basis:8em; margin: 0; padding: 0;
+        position: relative;
+        & > a {
+          display:block; position: absolute; left:0; top:0; right:0; bottom:0; width:100%; height:100%; z-index: 3;
+        }
+      }
+      & > nav#short-menu {
+        margin-right: auto;
+        & ul {
+          list-style: none; padding:0; margin: 0;
+          & > li {
+            & > a { text-decoration: none;}
+          }
+        }
+        & > ul {
+          display:flex; flex-wrap: nowrap; flex-direction: row; justify-content: space-between; align-items: center; column-gap: 1em;
+          & > li {
+            & > a {
+              color:#fff;
+            }
+          }
+        }
+      }
+      & > .header__search {
+        & summary {
+          color:#fff;
+        }
+      }
+      & > nav#user-menu {
+        & ul {
+          & li {
+            & a { color: #fff;}
+          }
+        }
+      }
+    }		
+  }
+  & > section.bottom {
+    background-color: var(--theme-color-white); color:var(--theme-color-brown);
+  }
+  &:where(body.is-scrolled-down #theme-header) {
+    transform: translateY(-3em);
+  }
+  @media only screen and (max-width: 640px) {
+    & > section.misc {
+      
+    }
+    & > section.top {
+      & > section.site {
+        flex-wrap: wrap;
+        & > form#site-search { flex-basis:100%; order:10;}
+      }
+    }
+    & > section.bottom {
+      display: none;
+    }
+  }
+
+}
+{%- endstyle -%}
+
+<link rel="stylesheet" href="{{ 'component-search.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'component-cart-notification.css' | asset_url }}" media="print" onload="this.media='all'">
+{%- if settings.predictive_search_enabled -%}
+  <link rel="stylesheet" href="{{ 'component-price.css' | asset_url }}" media="print" onload="this.media='all'">
+{%- endif -%}
+<script src="{{ 'cart-notification.js' | asset_url }}" defer="defer"></script>
+
+{% javascript %}
+  class StickyHeader extends HTMLElement {
+    constructor() {
+      super();
+    }
+
+    connectedCallback() {
+      console.log('bingo');
+      this.productMenu = this.querySelector('nav#product-menu');
+      if(this.productMenu){
+        
+        this.elemPreviewButton.addEventListener("click", (event) => {
+          if(event.target.matches('li.has-sub > a')){
+            event.preventDefault();
+            event.target.closest.classList.toggle('is-selected');
+          }
+        });
+      }  
+      
+      
+      
+      this.header = document.querySelector('.section-header');
+      this.headerIsAlwaysSticky = this.getAttribute('data-sticky-type') === 'always' || this.getAttribute('data-sticky-type') === 'reduce-logo-size';
+      this.headerBounds = {};
+
+      this.setHeaderHeight();
+
+      window.matchMedia('(max-width: 990px)').addEventListener('change', this.setHeaderHeight.bind(this));
+
+      if (this.headerIsAlwaysSticky) {
+        this.header.classList.add('shopify-section-header-sticky');
+      };
+
+      this.currentScrollTop = 0;
+      this.preventReveal = false;
+      this.predictiveSearch = this.querySelector('predictive-search');
+
+      this.onScrollHandler = this.onScroll.bind(this);
+      this.hideHeaderOnScrollUp = () => this.preventReveal = true;
+
+      this.addEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
+      window.addEventListener('scroll', this.onScrollHandler, false);
+
+      this.createObserver();
+    }
+
+    setHeaderHeight() {
+      document.documentElement.style.setProperty('--header-height', `${this.header.offsetHeight}px`);
+    }
+
+    disconnectedCallback() {
+      this.removeEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
+      window.removeEventListener('scroll', this.onScrollHandler);
+    }
+
+    createObserver() {
+      let observer = new IntersectionObserver((entries, observer) => {
+        this.headerBounds = entries[0].intersectionRect;
+        observer.disconnect();
+      });
+
+      observer.observe(this.header);
+    }
+
+    onScroll() {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+      if (this.predictiveSearch && this.predictiveSearch.isOpen) return;
+
+      if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        this.header.classList.add('scrolled-past-header');
+        if (this.preventHide) return;
+        requestAnimationFrame(this.hide.bind(this));
+      } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        this.header.classList.add('scrolled-past-header');
+        if (!this.preventReveal) {
+          requestAnimationFrame(this.reveal.bind(this));
+        } else {
+          window.clearTimeout(this.isScrolling);
+
+          this.isScrolling = setTimeout(() => {
+            this.preventReveal = false;
+          }, 66);
+
+          requestAnimationFrame(this.hide.bind(this));
+        }
+      } else if (scrollTop <= this.headerBounds.top) {
+        this.header.classList.remove('scrolled-past-header');
+        requestAnimationFrame(this.reset.bind(this));
+      }
+
+      this.currentScrollTop = scrollTop;
+    }
+
+    hide() {
+      if (this.headerIsAlwaysSticky) return;
+      this.header.classList.add('shopify-section-header-hidden', 'shopify-section-header-sticky');
+      this.closeMenuDisclosure();
+      this.closeSearchModal();
+    }
+
+    reveal() {
+      if (this.headerIsAlwaysSticky) return;
+      this.header.classList.add('shopify-section-header-sticky', 'animate');
+      this.header.classList.remove('shopify-section-header-hidden');
+    }
+
+    reset() {
+      if (this.headerIsAlwaysSticky) return;
+      this.header.classList.remove('shopify-section-header-hidden', 'shopify-section-header-sticky', 'animate');
+    }
+
+    closeMenuDisclosure() {
+      this.disclosures = this.disclosures || this.header.querySelectorAll('header-menu');
+      this.disclosures.forEach(disclosure => disclosure.close());
+    }
+
+    closeSearchModal() {
+      this.searchModal = this.searchModal || this.header.querySelector('details-modal');
+      this.searchModal.close(false);
+    }
+  }
+  customElements.define('sticky-header', StickyHeader);
+  
+  class PageHeader extends HTMLElement {
+    constructor() {
+      super();
+    }
+    scrollDetect() {
+      let lastScrollY = window.scrollY;
+      let ticking = false;
+      const randomClasses = [
+        'is-scrolled-random-default',
+        'is-scrolled-random-one',
+        'is-scrolled-random-two',
+        'is-scrolled-random-three',
+        'is-scrolled-random-four'
+        ];
+      function removeRandomClasses(body) {
+        randomClasses.forEach(cls => body.classList.remove(cls));
+      }
+      function updateScrollClasses() {
+        const body = document.body;
+        const scrollY = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const docHeight = document.documentElement.scrollHeight;
+        const distanceFromBottom = docHeight - (scrollY + windowHeight);
+      
+        // is-scrolled
+        body.classList.toggle('is-scrolled', scrollY > 0);
+      
+        // is-scrolled-top (within 96px from top)
+        body.classList.toggle('is-scrolled-top', scrollY <= 96);
+      
+        // is-scrolled-bottom
+        body.classList.toggle('is-scrolled-bottom', Math.ceil(scrollY + windowHeight) >= docHeight);
+      
+        // is-scrolled-halfway
+        body.classList.toggle('is-scrolled-halfway', scrollY >= (docHeight - windowHeight) / 2);
+      
+        // is-scrolled-up / is-scrolled-down
+        if (scrollY > lastScrollY) {
+          body.classList.add('is-scrolled-down');
+          body.classList.remove('is-scrolled-up');
+        } else if (scrollY < lastScrollY) {
+          body.classList.add('is-scrolled-up');
+          body.classList.remove('is-scrolled-down');
+        }
+      
+        // random class when within 100px from bottom
+        if (distanceFromBottom <= 96) {
+          removeRandomClasses(body);
+          const randomClass = randomClasses[Math.floor(Math.random() * randomClasses.length)];
+          body.classList.add(randomClass);
+        } else {
+          removeRandomClasses(body);
+        }
+      
+        lastScrollY = scrollY;
+        ticking = false;
+      }
+      function onScroll() {
+        if (!ticking) {
+          requestAnimationFrame(updateScrollClasses);
+          ticking = true;
+        }
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+    };
+    connectedCallback() {
+      this.productMenu = this.querySelector('nav#product-menu');
+      if(this.productMenu){
+        const getLiAncestors = (li, boundary) => {
+          const ancestors = [];
+          let parent = li.parentElement;
+        
+          while (parent && parent !== boundary) {
+            if (parent.tagName.toLowerCase() === 'li') {
+              ancestors.push(parent);
+            }
+            parent = parent.parentElement;
+          }
+        
+          return ancestors;
+        }
+        const productMenuListItems  = [...this.productMenu.querySelectorAll('li')];
+        this.productMenu.addEventListener("mouseenter", (event) => {
+          console.log('GO');
+          productMenuListItems.forEach(listItem => {
+            listItem.classList.remove('is-selected');
+          });
+        });
+        this.productMenu.addEventListener("mouseleave", (event) => {
+          console.log('EXIT');
+          productMenuListItems.forEach(listItem => {
+            listItem.classList.remove('is-selected');
+          });
+        });
+        this.productMenu.addEventListener("click", (event) => {
+          if(event.target.matches('li.has-sub > a')){
+            event.preventDefault();
+            let listItemSelected  = event.target.closest('li');
+            let listItemAncestors = getLiAncestors(listItemSelected, this.productMenu );            
+            productMenuListItems.forEach(listItem => {
+              if(listItemAncestors.includes(listItem)) {
+                listItem.classList.add('is-selected');
+              } else if( listItem == listItemSelected){
+                listItem.classList.toggle('is-selected');
+              } else {
+                listItem.classList.remove('is-selected');
+              }
+            });
+          }
+          if(event.target.matches('li.navigate > a.view-up')){
+            event.preventDefault();
+            let listItemSelected  = event.target.closest('li');
+            let listItemAncestors = getLiAncestors(listItemSelected, this.productMenu ); 
+            if(listItemAncestors){
+              listItemAncestors[0].classList.remove('is-selected');
+            }
+          }
+        });
+      } 
+      this.scrollDetect();
+    }
+    disconnectedCallback() {
+      if(this.productMenu){
+        this.productMenu.removeEventListener('click');
+        this.productMenu.removeEventListener('mouseenter');
+        this.productMenu.removeEventListener('mouseleave');
+      }
+    }
+  }
+  customElements.define('page-header', PageHeader);
+{% endjavascript %}
+
+  {% comment %}
+  <{{ header_tag }} {% if header_tag == 'sticky-header' %}data-sticky-type="{{ section.settings.sticky_header_type }}"{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
+  </{{ header_tag }}>
+  {%- liquid
+    if section.settings.menu != blank
+      if section.settings.menu_type_desktop == 'dropdown'
+        render 'header-dropdown-menu'
+      elsif section.settings.menu_type_desktop != 'drawer'
+        render 'header-mega-menu'
+      endif
+    endif
+  %}
+  {%- style -%}
+    .header {
+      padding: {{ section.settings.padding_top | times: 0.5 | round: 0 }}px 3rem {{ section.settings.padding_bottom | times: 0.5 | round: 0 }}px 3rem;
+    }
+  
+    .section-header {
+      position: sticky; /* This is for fixing a Safari z-index issue. PR #2147 */
+      margin-bottom: {{ section.settings.margin_bottom | times: 0.75 | round: 0 }}px;
+    }
+  
+    @media screen and (min-width: 750px) {
+      .section-header {
+        margin-bottom: {{ section.settings.margin_bottom }}px;
+      }
+    }
+  
+    @media screen and (min-width: 990px) {
+      .header {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+  {%- if section.settings.menu_type_desktop == 'mega' -%}
+    <link rel="stylesheet" href="{{ 'component-mega-menu.css' | asset_url }}" media="print" onload="this.media='all'">
+  {%- endif -%}
+{% endcomment %}
+
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "Organization",
+    "name": {{ shop.name | json }},
+    {% if settings.logo %}
+      "logo": {{ settings.logo | image_url: width: 500 | prepend: "https:" | json }},
+    {% endif %}
+    "sameAs": [
+      {{ settings.social_twitter_link | json }},
+      {{ settings.social_facebook_link | json }},
+      {{ settings.social_pinterest_link | json }},
+      {{ settings.social_instagram_link | json }},
+      {{ settings.social_tiktok_link | json }},
+      {{ settings.social_tumblr_link | json }},
+      {{ settings.social_snapchat_link | json }},
+      {{ settings.social_youtube_link | json }},
+      {{ settings.social_vimeo_link | json }}
+    ],
+    "url": {{ request.origin | append: page.url | json }}
+  }
+</script>
+
+{%- if request.page_type == 'index' -%}
+  {% assign potential_action_target = request.origin | append: routes.search_url | append: "?q={search_term_string}" %}
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "WebSite",
+      "name": {{ shop.name | json }},
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {{ potential_action_target | json }},
+        "query-input": "required name=search_term_string"
+      },
+      "url": {{ request.origin | append: page.url | json }}
+    }
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.header.name",
+  "class": "section-header",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "select",
+      "id": "logo_position",
+      "options": [
+        {
+          "value": "top-left",
+          "label": "t:sections.header.settings.logo_position.options__2.label"
+        },
+        {
+          "value": "top-center",
+          "label": "t:sections.header.settings.logo_position.options__3.label"
+        },
+        {
+          "value": "middle-left",
+          "label": "t:sections.header.settings.logo_position.options__1.label"
+        },
+        {
+          "value": "middle-center",
+          "label": "t:sections.header.settings.logo_position.options__4.label"
+        }
+      ],
+      "default": "middle-left",
+      "label": "t:sections.header.settings.logo_position.label",
+      "info": "t:sections.header.settings.logo_help.content"
+    },
+    {
+      "type": "select",
+      "id": "mobile_logo_position",
+      "options": [
+        {
+          "value": "center",
+          "label": "t:sections.header.settings.mobile_logo_position.options__1.label"
+        },
+        {
+          "value": "left",
+          "label": "t:sections.header.settings.mobile_logo_position.options__2.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.header.settings.mobile_logo_position.label"
+    },    
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "t:sections.header.settings.menu.label"
+    },
+    {
+      "type": "select",
+      "id": "menu_type_desktop",
+      "options": [
+        {
+          "value": "dropdown",
+          "label": "t:sections.header.settings.menu_type_desktop.options__1.label"
+        },
+        {
+          "value": "mega",
+          "label": "t:sections.header.settings.menu_type_desktop.options__2.label"
+        },
+        {
+          "value": "drawer",
+          "label": "t:sections.header.settings.menu_type_desktop.options__3.label"
+        }
+      ],
+      "default": "dropdown",
+      "label": "t:sections.header.settings.menu_type_desktop.label"
+    },
+    {
+      "type": "select",
+      "id": "sticky_header_type",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:sections.header.settings.sticky_header_type.options__1.label"
+        },
+        {
+          "value": "on-scroll-up",
+          "label": "t:sections.header.settings.sticky_header_type.options__2.label"
+        },
+        {
+          "value": "always",
+          "label": "t:sections.header.settings.sticky_header_type.options__3.label"
+        },
+        {
+          "value": "reduce-logo-size",
+          "label": "t:sections.header.settings.sticky_header_type.options__4.label"
+        }
+      ],
+      "default": "on-scroll-up",
+      "label": "t:sections.header.settings.sticky_header_type.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_line_separator",
+      "default": true,
+      "label": "t:sections.header.settings.show_line_separator.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.settings.header__1.content"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "color_scheme",
+      "id": "menu_color_scheme",
+      "label": "t:sections.header.settings.menu_color_scheme.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.settings.header__utilities.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_country_selector",
+      "default": true,
+      "label": "t:sections.header.settings.enable_country_selector.label",
+      "info":"t:sections.header.settings.enable_country_selector.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_language_selector",
+      "default": true,
+      "label": "t:sections.header.settings.enable_language_selector.label",
+      "info":"t:sections.header.settings.enable_language_selector.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_customer_avatar",
+      "default": true,
+      "label": "t:sections.header.settings.enable_customer_avatar.label",
+      "info": "t:sections.header.settings.enable_customer_avatar.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.header.settings.margin_bottom.label",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 36,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 36,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 20
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ]
+}
+{% endschema %}

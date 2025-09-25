@@ -1,0 +1,704 @@
+<section class="block-collection-products-content alignwide">
+	
+	{%- if collection.products.size == 0 -%}
+		No products
+	{%- else -%}
+		
+		{%- paginate collection.products by 24-%}
+			
+			<product-filter>
+				<section class="product-filter">
+					<section class="drawer-preview">
+						
+					</section>
+					<aside class="drawer-filter">
+						<form class="drawer-filter-content drawer-content">
+							<section class="drawer-filter-head drawer-head">
+								<span class="title">Filters</span>
+								<button type="button">
+									<i></i>
+									<span>Close filter</span>
+								</button>
+							</section>
+							<section class="drawer-filter-main drawer-main">
+									<nav class="filters">
+									{%- if collection.terms -%}
+									  <input type="hidden" name="q" value="{{ collection.terms | escape }}">
+									  <input name="options[prefix]" type="hidden" value="last">
+									{%- endif -%}
+									{%- for filter in collection.filters -%}
+										{% case filter.type %}
+											{% when 'boolean', 'list' %}
+												<details
+													id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
+													class="{% if filter_type == 'horizontal' %}disclosure-has-popup facets__disclosure{% else %} facets__disclosure-vertical{% endif %} js-filter"
+													data-index="{{ forloop.index }}"
+													{% if filter_type == 'vertical' and forloop.index == 1 %}
+													  open
+													{% endif %}
+												  >
+													<summary
+													  class="facets__summary caption-large focus-offset"
+													  aria-label="{{ filter.label | escape }} ({{ 'products.facets.filters_selected.one' | t: count: filter.active_values.size }})"
+													>
+														<span class="label">
+															<span class="label-name">{{- filter.label | escape }}</span>
+															{% if filter.active_values.size > 0 %}
+															<span class="label-count">{{ filter.active_values.size }}</span>
+															{%- endif -%}
+														</span>
+														{%- if filter.operator == 'AND' -%}
+															<span class="facets__and-helptext">
+																{{ 'products.facets.filter_and_operator_subtitle' | t }}
+															</span>
+														{%- endif -%}
+														<i>
+															{{- 'icon-caret.svg' | inline_asset_content -}}
+														</i>
+													</summary>
+													<fieldset>
+														<legend>{{ filter.label | escape }}</legend>
+														{%- liquid
+														assign sorted_values = filter.values
+														# Keep the selected values grouped together when operator is AND
+														if filter.operator == 'AND'
+															assign active_filter_values = filter.values | where: 'active', true
+															assign inactive_filter_values = filter.values | where: 'active', false
+															assign sorted_values = active_filter_values | concat: inactive_filter_values
+														endif
+														-%}
+														<ul role="list" >
+														{%- for value in sorted_values -%}
+															{% liquid
+																assign input_id = 'Filter-' | append: filter.param_name | escape | append: '-' | append: forloop.index
+																assign is_disabled = false
+																if value.count == 0 and value.active == false
+																	assign is_disabled = true
+																	endif
+															%}
+															{%- capture label_class -%}
+																facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
+															{%- endcapture -%}
+														
+															{%- capture text_value -%}
+																<span class="label">
+																	<span class="label-name">{{- value.label | escape }}</span>
+																	<span class="label-count">{{- value.count -}}</span>
+																	<span class="label-detail visually-hidden">
+																		{{- value.label | escape }}
+																		{%- if value.count == 1 -%}
+																			{{- 'products.facets.product_count_simple.one' | t: count: value.count -}}
+																		{%- else -%}
+																			{{- 'products.facets.product_count_simple.other' | t: count: value.count -}}
+																		{%- endif -%}
+																	</span>
+																</span>
+															{%- endcapture -%}
+														
+															<li class="">
+															{%- if presentation == 'swatch' -%}
+																<div class="{{ label_class }}">
+																<div class="swatch-input-wrapper">
+																	{% render 'swatch-input',
+																	id: input_id,
+																	type: 'checkbox',
+																	name: value.param_name,
+																	value: value.value,
+																	product_form_id: 'FacetFiltersForm',
+																	swatch: value.swatch,
+																	checked: value.active,
+																	disabled: is_disabled
+																	%}
+																</div>
+														
+																{{ text_value }}
+																</div>
+															{%- else -%}
+																<label for="{{ input_id }}" class="{{ label_class }}">
+																	<input
+																		type="checkbox"
+																		name="{{ value.param_name }}"
+																		value="{{ value.value }}"
+																		id="{{ input_id }}"
+																		{% if value.active %}
+																		checked
+																		{% endif %}
+																		{% if is_disabled %}
+																		disabled
+																		{% endif %}
+																	>
+																	{{ text_value }}
+																</label>
+															{%- endif -%}
+															</li>
+														{%- endfor -%}
+														</ul>
+													</fieldset>
+												</details>
+											{% when 'price_range' %}
+												<details
+													id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
+													class="{% if filter_type == 'horizontal' %}disclosure-has-popup facets__disclosure{% else %} facets__disclosure-vertical{% endif %} js-filter"
+													data-index="{{ forloop.index }}"
+													{% if filter_type == 'vertical' and forloop.index == 1 %}
+													  open
+													{% endif %}
+												  >
+													<summary class="facets__summary caption-large focus-offset">
+														<span class="label">
+															<span class="label-name">{{- filter.label | escape }}</span>
+															{% if filter.active_values.size > 0 %}
+															<span class="label-count">{{ filter.active_values.size }}</span>
+															{%- endif -%}
+														</span>
+														<i>{{- 'icon-caret.svg' | inline_asset_content -}}</i>
+													</summary>
+													<fieldset>
+														<div
+														  id="Facet-{{ forloop.index }}-{{ section.id }}"
+														  class="{% if filter_type == 'horizontal' %}facets__display{% else %}facets__display-vertical{% endif %}"
+														>
+														  <div class="{% if filter_type == 'horizontal' %}facets__header{% else %}facets__header-vertical{% endif %}">
+															{%- assign max_price_amount = filter.range_max | money | strip_html | escape -%}
+															<span class="facets__selected">
+															  {{- 'products.facets.max_price' | t: price: max_price_amount -}}
+															</span>
+															{%- if filter_type != 'vertical' -%}
+															  <facet-remove>
+																<a href="{{ filter.url_to_remove }}" class="facets__reset link underlined-link">
+																  {{ 'products.facets.reset' | t }}
+																</a>
+															  </facet-remove>
+															{%- endif -%}
+														  </div>
+														  <price-range class="facets__price">
+															{% render 'price-facet', filter: filter, id_prefix: 'Filter-', filter_type: filter_type %}
+														  </price-range>
+														</div>
+													</fieldset>
+												  </details>
+										{% endcase %}
+									{%- endfor -%}
+									</nav>
+									<nav class="sorting">
+										<div class="select">
+											{%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+											<select
+											name="sort_by"
+											class="facet-filters__sort select__select caption-large"
+											id="SortBy"
+											aria-describedby="a11y-refresh-page-message"
+											>
+											{%- for option in collection.sort_options -%}
+												<option
+												value="{{ option.value | escape }}"
+												{% if option.value == sort_by %}
+													selected="selected"
+												{% endif %}
+												>
+												{{ option.name | escape }}
+												</option>
+											{%- endfor -%}
+											</select>
+										</div>
+										<div class="count">
+											{%- if collection.results_count -%}
+												{{ 'templates.search.results_with_count' | t: terms: collection.terms, count: collection.results_count }}
+											{%- elsif collection.products_count == collection.all_products_count -%}
+												{{ 'products.facets.product_count_simple' | t: count: collection.products_count }}
+											{%- else -%}
+												{{ 'products.facets.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
+											{%- endif -%}
+										</div>
+									</nav>
+									
+							</section>
+							<section class="drawer-filter-foot drawer-foot">
+								<nav class="actions">
+									<button type="submit">
+										<i></i>
+										<span>Submit</span>
+									</button>
+								</nav>
+							</section>
+						</form>
+						
+					</aside>
+				</section>
+			</product-filter>
+		
+			<ul id="product-grid" data-id="{{ section.id }}" class="product-grid">
+				{% assign skip_card_product_styles = false %}
+				{%- for product in collection.products -%}
+					{% assign lazy_load = false %}
+					{%- if forloop.index > 2 -%}
+					{%- assign lazy_load = true -%}
+					{%- endif -%}
+					<li
+					class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+					{% if settings.animations_reveal_on_scroll %}
+						data-cascade
+						style="--animation-order: {{ forloop.index }};"
+					{% endif %}
+					>
+					{% render 'card-product',
+						card_product: product,
+						media_aspect_ratio: section.settings.image_ratio,
+						image_shape: section.settings.image_shape,
+						show_secondary_image: section.settings.show_secondary_image,
+						show_vendor: section.settings.show_vendor,
+						show_rating: section.settings.show_rating,
+						lazy_load: lazy_load,
+						skip_styles: skip_card_product_styles,
+						quick_add: section.settings.quick_add,
+						section_id: section.id
+					%}
+					</li>
+					{%- assign skip_card_product_styles = true -%}
+				{%- endfor -%}
+			</ul>
+			
+			{%- if paginate.parts.size > 0 -%}
+				<nav class="product-pagination" role="navigation" aria-label="{{ 'general.pagination.label' | t }}" data-page="{{ paginate.current_page }}">
+				  <ul class="pagination__list list-unstyled" role="list">
+					{%- if paginate.previous -%}
+					  <li>
+						<a
+						  href="{{ paginate.previous.url }}{{ anchor }}"
+						  class="pagination__item pagination__item--next pagination__item-arrow link motion-reduce"
+						  aria-label="{{ 'general.pagination.previous' | t }}"
+						>
+						  <span class="svg-wrapper">
+							{{- 'icon-caret.svg' | inline_asset_content -}}
+						  </span>
+						</a>
+					  </li>
+					{%- endif -%}
+			
+					{%- for part in paginate.parts -%}
+					  <li>
+						{%- if part.is_link -%}
+						  <a
+							href="{{ part.url }}{{ anchor }}"
+							class="pagination__item link"
+							aria-label="{{ 'general.pagination.page' | t: number: part.title }}"
+						  >
+							{{- part.title -}}
+						  </a>
+						{%- else -%}
+						  {%- if part.title == paginate.current_page -%}
+							<a
+							  role="link"
+							  aria-disabled="true"
+							  class="pagination__item pagination__item--current light"
+							  aria-current="page"
+							  aria-label="{{ 'general.pagination.page' | t: number: part.title }}"
+							>
+							  {{- part.title -}}
+							</a>
+						  {%- else -%}
+							<span class="pagination__item">{{ part.title }}</span>
+						  {%- endif -%}
+						{%- endif -%}
+					  </li>
+					{%- endfor -%}
+			
+					{%- if paginate.next -%}
+					  <li>
+						<a
+						  href="{{ paginate.next.url }}{{ anchor }}"
+						  class="pagination__item pagination__item--prev pagination__item-arrow link motion-reduce"
+						  aria-label="{{ 'general.pagination.next' | t }}"
+						>
+						  <span class="svg-wrapper">
+							{{- 'icon-caret.svg' | inline_asset_content -}}
+						  </span>
+						</a>
+					  </li>
+					{%- endif -%}
+				  </ul>
+				</nav>
+			{%- endif -%}
+			
+		{%- endpaginate -%}
+	{%- endif -%}
+</section>
+
+{%- javascript -%}
+	class ProductFilter extends HTMLElement {
+		constructor() {
+			super();
+			this.elemAside 		= null;
+			this.elemPreview 	= null;
+		}
+		connectedCallback() {
+			// console.log('bingo');
+			this.elemAside			= this.querySelector(':scope > section.product-filter > .drawer-filter');
+			this.elemAsideButton	= this.querySelector(':scope > section.product-filter > .drawer-filter .drawer-head button');
+			this.elemAsideForm		= this.querySelector(':scope > section.product-filter > .drawer-filter .drawer-main');
+			this.elemPreview		= this.querySelector(':scope > section.product-filter > .drawer-preview');
+			this.elemPreviewForm	= this.querySelector(':scope > section.product-filter > .drawer-preview form');
+			this.elemPreviewFilters	= this.querySelector(':scope > section.product-filter > .drawer-preview form > nav.filters');
+			this.elemPreviewSorting	= this.querySelector(':scope > section.product-filter > .drawer-preview form > nav.sorting');
+			
+			if(this.elemPreview && !this.elemPreviewForm){
+				this.elemPreviewForm = document.createElement('form');
+				// Add filters
+				if(!this.elemPreviewFilters){
+					this.elemPreviewFilters = this.elemAsideForm.querySelector(':scope > nav.filters').cloneNode(true);
+					
+					// Add button
+					this.elemPreviewButton = document.createElement('button');
+					this.elemPreviewButton.setAttribute('type', 'button');
+					this.elemPreviewButton.classList.add('is-button','filters-aside-button');
+					this.elemPreviewButton.innerHTML = `<i><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-filter"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg></i><span>All Filters</span>`;
+					this.elemPreviewButton.addEventListener("click", (event) => {
+					  this.elemAside.toggleAttribute('open');
+					  document.body.classList.toggle('is-drawer-open');
+					});
+					this.elemPreviewFilters.appendChild(this.elemPreviewButton);
+					this.elemPreviewForm.appendChild(this.elemPreviewFilters);
+				}
+				// Add sorting
+				if(!this.elemPreviewSorting){
+					this.elemPreviewSorting = this.elemAsideForm.querySelector(':scope > nav.sorting').cloneNode(true);
+					this.elemPreviewForm.appendChild(this.elemPreviewSorting);
+				}
+				
+				this.elemPreview.appendChild(this.elemPreviewForm);
+				this.updateLayout();
+			}
+			if(this.elemAsideButton){
+				this.elemAsideButton.addEventListener("click", (event) => {
+				  this.elemAside.removeAttribute('open');
+				  document.body.classList.remove('is-drawer-open');
+				});
+			}
+			// Add toggling
+			if(this.elemPreviewFilters){
+				const elemPreviewFilterItems 		= [...this.elemPreviewFilters.querySelectorAll('details')];
+				elemPreviewFilterItems.forEach(detail => {
+					detail.addEventListener("toggle", function () {
+						if (this.open) {
+						  // Close all other details
+						  elemPreviewFilterItems.forEach((other) => {
+							if (other !== this) other.removeAttribute("open");
+						  });
+						}
+					});
+				});
+			}
+			window.addEventListener('resize', this.updateLayout.bind(this));
+			// if (this.filtersCount > 2) {
+			// 	const aside = document.createElement('aside');
+			// 	this.appendChild(aside);
+			// }
+		}
+		disconnectedCallback() {
+			// console.log('Products element removed from DOM');			
+			window.removeEventListener('resize', this.updateLayout.bind(this));
+		}
+		updateLayout() {
+			if(this.elemPreviewForm){
+				if(this.elemPreviewFilters){
+					this.elemPreviewFilters.style.overflow = 'hidden';
+					
+					const elemPreviewFilterItems 		= [...this.elemPreviewFilters.querySelectorAll('details')];
+					const elemPreviewFilterNavWidth 	= this.elemPreviewFilters.offsetWidth;
+					let elemPreviewTotalWidth 			= 196;
+					
+					elemPreviewFilterItems.forEach(filter => {
+						filter.classList.remove('hide-filter');
+					});
+					elemPreviewFilterItems.forEach(filter => {
+					  const style = window.getComputedStyle(filter);
+					  const filterWidth = filter.offsetWidth
+										+ parseFloat(style.marginLeft)
+										+ parseFloat(style.marginRight);
+					
+					  // If adding this filter would exceed nav width
+					  //filter.classList.remove('hide-filter');
+					  if (elemPreviewTotalWidth + filterWidth > elemPreviewFilterNavWidth) {
+						filter.classList.add('hide-filter');
+					  } else {
+						elemPreviewTotalWidth += filterWidth;
+						filter.classList.remove('hide-filter');
+					  }
+					});
+					
+					this.elemPreviewFilters.style.overflow = '';
+				}
+			}
+			
+		}
+		updateFilters() {
+			
+		}
+	}
+	customElements.define('product-filter', ProductFilter);
+{%- endjavascript -%}
+
+{%- style -%}
+	.block-collection-products {
+		background-color: var(--theme-color-grey);
+		& .block-collection-products-content {
+			& .product-filter {
+				& form {
+					display: flex; flex-direction: row; flex-wrap: nowrap; 
+					align-items: center; justify-content: space-between;
+					row-gap: 0.5em; column-gap: 0.5em;
+					padding: 1em 0.5em;
+					& nav.filters {
+						display: flex; flex-direction: row; flex-wrap: nowrap; 
+						align-items: center; justify-content: flex-start;
+						row-gap: 0.5em; column-gap: 0em; flex-grow: 1;
+						& > details {
+							& > summary {
+								position: relative;
+								display:block; padding-right:2em; letter-spacing: -0.02em;
+								font-size: 1em; border-bottom:var(--theme-color-brown) 1px solid;
+								& > span.label {
+									
+									display:flex; flex-direction: row; flex-wrap: no-wrap;
+									align-content: flex-start; justify-content: space-between;
+									column-gap: 0.6em; row-gap: 0; padding-top: 0.5em; padding-bottom: 0.5em; padding-right: 1em;
+									& > span.label-name {
+										display: block;
+									}
+									& > span.label-count {
+										display: block; 
+										font-size: 0.75em; line-height: 1.6em; padding-left: 1em; padding-right: 1em;
+										background-color: var(--theme-color-white); color:var(--theme-color-blue);
+										border:var(--theme-color-blue) 1px solid;
+										 border-radius:2em;
+									}
+								}
+							}
+							& > fieldset {
+								display: block; margin: 0; padding: 1em; border:0;
+								& > legend { display: none;}
+								& > ul { 
+									list-style: none; margin:0; padding: 0;
+									& > li {
+										& label {
+											display:flex; flex-direction: row; flex-wrap: nowrap;
+											align-content: flex-start; justify-content: flex-start;
+											column-gap: 1em; row-gap: 0;
+											padding-top: 0.5em; padding-bottom: 0.5em;
+											& input[type="checkbox"] {
+												-webkit-appearance: none!important; -moz-appearance: none!important; appearance: none!important;
+												flex-basis: 1.6em; min-width:1.6em;
+												width: 1.6em; height:1.6em; padding:0; margin:0; overflow:hidden; vertical-align: middle;
+												border: currentcolor 1px solid; border-radius:0px;
+												background:#FFF url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>') no-repeat center 48px / 16px!important; transition: all 175ms linear!important;
+												&:checked {
+													background-color: currentcolor!important;
+													background-position: center center!important;
+												}
+											}
+											& span.label {
+												flex-grow:1;
+												display:flex; flex-direction: row; flex-wrap: no-wrap;
+												align-content: flex-start; justify-content: space-between;
+												column-gap: 0.6em; row-gap: 0;
+												& span.label-name { font-size: 0.75em; white-space: nowrap; line-height: 1.4em; }
+												& span.label-count {
+													display: block;
+													font-size: 0.5em; line-height: 1.6em;
+													background-color: var(--theme-color-grey);
+													padding: 0.25em 1em; border-radius:2em;
+												}
+												& span.label-details { display: none;}
+											}
+											&:hover { cursor: pointer; }
+										}
+									}
+								}
+							}
+						}
+					}
+					& nav.sorting {
+						display: flex; flex-direction: row; flex-wrap: nowrap; 
+						align-items: center; justify-content: space-between;
+						column-gap: 1em; padding:0 1em;
+						& > .select {}
+						& > .count { white-space: nowrap;}
+					}
+					& nav.actions {
+						& button {
+							& > * { pointer-events: none;}
+							& > i {}
+							& > span {}
+						}
+					}
+				}
+				& > .drawer-preview {
+					background-color: #fff; margin-bottom: 1em;
+					& form {
+						padding: 0;
+						& > nav {
+							flex-direction: row; justify-content: flex-start; align-items: center;
+							& > details {
+								position: relative; padding:1em;
+								& > summary {
+									white-space: nowrap; font-size: 0.8em;
+									
+								}
+								& > fieldset {
+									position: absolute; z-index: 10; left:0; top:100%;
+									background-color: #fff; width: 10em;
+									max-height: min(30em, 50vh); overflow: hidden; overflow-y: auto;
+								}
+								&.hide-filter {
+									display:none;
+								}
+							}
+							& > button {
+								white-space: nowrap;
+							}
+							&.filters {
+								flex-grow: 1;
+							}
+						}
+					}
+				}
+				& > .drawer-filter {
+					position: fixed; right:0; top:0; bottom:0; left:0; z-index: 100; isolation: isolate; pointer-events: none;
+					& > .drawer-content {
+						position: absolute; right:0; top:0;
+						width: min(100dvw, 20em); height:100dvh; transform: translate3d(20em,0,0);
+						background: #fff; pointer-events: none; opacity: 0; transition: transform 175ms ease-in-out;
+						display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch;
+						 row-gap: 0; column-gap: 0; padding: 0;
+						& > .drawer-head { padding:1em; background-color: var(--theme-color-grey);}
+						& > .drawer-main { padding:0em; flex-grow: 1; overflow: hidden; overflow-y: auto;}
+						& > .drawer-foot { padding:1em; background-color: var(--theme-color-grey); }
+						& nav.filters {
+							display: flex; flex-direction: column; flex-wrap: nowrap; 
+							align-items: stretch; justify-content: flex-start;
+							padding-top: 1em; padding-bottom: 1em; row-gap: 0;
+							& details {
+								width:100%;
+								& > summary {
+									font-size: 1em; border-bottom:var(--theme-color-brown) 1px solid;
+									padding:0.5em 1em;
+								}
+								
+							}
+						}
+						& nav.sorting {
+							display: flex; flex-direction: column; flex-wrap: nowrap; 
+							align-items: stretch; justify-content: flex-start;
+							padding-top: 1em; padding-bottom: 1em;
+						}
+					}
+					&[open] {
+						pointer-events: all; 
+						& > .drawer-content {
+							opacity:1; pointer-events: all; transform: translate3d(0,0,0); 
+						}
+						&::after {
+							content:''; display: block; position: absolute; z-index: -1;
+							top:0; left:0; right:0; width: 100%; height:100vh;
+							background-color: rgba(0,0,0,0.8);
+							pointer-events: none;
+						}
+					}
+				}
+			}
+			& .product-grid {
+				display: grid;
+				/* grid-template-columns: repeat(auto-fit, minmax(16em, 1fr)); */
+				grid-template-columns: repeat(4, 1fr);
+				grid-gap: 0.5em;
+				list-style: none; margin: 0; padding:0;
+				& > li { display: block; min-width:100%;}
+			}
+			& .product-card-wrapper {
+				& > .card {
+					& > .card__inner {
+						display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; 
+						&::before { display: none;}
+						& > .card__media {
+							
+							& > .media {
+								display: flex; flex-direction: column; align-items: center; justify-content: center;
+								width: 100%; aspect-ratio: 2/3; 
+								background-color: #fff;
+								& img {
+									position: relative; width:100%; aspect-ratio: 2/3; object-fit: cover;
+								}
+							}
+						}
+						& > .card__content {}
+					}
+				}
+			}
+			& .product-pagination {
+				& > ul {
+					display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center;
+					row-gap: 0.5em; column-gap: 0.5em; list-style: none; margin: 0; padding:2em 0;
+					& > li { 
+						min-width: unset; margin:0;
+						& a {
+							display: block; font-size: inherit; line-height: 1em; text-decoration: none;
+							padding:1em; background-color: #fff; 
+							&.pagination__item--current {
+								background-color: var(--theme-color-blue); color:var(--theme-color-white); opacity: 1;
+							}
+							&.pagination__item--prev {
+								background-color: transparent;
+								& svg { height:1em; transform: rotate(-90deg);}
+							}
+							&.pagination__item--next {
+								background-color: transparent;
+								& svg { height:1em; transform: rotate(90deg);}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	body.is-drawer-open {
+		overflow: hidden;
+	}
+	@media only screen and (max-width: 920px) {
+		.block-collection-products {
+			& .block-collection-products-content {
+				& .product-grid {
+					grid-template-columns: repeat(3, 1fr);
+				}
+			}
+		}
+	}
+	@media only screen and (max-width: 640px) {
+		.block-collection-products {
+			& .block-collection-products-content {
+				& .product-grid {
+					grid-template-columns: repeat(2, 1fr);
+				}
+			}
+		}
+	}
+	
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Collection Products",
+  "tag": "section",
+  "class": "block-collection-products",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [],
+  "presets": [
+	{
+	  "name": "Collection Products",
+	  "category": "Homework",
+	  "blocks": []
+	}
+  ]
+}
+{% endschema %}

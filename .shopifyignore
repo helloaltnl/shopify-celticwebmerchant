@@ -1,0 +1,15 @@
+# Node modules & package managers
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build artifacts
+dist/
+build/
+*.map
+
+# Env / config
+.env
+*.log

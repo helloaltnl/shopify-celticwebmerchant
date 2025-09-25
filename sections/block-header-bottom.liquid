@@ -1,0 +1,349 @@
+<section class="block-header-bottom-content">
+	<header-bottom>
+	{% if linklists.product-menu %}
+		<nav id="product-menu">
+		  <ul class="depth-first">
+		  {% for link in linklists.product-menu.links %}
+			<li {% if link.links != blank %}class="has-sub"{% endif %} >
+			  <a href="{{ link.url }}"><span>{{ link.title }}</span></a>
+			  {% if link.links != blank %}
+				<nav class="depth-first">                
+				  <ul>
+					{% for child in link.links %}
+					  <li {% if child.links != blank %}class="has-sub"{% endif %} >
+						{% assign link_collection = false %}
+						{% if child.url contains '/collections/' %}
+						  {% assign url_parts = child.url | split: '/' %}
+						  {% assign handle = url_parts.last %}
+						  {% assign link_collection = collections[handle] %}
+						{% endif %}  
+						<a href="{{ child.url }}">
+						  {% if link_collection %}
+							{% if link_collection.metafields.custom.collection_menu_thumb  %}
+							  <img
+								src="{{ link_collection.metafields.custom.collection_menu_thumb | image_url: width: 96 }}"
+								alt="{{ link_collection.metafields.custom.collection_menu_thumb_alt | default: link_collection.title | escape }}"
+							  >
+							{% elsif link_collection.metafields.custom.collection_featured_image %}
+							  <img
+								src="{{ link_collection.metafields.custom.collection_featured_image | image_url: width: 96 }}"
+								alt="{{ link_collection.metafields.custom.collection_featured_image_alt | default: link_collection.title | escape }}"
+							  >
+							{% elsif link_collection.image  %}
+							  <img src="{{ link_collection.image | image_url: width: 96 }}" alt="{{ link_collection.image.alt | default: link_collection.title | escape }}">
+							{% endif %} 
+						  {% endif %}
+						  <span>{{ child.title }}</span>
+						  {% if child.links != blank %}
+							<i>
+							  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve" fill="currentColor"><path d="M12,16c-0.3,0-0.5-0.1-0.7-0.3l-6-6c-0.4-0.4-0.4-1,0-1.4s1-0.4,1.4,0l5.3,5.3l5.3-5.3c0.4-0.4,1-0.4,1.4,0s0.4,1,0,1.4
+							  l-6,6C12.5,15.9,12.3,16,12,16z"></path></svg>
+							</i>
+						  {% endif %} 
+						</a>
+						{% if child.links != blank %}
+						  <nav class="depth-second">
+							<ul>
+							  <li class="navigate navigate-top">
+								<a href="{{ link.url }}" class="view-up"><span>{{ link.title }}</span><i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i></a>
+								<a href="{{ child.url }}" class="view-all"><span>{{ child.title }}</span><i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i></a>
+							  </li>
+							  {% for subchild in child.links %}
+								<li>
+								  {% assign link_collection = false %}
+								  {% if subchild.url contains '/collections/' %}
+									{% assign url_parts = subchild.url | split: '/' %}
+									{% assign handle = url_parts.last %}
+									{% assign link_collection = collections[handle] %}
+								  {% endif %}  
+								  <a href="{{ subchild.url }}">
+									{% if link_collection %}
+									  {% if link_collection.metafields.custom.collection_menu_thumb  %}
+										<img
+										  src="{{ link_collection.metafields.custom.collection_menu_thumb | image_url: width: 96 }}"
+										  alt="{{ link_collection.metafields.custom.collection_menu_thumb_alt | default: link_collection.title | escape }}"
+										>
+									  {% elsif link_collection.metafields.custom.collection_featured_image %}
+										<img
+										  src="{{ link_collection.metafields.custom.collection_featured_image | image_url: width: 96 }}"
+										  alt="{{ link_collection.metafields.custom.collection_featured_image_alt | default: link_collection.title | escape }}"
+										>
+									  {% elsif link_collection.image  %}
+										<img src="{{ link_collection.image | image_url: width: 96 }}" alt="{{ link_collection.image.alt | default: link_collection.title | escape }}">
+									  {% endif %} 
+									{% endif %}
+									<span>{{ subchild.title }}</span>
+								  </a>
+								</li>
+							  {% endfor %}
+							  <li class="navigate navigate-bottom">
+								<a href="{{ link.url }}" class="view-up"><span>{{ link.title }}</span><i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i></a>
+								<a href="{{ child.url }}" class="view-all"><span>{{ child.title }}</span><i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i></a>
+							  </li>
+							</ul>
+							<ul>
+							  
+							</ul>
+						  </nav>
+						{% endif %}  
+					  </li>
+					{% endfor %}
+					<li class="navigate navigate-bottom">
+					  <a href="{{ link.url }}" class="view-all"><span>{{ link.title }}</span><i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i></a>
+					</li>
+				  </ul>
+				</nav>
+			  {% endif %}
+			</li>
+		  {% endfor %}
+		  </ul>
+		</nav>
+	{% endif %}
+	</header-bottom>
+</section>
+
+{%- style -%}
+	.block-header-bottom {
+		background-color: var(--theme-color-white); color:var(--theme-color-brown);
+		& > .block-header-bottom-content {
+			nav#product-menu {
+				position: relative; isolation: isolate;
+				& ul {
+				  position: static; list-style: none; padding:0; margin:0;
+				  & > li {
+					position: static;
+					& > a {
+					  position: relative;
+					  display: inline-flex; flex-direction: row; flex-wrap: nowrap;
+					  justify-content: space-between; align-items: center; column-gap: 1em; 
+					  padding: 1em; margin:0; height:100%; width:100%; overflow:hidden;
+					  color: inherit; text-decoration: none; 
+					  & > * { pointer-events: none;}
+					  & img { 
+						position: absolute; left:0; top:0; bottom:0; 
+						width:96px; height:100%; object-fit: cover;
+						vertical-align: bottom;
+						& + span { padding-left:96px;}
+					  }
+					  & span { font-size: 0.9em; letter-spacing: -0.02em; line-height: 1.2em; }
+					  & i { line-height: 1em;}
+					}
+					& > nav {
+					  position: absolute; left:0; top:100%; right:0; opacity: 0; pointer-events: none;
+					  padding-top:2em; padding-bottom: 2em; transform: translate3d(0, -1em, 0); transition: opacity 125ms linear, transform 175ms ease;                
+					}
+				  }
+				}
+				& nav {
+				  background-color: var(--theme-color-grey);
+				  padding-left: max(
+					var(--theme-page-padding),
+					calc( ( 100% - var(--theme-page-width-alignwide) ) / 2 )
+				  );
+				  padding-right: max(
+					var(--theme-page-padding),
+					calc( ( 100% - var(--theme-page-width-alignwide) ) / 2 )
+				  );
+				  &.depth-first, &.depth-second {
+					& > ul {
+					  position: static; list-style: none; margin:0; padding:0; width:100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(228px, 1fr)); column-gap: 0.8em; row-gap: 0.8em;            
+					  & li { 
+						position: static; display: inline-block; background-color: var(--theme-color-white);
+						& a {
+						position: relative;
+						  display: inline-flex; flex-direction: row; flex-wrap: nowrap;
+						  justify-content: space-between; align-items: center; column-gap: 1em; 
+						  padding: 0.8em; margin:0; height:100%; width:100%; min-height: 80px; overflow:hidden;
+						  color: inherit; text-decoration: none; transition: box-shadow 125ms ease; 
+						  & img { 
+							position: absolute; left:0; top:0; bottom:0; 
+							width:80px; height:100%; object-fit: cover;
+							& + span { padding-left:80px;}
+						  }
+						  & span { font-size: 0.8em; line-height: 1.2em; }
+						  & i { 
+							line-height: 1em; flex-basis: 1em; min-width: 1em;
+							& svg { transform:rotate(-90deg);}
+						  }
+						  &:hover {
+							background-color: var(--theme-color-blue); color:var(--theme-color-white);
+							/* box-shadow: 0 0 0 0.4em var(--theme-color-blue); */
+						  }
+						}
+						&.has-sub {
+						  &.is-selected > nav {
+							opacity: 1; pointer-events: all; transform:none;
+						  }
+						}
+						&.navigate {
+						  grid-column: 1 / -1; text-align: center; background-color:transparent;
+						  & > a {
+							width: auto; height: auto; min-height: auto;
+							&.view-up {
+							  background-color: var(--theme-color-white); color:var(--theme-color-blue);
+							  & span {
+								order:1;
+							  }
+							  & i {
+								order:0;
+								& svg {
+								  transform: rotate(180deg);
+								}
+							  }
+							}
+							&.view-all {
+							  background-color: var(--theme-color-blue); color:var(--theme-color-white);
+							  & i {
+								& svg {
+								  transform: none;
+								}
+							  }
+							}
+						  }
+						  &.navigate-top { display:none;}
+						}
+						& > nav {
+						  top:0; min-height:100%; z-index: 3;
+						}
+					  }
+					}
+					& > section {
+					  flex-basis: 40%;
+					}
+				  }
+				}
+				& > ul {
+				  display:flex; flex-direction: row; flex-wrap: nowrap; justify-content:space-between; align-items: center; background-color:#fff; column-gap: 2em; overflow:hidden; 
+				  padding-left: var(--theme-page-padding); padding-right: var(--theme-page-padding);
+				  padding-left: max(
+					var(--theme-page-padding),
+					calc( ( 100% - var(--theme-page-width-alignwide) ) / 2 )
+				  );
+				  padding-right: max(
+					var(--theme-page-padding),
+					calc( ( 100% - var(--theme-page-width-alignwide) ) / 2 )
+				  );
+				  & > li { 
+					background-color: transparent;
+					& > a {
+					  opacity: 1; padding: 1em 0 1.5em 0; letter-spacing: -0.02px; font-weight: 500;
+					  & span { font-size: 0.9em; text-align: center; white-space:nowrap;}
+					  &:hover { opacity: 1;}
+					}
+					&.has-sub {
+					  & > a {
+						position: relative;
+						&::after {
+						  content:''; display:inline-block; width:1em; height:1em; opacity: 0.4;
+						  position: absolute; left:50%; bottom:0.5em; transform: translate3d(-50%, 0, 0);
+						  background-color: var(--theme-color-brown);
+						  -webkit-mask-repeat: no-repeat; -webkit-mask-position: center center; -webkit-mask-size: 100%;
+						  -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+						}
+					  }
+					  &:hover > nav {
+						opacity: 1; pointer-events: all; transform:none;
+					  }
+					}
+				  }
+				}
+				&:hover {
+				  &::after {
+					content:''; display: block; position: absolute; z-index: -1;
+					top:0; left:0; right:0; width: 100%; height:100vh;
+					background-color: rgba(0,0,0,0.8);
+					pointer-events: none;
+				  }
+				}
+			  }
+		}
+	}
+{%- endstyle -%}
+
+{% javascript %}
+	class HeaderBottom extends HTMLElement {
+		constructor() {
+			super();
+		}
+		connectedCallback() {
+		  this.productMenu = this.querySelector('nav#product-menu');
+		  if(this.productMenu){
+			const getLiAncestors = (li, boundary) => {
+			  const ancestors = [];
+			  let parent = li.parentElement;
+			
+			  while (parent && parent !== boundary) {
+				if (parent.tagName.toLowerCase() === 'li') {
+				  ancestors.push(parent);
+				}
+				parent = parent.parentElement;
+			  }
+			
+			  return ancestors;
+			}
+			const productMenuListItems  = [...this.productMenu.querySelectorAll('li')];
+			this.productMenu.addEventListener("mouseenter", (event) => {
+			  console.log('GO');
+			  productMenuListItems.forEach(listItem => {
+				listItem.classList.remove('is-selected');
+			  });
+			});
+			this.productMenu.addEventListener("mouseleave", (event) => {
+			  console.log('EXIT');
+			  productMenuListItems.forEach(listItem => {
+				listItem.classList.remove('is-selected');
+			  });
+			});
+			this.productMenu.addEventListener("click", (event) => {
+			  if(event.target.matches('nav.depth-first li.has-sub > a')){
+				event.preventDefault();
+				let listItemSelected  = event.target.closest('li');
+				let listItemAncestors = getLiAncestors(listItemSelected, this.productMenu );            
+				productMenuListItems.forEach(listItem => {
+				  if(listItemAncestors.includes(listItem)) {
+					listItem.classList.add('is-selected');
+				  } else if( listItem == listItemSelected){
+					listItem.classList.toggle('is-selected');
+				  } else {
+					listItem.classList.remove('is-selected');
+				  }
+				});
+			  }
+			  if(event.target.matches('li.navigate > a.view-up')){
+				event.preventDefault();
+				let listItemSelected  = event.target.closest('li');
+				let listItemAncestors = getLiAncestors(listItemSelected, this.productMenu ); 
+				if(listItemAncestors){
+				  listItemAncestors[0].classList.remove('is-selected');
+				}
+			  }
+			});
+		  } 
+		}
+		disconnectedCallback() {
+			
+		}
+	}
+	customElements.define('header-bottom', HeaderBottom);
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Block header bottom",
+  "tag": "section",
+  "class": "block-header-bottom",
+  "settings": [],
+  "blocks": [
+	  {
+		"type": "@app"
+	  }
+  ],
+  "presets": [
+	{
+	  "name": "Default header bottom for theme",
+	  "category": "Homework",
+	  "blocks": []
+	}
+  ]
+}
+{% endschema %}

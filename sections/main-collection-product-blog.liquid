@@ -1,0 +1,561 @@
+<section id="blog-articles">	
+	{% assign blogpost_references = false %}
+	{% assign knowledge_references = false %}
+	{% assign sizechart_references = false %}
+	{% assign sizechart_reference = false %}
+	{% if template == 'collection' %}
+		{% assign blogpost_references = collection.metafields.custom.collection-blogpost-references %}
+		{% assign knowledge_references = collection.metafields.custom.collection-knowledgebase-references %}
+	{% endif %}
+	{% if request.page_type == 'product' %}
+		{% assign blogpost_references = product.metafields.custom.product-blogpost-references %}
+		{% assign knowledge_references = product.metafields.custom.product-knowledgebase-references %}
+		{% assign sizechart_references = product.metafields.custom.product-sizechart-references %}
+		{% assign sizechart_reference = product.metafields.custom.product-sizechart %}
+	{% endif %}
+	
+	{% if sizechart_references or sizechart_reference %}
+		<aside class="blog-sizecharts__inner align">
+			<section class="blog-sizecharts__title">
+				<h3>
+					<i><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" viewBox="0 0 24 24"><g><path d="M5.46973 4.53027C5.61621 4.67676 5.80811 4.75 6 4.75C6.19189 4.75 6.38379 4.67676 6.53027 4.53027C6.82324 4.2373 6.82324 3.76269 6.53027 3.46972L4.53027 1.46972C4.39453 1.33398 4.20703 1.25 4 1.25C3.79297 1.25 3.60547 1.33398 3.46973 1.46973L1.46973 3.46973C1.17676 3.7627 1.17676 4.23731 1.46973 4.53028C1.7627 4.82325 2.23731 4.82325 2.53028 4.53028L3.25 3.81055V18C3.25 18.4141 3.58594 18.75 4 18.75C4.41406 18.75 4.75 18.4141 4.75 18V3.81055L5.46973 4.53027Z"></path>
+						<path d="M22.5303 19.4697L20.5303 17.4697C20.2373 17.1768 19.7627 17.1768 19.4697 17.4697C19.1768 17.7627 19.1768 18.2373 19.4697 18.5303L20.1894 19.25H6C5.58594 19.25 5.25 19.5859 5.25 20C5.25 20.4141 5.58594 20.75 6 20.75H20.1894L19.4697 21.4697C19.1768 21.7627 19.1768 22.2373 19.4697 22.5303C19.6162 22.6768 19.8076 22.75 20 22.75C20.1924 22.75 20.3838 22.6768 20.5303 22.5303L22.5303 20.5303C22.666 20.3945 22.75 20.207 22.75 20C22.75 19.793 22.666 19.6055 22.5303 19.4697Z"></path>
+						<path d="M6.25 7V17C6.25 17.4141 6.58594 17.75 7 17.75H17C17.4141 17.75 17.75 17.4141 17.75 17V7C17.75 6.58594 17.4141 6.25 17 6.25H7C6.58594 6.25 6.25 6.58594 6.25 7ZM7.75 7.75H16.25V16.25H7.75V7.75Z"></path></g></svg></i>
+					<span>Maatvoering</span>
+				</h3>	
+			</section>
+			<section class="blog-sizecharts__content">
+				
+				<ul class="is-list-sizecharts is-grid is-list-unstyled">
+					{% if sizechart_reference %}
+						<li>
+							<article class="article-card">
+								<section class="article-card__content">
+									{{ sizechart_reference | metafield_tag | replace: '&lt;', '<' | replace: '&gt;', '>' }}
+								</section>
+							</article>
+						</li>
+					{% endif %}
+					{% if sizechart_references %}
+					{% for sizechart_reference in sizechart_references.value %}
+						<li>
+						<article class="article-card">
+							<section class="article-card__content">
+								<h4>{{ sizechart_reference.title }}</h4>
+								{% if sizechart_reference.excerpt %}
+									<p>{{ sizechart_reference.excerpt }}</p>
+								{% endif %}
+								{% if sizechart_reference.content %}
+									{{ sizechart_reference.content  | metafield_tag | newline_to_br | replace: '&lt;', '<' | replace: '&gt;', '>' }}
+								{% endif %}
+								{% if sizechart_reference.links %}
+																				
+									{% for sizechart_link in sizechart_reference.links.value %}
+									
+										{% comment %} {% assign url_parts 	= sizechart_link.url | split: '/' %}
+										{% assign url_part 		= url_parts.last %}
+										{% assign url_blog 		= 'maattabellen' %}
+										{% assign url_handle	= url_blog | append:"/" | append: url_part %}
+										<!-- Find: {{url_handle}} -->
+										{% for article in blogs.maattabellen.articles %}
+											{% if article.handle == url_handle %}
+												{{article.title}}
+											{% endif %}
+										{% endfor %} {% endcomment %}
+										
+											<a href="{{ sizechart_link.url }}" class="is-button" target="_blank">
+												<span>{{ sizechart_link.text }}</span>
+												<i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i>
+											</a>
+									{% endfor %}
+								{% endif %}
+							</section>
+						</article>
+					</li>
+					{% endfor %}
+				</ul>
+				{% endif %}
+			</section>
+		</aside>
+	{% endif %}
+	{% if blogpost_references or knowledge_references %}
+		<section class="blog-articles__inner align">
+			<section class="blog-articles__title">
+				<h3>Gerelateerde artikelen</h3>	
+			</section>
+			<section class="blog-articles__content is-flex">
+				{% if blogpost_references %}
+					<ul class="is-list-articles is-flex-columns is-list-unstyled">
+						{% for article_reference in blogpost_references.value %}
+							<li>
+							<article class="article-card article-reference">
+								<a href="{{ article_reference.link.value.url }}" class="article-card__link"></a>
+								<figure class="article-card__image">
+									{% if article_reference.thumb %}
+									<img
+									src="{{ article_reference.thumb | image_url: width: 296 }}"
+									alt="{{ article_reference.title | escape }}"
+									>
+									{% endif %}
+								</figure>
+								<section class="article-card__content">
+									<h3>{{ article_reference.title }}</h3>
+									{% if article_reference.excerpt %}
+										<p>{{ article_reference.excerpt }}</p>
+									{% endif %}
+									{% if article_reference.link %}
+										<a href="{{ article_reference.link.value.url }}" class="is-button" target="_blank">
+											<span>{{ article_reference.link.value.text }}</span>
+											<i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i>
+										</a>
+									{% endif %}	
+								</section>
+							</article>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+				{% if knowledge_references %}
+					<ul class="is-list-knowledgebase is-list-unstyled is-flex-rows">
+						{% for article_reference in knowledge_references.value %}
+							<li>
+							<article class="article-card article-reference">
+								<a href="{{ article_reference.link.value.url }}" class="article-card__link"></a>
+								<!-- <figure class="article-card__image">
+									{% if article_reference.thumb %}
+									<img
+									src="{{ article_reference.thumb | image_url: width: 296 }}"
+									alt="{{ article_reference.title | escape }}"
+									>
+									{% endif %}
+								</figure> -->
+								<section class="article-card__content">
+									<h4>{{ article_reference.title }}</h4>
+									{% if article_reference.excerpt %}
+										<p>{{ article_reference.excerpt }}</p>
+									{% endif %}
+									{% if article_reference.link %}
+										<a href="{{ article_reference.link.value.url }}" class="is-button" target="_blank">
+											<span>{{ article_reference.link.value.text }}</span>
+											<i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i>
+										</a>
+									{% endif %}	
+								</section>
+							</article>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</section>
+		</section>
+		{%- style -%}
+			#blog-articles {
+				background-color:var(--theme-color-grey);
+				padding-top: 3em; padding-bottom: 3em;
+				& section.blog-sizecharts__title {
+					& > h3 {
+						font-size: 2em; font-weight: 700;
+						text-align: center;
+						& > i { 
+							display:inline-block; height:1em; width:1em; 
+							& > svg {
+								height:1em; width:1em; 
+							}
+						}
+					}
+				}
+				& section.blog-sizecharts__content {
+					& > ul {
+						&.is-grid {
+							& > li {
+								overflow: hidden;
+								& > article {
+									display:flex; flex-direction: row; flex-wrap: nowrap; 
+									& > figure { flex-basis: 6em; }
+									& > section { flex-basis: 10em; flex-grow: 1;}
+								}
+								
+							}
+						}
+					}
+				}
+				& section.blog-articles__title {
+					& > h3 {
+						font-size: 2em; font-weight: 700;
+						text-align: center;
+					}
+				}
+				& section.blog-articles__content {
+					& > ul {
+						align-self: flex-start;
+						&.is-grid {}
+						&.is-flex-columns {
+							justify-content: center; align-items: stretch;
+							& > li {
+								flex-basis: 16em; flex-shrink: 0; overflow: hidden;
+								& > article {
+									display:flex; flex-direction: row; flex-wrap: nowrap; 
+									& > figure { flex-basis: 6em; }
+									& > section { flex-basis: 10em; flex-grow: 1;}
+								}
+								
+							}
+						}
+						&.is-list-articles {
+							flex-basis: 20em; flex-grow: 1; 
+							& > li {
+								& > article {
+									background-color: var(--theme-color-white); color:var(--theme-color-blue);
+								}
+							}
+						}
+						&.is-list-knowledgebase {
+							flex-basis: 20em; flex-shrink: 0;
+							& > li {
+								& > article {
+									background-color: var(--theme-color-blue); color:var(--theme-color-white);
+								}
+							}
+						}
+					}
+				}
+				& article {
+					display:block; position: relative; background-color: #fff; width:100%; height:100%;
+					& figure.article-card__image {
+						margin:0; padding: 0; width: 100%; aspect-ratio:2/3; overflow: hidden; 
+						align-self:stretch; align-content: center;
+						& img { width:100%; height:100%; object-fit: cover; vertical-align: bottom; transition: transform 175ms ease;}
+					}
+					& section.article-card__content {
+						padding:1em; 
+						& h3 { font-size: 1.4em; line-height:1.1em; font-weight: 400; margin-bottom: 0.2em; margin-top: 0; color: inherit; }
+						& h4 { font-size: 1.1em; line-height:1.1em; font-weight: 400; margin-bottom: 0.2em; margin-top: 0; color: inherit; }
+						& p { font-size: 0.9em; line-height: 1.4em;}
+						& a { 
+							color: inherit; 
+							& > i { transition:transform 125ms ease;}
+						}
+					}
+					& a.article-card__link {
+						display:block; position: absolute; left:0; top:0; right:0; bottom:0; width:100%; height:100%; z-index: 5;
+						&:hover {
+							& ~ figure {
+								& img {
+									transform: scale(1.1);
+								}
+							}
+							& ~ section {
+								& a {
+									& > i {
+										transform: translate3d(0.2em, 0, 0 );
+									}
+								}
+							}
+						} 
+					}
+				}
+			}
+		{%- endstyle -%}
+	{% endif %}
+		{% comment %}
+		<div class="alltags">
+			All tags:
+			
+		</div>
+		{% assign blog_handles = false %}
+		{% assign blog_tags = false %}
+		{% assign knowledge_handles = false %}
+		{% assign knowledge_tags = false %}
+		{% if linklists.product-blogs %}
+			{% assign blog_handles = '' %}
+			{% for link in linklists.product-blogs.links %}
+				{% assign url_parts = link.url | split: '/' %}
+				{% assign handle = url_parts.last %}
+				{% unless blog_handles contains handle %}
+					{% assign blog_handles = blog_handles | append: handle | append: ',' %}
+				{% endunless %}
+			{% endfor %}
+			{% assign blog_handles = blog_handles | split: ',' | uniq %}
+		{% endif %}
+		{% if linklists.product-knowledgebase %}
+			{% assign knowledge_handles = '' %}
+			{% for link in linklists.product-knowledgebase.links %}
+				{% assign url_parts = link.url | split: '/' %}
+				{% assign handle = url_parts.last %}
+				{% unless blog_handles contains handle %}
+					{% assign knowledge_handles = knowledge_handles | append: handle | append: ',' %}
+				{% endunless %}
+			{% endfor %}
+			{% assign knowledge_handles = knowledge_handles | split: ',' | uniq %}
+		{% endif %}
+		{% if blog_handles %}
+			{% assign blog_tags = '' %}
+			{% for handle in blog_handles %}
+				{% assign blog = blogs[handle] %}
+				{% if blog and blog.articles %}
+					{% for article in blog.articles %}
+						{% for tag in article.tags %}
+							{% capture tag_key %}{{ handle }}::{{ blog.title }}::{{ tag | handleize }}::{{ tag }}{% endcapture %}
+							{% unless blog_tags contains tag_key %}
+								{% assign blog_tags = blog_tags | append: tag_key |  append: ',' %}
+							{% endunless %}
+						{% endfor %}
+					{% endfor %}
+				{% endif %}
+			{% endfor %}
+			{% assign blog_tags = blog_tags | split: ',' | uniq %}
+		{% endif %}
+		{% if knowledge_handles %}
+			{% assign knowledge_tags = '' %}
+			{% for handle in knowledge_handles %}
+				{% assign blog = blogs[handle] %}
+				{% if blog and blog.articles %}
+					{% for article in blog.articles %}
+						{% for tag in article.tags %}
+							{% capture tag_key %}{{ handle }}::{{ blog.title }}::{{ tag | handleize }}::{{ tag }}{% endcapture %}
+							{% unless blog_tags contains tag_key %}
+								{% assign knowledge_tags = knowledge_tags | append: tag_key |  append: ',' %}
+							{% endunless %}
+						{% endfor %}
+					{% endfor %}
+				{% endif %}
+			{% endfor %}
+			{% assign knowledge_tags = knowledge_tags | split: ',' | uniq %}
+		{% endif %}
+		{% if blog_tags %}
+			<h3>Blogs</h3>
+			<ul>
+			{% for entry in blog_tags %}
+				{% unless entry == '' %}
+					{% assign parts = entry | split: '::' %}
+					{% assign blog_slug		= parts[0] %}
+					{% assign blog_name		= parts[1] %}
+					{% assign tag_slug 		= parts[2] %}
+					{% assign tag_name 		= parts[3] %}
+					<li>
+						<a class="tag" href="/blogs/{{ blog_slug }}/tagged/{{ tag_slug }}">{{ tag_name }} in {{blog_name}}</a>
+					</li>
+				{% endunless %}
+			{% endfor %}
+			</ul>
+		{% endif %}
+		{% if knowledge_tags %}
+			<h3>Kennisbank</h3>
+			<ul>
+			{% for entry in knowledge_tags %}
+				{% unless entry == '' %}
+					{% assign parts = entry | split: '::' %}
+					{% assign blog_slug		= parts[0] %}
+					{% assign blog_name		= parts[1] %}
+					{% assign tag_slug 		= parts[2] %}
+					{% assign tag_name 		= parts[3] %}
+					<li>
+						<a class="tag" href="/blogs/{{ blog_slug }}/tagged/{{ tag_slug }}">{{ tag_name }} in {{blog_name}}</a>
+					</li>
+				{% endunless %}
+			{% endfor %}
+			</ul>
+		{% endif %}
+		{% endcomment %}
+	
+</section>
+{% comment %}
+<script>
+	const SHOPIFY_DOMAIN = '5z0af7-xt.myshopify.com';
+	const ACCESS_TOKEN = '005f23706ca10e993f6e02ec3159db56';
+	const API_URL = `https://${SHOPIFY_DOMAIN}/api/2024-04/graphql.json`;
+	const headers = {
+	  'Content-Type': 'application/json',
+	  'X-Shopify-Storefront-Access-Token': ACCESS_TOKEN,
+	};
+	async function fetchGraphQL(query, variables = {}) {
+	  const response = await fetch(API_URL, {
+		method: 'POST',
+		headers,
+		body: JSON.stringify({ query, variables }),
+	  });
+	
+	  const json = await response.json();
+	  if (json.errors) {
+		console.error('GraphQL errors:', json.errors);
+	  }
+	  return json.data;
+	}
+	async function fetchAllBlogs(cursor = null, blogs = []) {
+	  const query = `
+		query ($cursor: String) {
+		  blogs(first: 10, after: $cursor) {
+			edges {
+			  cursor
+			  node {
+				handle
+				title
+			  }
+			}
+			pageInfo {
+			  hasNextPage
+			}
+		  }
+		}
+	  `;
+	
+	  const data = await fetchGraphQL(query, { cursor });
+	  const edges = data.blogs.edges;
+	
+	  blogs.push(...edges.map(edge => edge.node));
+	
+	  if (data.blogs.pageInfo.hasNextPage) {
+		const nextCursor = edges[edges.length - 1].cursor;
+		return fetchAllBlogs(nextCursor, blogs);
+	  }
+	
+	  return blogs;
+	}	
+	async function fetchAllArticles(blogHandle, cursor = null, articles = []) {
+	  const query = `
+		query ($handle: String!, $cursor: String) {
+		  blog(handle: $handle) {
+			articles(first: 100, after: $cursor) {
+			  edges {
+				cursor
+				node {
+				  title
+				  handle
+				  tags
+				  blog {
+					handle
+				  }
+				}
+			  }
+			  pageInfo {
+				hasNextPage
+			  }
+			}
+		  }
+		}
+	  `;
+	
+	  const data = await fetchGraphQL(query, { handle: blogHandle, cursor });
+	  const edges = data.blog.articles.edges;
+	
+	  articles.push(...edges.map(edge => edge.node));
+	
+	  if (data.blog.articles.pageInfo.hasNextPage) {
+		const nextCursor = edges[edges.length - 1].cursor;
+		return fetchAllArticles(blogHandle, nextCursor, articles);
+	  }
+	
+	  return articles;
+	}
+	async function getAllTags(useBlogs=false) {
+	  const allTags = new Set();
+	  const blogs = await fetchAllBlogs();	
+	  for (const blog of blogs) {
+		const articles = await fetchAllArticles(blog.handle);
+		articles.forEach(article => {
+		  article.tags.forEach(tag => allTags.add(tag));
+		});
+	  }
+	  return Array.from(allTags.values());
+	}
+	async function getAllArticles(useBlogs=false,useTags=false,useSortby=false) {
+	  const allArticles = new Map();
+	  const blogs = await fetchAllBlogs();	
+	  for (const blog of blogs) {
+		const articles = await fetchAllArticles(blog.handle);	
+		articles.forEach(article => {
+			let key = `${blog.handle}::${article.handle}`;
+			if( useSortby && useSortby =='tag' ){
+				article.tags.forEach(tag => {
+					const tagslug 	= tag.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+					key = `${blog.handle}::${tagslug}`; // ensures uniqueness per blog
+					if(!allArticles.has(key)) {
+					  allArticles.set(key, {
+						article: article,
+						tag: tag,
+						tagslug: tagslug,
+						blogHandle: blog.handle,
+						url: `/blogs/${blog.handle}/tagged/${tagslug}`,
+					  });
+					}
+				});
+			} else {
+				if(!allArticles.has(key)) {
+				  allArticles.set(key, {
+					article: article,
+					url: `/blogs/${blog.handle}/${article.handle}`,
+				  });
+				}
+			}
+		});
+	  }
+	  return Array.from(allArticles.values());
+	}
+	
+	//Run it:
+	const $alltags = document.querySelector('.alltags');
+	if($alltags){
+		getAllTags().then(tags => {
+		  console.log('✅ All unique tags:', tags);
+		  const $ul = document.createElement('ul');
+		  tags.forEach(tag => {
+			  const $li =  document.createElement('li');
+			  $li.innerHTML = `${tag}`;
+			  $ul.appendChild($li);
+		  });
+		  $alltags.appendChild($ul);
+		}).catch(err => {
+		  console.error('❌ Error fetching tags:', err);
+		});
+	}
+	
+	
+	// getAllArticles(false,false,'tag').then(articles => {
+	//   console.log('✅ All articles:', articles);
+	// }).catch(err => {
+	//   console.error('❌ Error fetching tags:', err);
+	// });
+
+</script>
+{% endcomment %}
+
+{% schema %}
+{
+  "name": "Product Blog",
+  "tag": "section",
+  "class": "main-product-blog",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [
+	{
+	  "type": "text",
+	  "id": "heading",
+	  "label": "Heading",
+	  "default": "Welcome to our blog"
+	},
+	{
+	  "type": "textarea",
+	  "id": "subtext",
+	  "label": "Subtext",
+	  "default": "Here you can highlight promotions, features, or anything else."
+	},
+	{
+	  "type": "select",
+	  "id": "view",
+	  "label": "Banner view",
+	  "default": "grid",
+	  "options": [
+		{ "value": "grid", "label": "Grid" },
+		{ "value": "flex", "label": "Flex row" }
+	  ]
+	}
+  ],
+  "presets": [
+	  {
+		"name": "Main Product Blogs",
+		"category": "Homework"
+	  }
+	]
+}
+{% endschema %}

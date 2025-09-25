@@ -1,0 +1,98 @@
+<section class="block-latest-products-content alignwide">
+	{% comment %}
+	  Latest Products section
+	  - Source: selected collection (defaults to "All" if none selected)
+	  - Tip: set that collection's sort to "Newest" in Admin → Collections → Sort → Newest
+	{% endcomment %}
+	
+	{% liquid
+	  assign source_collection = section.settings.source_collection | default: collections['all']
+	  assign product_count = section.settings.products_count | default: 8
+	  assign columns = section.settings.columns | default: 4
+	%}
+	
+	  {% if source_collection and source_collection.products_count > 0 %}
+		{%- comment -%} Build Dawn grid classes {%- endcomment -%}
+		{% liquid
+		  assign grid_class = ''
+		  case columns
+			when 2
+			  assign grid_class = 'grid--2-col grid--2-col-tablet'
+			when 3
+			  assign grid_class = 'grid--2-col grid--3-col-tablet'
+			when 4
+			  assign grid_class = 'grid--2-col grid--4-col-desktop'
+			else
+			  assign grid_class = 'grid--2-col grid--4-col-desktop'
+		  endcase
+		%}
+		<h2>Onze nieuwste producten</h2>
+		<ul class="grid {{ grid_class }}">
+		  {%- for product in source_collection.products limit: product_count -%}
+			<li class="grid__item">
+			  {%- render 'card-product',
+				card_product: product,
+				media_aspect_ratio: section.settings.media_aspect_ratio,
+				show_secondary_image: section.settings.show_secondary_image,
+				show_vendor: section.settings.show_vendor,
+				show_rating: section.settings.show_rating,
+				lazy_load: true,
+				section_id: section.id,
+				show_quick_add: section.settings.enable_quick_add
+			  -%}
+			</li>
+		  {%- endfor -%}
+		</ul>
+	  {% endif %}
+</section>
+
+{%- style -%}
+	.block-latest-products {
+		& .block-latest-products-content {
+			padding-top: 2em; padding-bottom: 2em;
+			& h2 {
+				font-family: 'Absara Pro'; text-align: center; font-size: 2em;
+			}
+		}
+	}
+{%- endstyle -%}
+
+{% javascript %}
+	class LatestProducts extends HTMLElement {
+		constructor() {
+			super();
+		}
+		connectedCallback() {
+			
+		}
+		disconnectedCallback() {
+			
+		}
+	}
+	customElements.define('latest-products', LatestProducts);
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Latest products",
+  "tag": "section",
+  "class": "block-latest-products",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [],
+  "blocks": [
+	  {
+		"type": "@app"
+	  }
+  ],
+  "max_blocks": 5,
+  "presets": [
+	{
+	  "name": "Latest products",
+	  "category": "Homework",
+	  "blocks": []
+	}
+  ]
+}
+{% endschema %}

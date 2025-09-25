@@ -1,0 +1,39 @@
+<section class="block-collection-top-content alignsmall">
+	<h1>{{- collection.title | escape -}}</h1>
+	{% if collection.metafields.global.description_tag != blank %}
+		<p>{{ collection.metafields.global.description_tag }}</p>
+	{% endif %}
+</section>
+
+{%- style -%}
+	.block-collection-top {
+		& .block-collection-top-content {
+			text-align: center; padding-bottom: 2em;
+			& h1 {
+				font-family: 'Absara Pro'; font-weight: 400; margin-bottom: 0;
+			}
+			& p {
+				 margin-bottom: 0; letter-spacing: -0.02em;
+			}
+		}
+	}
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Collection top",
+  "tag": "section",
+  "class": "block-collection-top",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [],
+  "presets": [
+	{
+	  "name": "Collection top",
+	  "category": "Homework",
+	  "blocks": []
+	}
+  ]
+}
+{% endschema %}
