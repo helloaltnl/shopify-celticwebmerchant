@@ -1,5 +1,6 @@
-# Node modules & package managers
+# Node & package managers
 node_modules/
+node_modules/*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -7,9 +8,33 @@ pnpm-debug.log*
 
 # Build artifacts
 dist/
+dist/*
 build/
-*.map
+build/*
 
-# Env / config
-.env
+# Maps & logs
+*.map
 *.log
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# NOVA #
+.nova
+.nova/*
+
+# CODEKIT #
+.config.codekit3
+.config.codekit3/*
+.compiled.codekit3
+.compiled.codekit3/*
+
+# PHPSTORM #
+.idea
+.idea/*
