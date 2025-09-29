@@ -1,0 +1,454 @@
+{%- liquid
+  assign id       = section_id
+  assign obj      = section_object | default: collection | default: search
+  assign settings = section_settings
+  assign sort_by  = obj.sort_by | default: obj.default_sort_by
+-%}
+
+<product-filter
+  class="product-filter"
+  data-section-id="{{ id }}"
+  data-auto-submit="{{ settings.auto_submit | default: true }}"
+  data-auto-fill="{{ settings.auto_fill_preview | default: true }}"
+  data-max-preview="{{ settings.max_preview_filters | default: 4 }}"
+  data-ajax-pagination="{{ settings.ajax_pagination | default: false }}"
+  data-dynamic="true"
+>
+
+  {%- comment -%} PREVIEW {%- endcomment -%}
+  {%- render 'html-facets-preview',
+	  object: obj,
+	  section_id: id,
+	  sort_by: sort_by,
+	  settings: settings
+  -%}
+
+  {%- comment -%} ACTIVE PILLS {%- endcomment -%}
+  {%- render 'html-facets-active',
+	  object: obj,
+	  section_id: id
+  -%}
+
+  {%- comment -%} ASIDE/DRAWER {%- endcomment -%}
+  {%- render 'html-facets-aside',
+	  object: obj,
+	  section_id: id,
+	  sort_by: sort_by,
+	  settings: settings
+  -%}
+</product-filter>
+<style>
+	.product-filter { display:block; padding-top: 0em; padding-bottom: 2em; }	
+	.facets__resultcount { letter-spacing: -0.02em;}
+</style>
+<script>
+/* ProductFilter – section-scoped AJAX grid + facet sync */
+(function () {
+  if (customElements.get('product-filter')) return;
+
+  // ---------- helpers ----------
+  function closest(el, sel){ while(el && el.nodeType===1){ if(el.matches(sel)) return el; el = el.parentElement; } return null; }
+  function q(root, sel){ return root ? root.querySelector(sel) : null; }
+  function qa(root, sel){ return root ? root.querySelectorAll(sel) : []; }
+  function findGrid(root){
+	if (!root) return null;
+	return root.querySelector('[data-grid]') ||
+		   root.querySelector('#product-grid') ||
+		   root.querySelector('.product-grid');
+  }
+
+  // ---------- custom element ----------
+  function ProductFilter(){ return Reflect.construct(HTMLElement, [], ProductFilter); }
+  ProductFilter.prototype = Object.create(HTMLElement.prototype, { constructor: { value: ProductFilter } });
+
+  ProductFilter.prototype.connectedCallback = function () {
+	var id = this.dataset.sectionId;
+
+	// Scope alles aan de hand van de Shopify section wrapper
+	this.sectionEl = document.getElementById('shopify-section-' + id) || document;
+
+	// UI refs
+	this.drawer   = q(this, '#filter-drawer-' + id);
+	this.openBtn  = q(this, '.product-filter__open');
+	this.closeBtn = q(this, '.product-filter__close');
+	this.backdrop = q(this, '.product-filter__backdrop');
+
+	// Forms
+	this.formPrev = q(this, '#PreviewFiltersForm-' + id);
+	this.formFull = q(this, '#AsideFiltersForm-' + id);
+
+	// Targets in page (section-scoped)
+	this.gridHost = findGrid(this.sectionEl);
+	this.pillsEl  = q(this.sectionEl, '[data-active-pills]');
+
+	// Buttons / drawer
+	var self = this;
+	if (this.openBtn)  this.openBtn.addEventListener('click', function(){ self.openDrawer(); });
+	if (this.closeBtn) this.closeBtn.addEventListener('click', function(){ self.closeDrawer(); });
+	if (this.backdrop) this.backdrop.addEventListener('click', function(){ self.closeDrawer(); });
+	this._onKeydown = function(e){ if (e.key === 'Escape') self.closeDrawer(); };
+	window.addEventListener('keydown', this._onKeydown, { passive: true });
+
+	// Intercept forms (capture + stop → vóór theme autosubmit)
+	this._onFormChange = function (e) {
+	  var form = closest(e.target, 'form');
+	  if (!form || (form !== self.formFull && form !== self.formPrev)) return;
+	  e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); e.cancelBubble = true;
+	  self._handleSubmit(form);
+	};
+	this._onFormSubmit = function (e) {
+	  var form = e.target;
+	  if (form !== self.formFull && form !== self.formPrev) return;
+	  var submitter = e.submitter || document.activeElement;
+	  var wantsPage = submitter && submitter.getAttribute && submitter.getAttribute('data-mode') === 'page';
+	  if (!wantsPage) {
+		e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); e.cancelBubble = true;
+		self._handleSubmit(form);
+		return;
+	  }
+	  // "Toepassen" met data-mode="page" → klassieke navigatie toestaan
+	};
+	if (this.formPrev) {
+	  this._bindAccordion(this.formPrev, 'prev');
+	  this.formPrev.addEventListener('change', this._onFormChange, { capture: true });
+	  this.formPrev.addEventListener('submit', this._onFormSubmit, { capture: true });
+	}
+	if (this.formFull) {
+		// this._bindAccordion(this.formFull, 'full');
+	  this.formFull.addEventListener('change', this._onFormChange, { capture: true });
+	  this.formFull.addEventListener('submit', this._onFormSubmit, { capture: true });
+	}
+
+	// Pagination intercept (alleen als aangezet)
+	this._onClick = function (e) {
+	  if (self.dataset.ajaxPagination !== 'true') return;
+	  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+	  var a = e.target && e.target.closest && e.target.closest('.product-pagination a, .pagination__list a');
+	  if (!a) return;
+	  e.preventDefault();
+	  self._fetchAndSwapGrid(new URL(a.href));
+	  var host = self.gridHost || findGrid(self.sectionEl) || findGrid(document);
+	  if (host) {
+		host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		var firstFocusable = host.querySelector('a,button,[tabindex]:not([tabindex="-1"])');
+		if (firstFocusable && firstFocusable.focus) firstFocusable.focus({ preventScroll: true });
+	  }
+	};
+	document.addEventListener('click', this._onClick, true); // capture: true → vóór theme handlers
+
+	// Autofill alleen als aangezet
+	if (this.dataset.autoFill === 'true') this.autofillPreview('setup');
+  };
+
+  ProductFilter.prototype.disconnectedCallback = function () {
+	window.removeEventListener('keydown', this._onKeydown);
+	if (this.formPrev) { this.formPrev.removeEventListener('change', this._onFormChange, true); this.formPrev.removeEventListener('submit', this._onFormSubmit, true); }
+	if (this.formFull) { this.formFull.removeEventListener('change', this._onFormChange, true); this.formFull.removeEventListener('submit', this._onFormSubmit, true); }
+	if (this._onClick) document.removeEventListener('click', this._onClick, true);
+	if (this.dataset.autoFill === 'true') this.autofillPreview('teardown');
+	// Accordion cleanup
+	if (this._accDoc_prev) {
+	  document.removeEventListener('click', this._accDoc_prev, true);
+	  this._accDoc_prev = null;
+	}
+	if (this._accDoc_full) {
+	  document.removeEventListener('click', this._accDoc_full, true);
+	  this._accDoc_full = null;
+	}
+  };
+
+  // ---------- Drawer ----------
+  ProductFilter.prototype.openDrawer = function () {
+	this.lastFocus = document.activeElement;
+	if (this.drawer) this.drawer.setAttribute('aria-hidden', 'false');
+	if (this.openBtn) this.openBtn.setAttribute('aria-expanded', 'true');
+	if (this.backdrop) this.backdrop.hidden = false;
+	document.documentElement.classList.add('is-drawer-open');
+	if (this.drawer && this.drawer.focus) this.drawer.focus({ preventScroll: true });
+  };
+  ProductFilter.prototype.closeDrawer = function () {
+	if (this.drawer) this.drawer.setAttribute('aria-hidden', 'true');
+	if (this.openBtn) this.openBtn.setAttribute('aria-expanded', 'false');
+	if (this.backdrop) this.backdrop.hidden = true;
+	document.documentElement.classList.remove('is-drawer-open');
+	var lf = this.lastFocus;
+	if (lf && document.body.contains(lf) && lf.focus) lf.focus({ preventScroll: true });
+	else if (this.openBtn && this.openBtn.focus) this.openBtn.focus({ preventScroll: true });
+  };
+  
+  // Alleen-één-open accordion binnen .facets__groups (klik-gestuurd, robuust)
+  ProductFilter.prototype._bindAccordion = function (form, key) {
+	var groups = q(form, '.facets__groups');
+	if (!groups) return;
+  
+	var self = this;
+  
+	var onClick = function (e) {
+	  var sum = e.target && e.target.closest ? e.target.closest('summary') : null;
+	  if (!sum) return;
+  
+	  var d = sum.parentElement;
+	  if (!d || !d.matches || !d.matches('details.facet')) return;
+  
+	  // voorkom native toggle
+	  e.preventDefault();
+  
+	  var wasOpen = d.hasAttribute('open');
+  
+	  // sluit alle andere
+	  groups.querySelectorAll('details.facet[open]').forEach(function (el) {
+		if (el !== d) el.removeAttribute('open');
+	  });
+  
+	  // toggle de huidige
+	  if (!wasOpen) d.setAttribute('open', '');
+	  else d.removeAttribute('open');
+  
+	  // re-measure preview
+	  if (typeof self.autofillPreview === 'function') self.autofillPreview();
+	};
+  
+	// buiten-klik sluit alles
+	var onDocClick = function (e) {
+	  if (!groups.contains(e.target)) {
+		groups.querySelectorAll('details.facet[open]').forEach(function (el) {
+		  el.removeAttribute('open');
+		});
+		if (typeof self.autofillPreview === 'function') self.autofillPreview();
+	  }
+	};
+  
+	groups.addEventListener('click', onClick, true);
+	document.addEventListener('click', onDocClick, true);
+  
+	// refs bewaren voor cleanup
+	this['_accEl_' + key] = groups;
+	this['_acc_' + key]   = onClick;
+	this['_accDoc_' + key] = onDocClick;
+  };
+
+  // ---------- Form → URL ----------
+  ProductFilter.prototype._handleSubmit = function (form) {
+	var url = this._formToUrl(form);
+	this._fetchAndSwapGrid(url);
+  };
+
+  ProductFilter.prototype._formToUrl = function (form) {
+	var action = form.getAttribute('action') || window.location.pathname;
+	var u = new URL(action, window.location.origin);
+
+	// keep certain params (optional)
+	var cur = new URL(window.location.href);
+	if (cur.searchParams.has('view')) u.searchParams.set('view', cur.searchParams.get('view'));
+
+	// rebuild from scratch with current form state
+	var fd = new FormData(form);
+	fd.forEach(function (v, k) {
+	  if (v === null || v === undefined) return;
+	  u.searchParams.append(k, v);
+	});
+
+	// search page prefix
+	if (u.searchParams.has('q') && !u.searchParams.has('options[prefix]')) {
+	  u.searchParams.set('options[prefix]', 'last');
+	}
+
+	// reset pagination on filter change
+	u.searchParams.delete('page');
+
+	return u;
+  };
+
+  // ---------- Fetch & swap ----------
+  ProductFilter.prototype._fetchAndSwapGrid = function (baseUrl) {
+	var _this = this;
+	var sectionId = this.dataset.sectionId;
+	var api = new URL(baseUrl);
+	api.searchParams.set('sections', sectionId);
+
+	this._setLoading(true);
+	fetch(api.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+	  .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+	  .then(function (map) {
+		var html = map[sectionId];
+		if (!html) throw new Error('Section HTML ontbreekt');
+		var doc = new DOMParser().parseFromString(html, 'text/html');
+
+		// 1) Grid (section HTML bevat inner; zoek grid daarin)
+		var newGrid = findGrid(doc);
+		if (newGrid) {
+		  // her-bepaal gridHost fallback (als DOM intussen veranderde)
+		  _this.gridHost = _this.gridHost || findGrid(_this.sectionEl) || findGrid(document);
+		  if (_this.gridHost) _this.gridHost.innerHTML = newGrid.innerHTML;
+		}
+
+		// 2) Facet counts/disabled sync (preview + full), zonder DOM te vervangen
+		var newPreview = doc.querySelector('.facets--preview[data-facets]');
+		var newFull    = doc.querySelector('.facets--full[data-facets]');
+		_this._syncFacetsCounts(_this.formPrev, newPreview);
+		_this._syncFacetsCounts(_this.formFull, newFull);
+
+		// 3) Active pills (scoped binnen section)
+		var curPills = _this.pillsEl || q(_this.sectionEl, '[data-active-pills]');
+		var newPills = doc.querySelector('[data-active-pills]');
+		if (curPills && newPills) curPills.innerHTML = newPills.innerHTML;
+
+		// 4) Result count(s)
+		_this._syncResultCount(doc);
+		
+		// 5) Update URL (zonder ?sections)
+		history.replaceState({}, '', baseUrl.toString());
+	  })
+	  .catch(function (err) {
+		console.error('[product-filter] fetch failed:', err);
+		// Fallback naar normale navigatie
+		window.location.assign(baseUrl.toString());
+	  })
+	  .finally(this._setLoading.bind(this, false));
+  };
+
+  ProductFilter.prototype._setLoading = function (on) {
+	document.documentElement.classList.toggle('is-loading', !!on);
+  };
+
+  // Result count sync – vervangt ALLE tellers in de huidige section
+  ProductFilter.prototype._syncResultCount = function (doc) {
+	if (!doc || !this.sectionEl) return;
+	var src = doc.querySelector('[data-facets-resultcount]');
+	if (!src) return; // response bevat geen teller → niets te doen
+	var html = src.innerHTML; // laat opzet/markup van server intact
+  
+	var targets = this.sectionEl.querySelectorAll('[data-facets-resultcount]');
+	targets.forEach(function(el){ el.innerHTML = html; });
+  };
+
+  // ---------- Facet count & disabled sync ----------
+  ProductFilter.prototype._syncFacetsCounts = function (targetForm, sourceForm) {
+	if (!targetForm || !sourceForm) return;
+	var tFacets = qa(targetForm, 'details.facet[data-param]');
+	for (var i=0; i<tFacets.length; i++) {
+	  var tDetail = tFacets[i];
+	  var param = tDetail.getAttribute('data-param');
+	  var sDetail = q(sourceForm, 'details.facet[data-param="' + param.replace(/"/g,'\\"') + '"]');
+	  if (!sDetail) continue;
+
+	  var tItems = qa(tDetail, 'li[data-value]');
+	  for (var j=0; j<tItems.length; j++) {
+		var tLi = tItems[j];
+		var val = tLi.getAttribute('data-value');
+		var sLi = q(sDetail, 'li[data-value="' + (val || '').replace(/"/g,'\\"') + '"]');
+		if (!sLi) continue;
+
+		var tQty = q(tLi, '.facet__qty');
+		var sQty = q(sLi, '.facet__qty');
+		if (tQty && sQty) tQty.textContent = sQty.textContent;
+
+		var tInput = q(tLi, 'input[type="checkbox"],input[type="radio"]');
+		var sInput = q(sLi,   'input[type="checkbox"],input[type="radio"]');
+		if (tInput && sInput) {
+		  var isActive = !!tInput.checked;
+		  var shouldDisable = sInput.hasAttribute('disabled');
+		  var tWrap = q(tLi, '.facet__check');
+		  if (!isActive) {
+			if (shouldDisable) {
+			  tInput.setAttribute('disabled', '');
+			  if (tWrap) tWrap.classList.add('is-disabled');
+			} else {
+			  tInput.removeAttribute('disabled');
+			  if (tWrap) tWrap.classList.remove('is-disabled');
+			}
+		  }
+		}
+	  }
+	}
+  };
+
+  // ---------- Autofill preview (1 regel + badge) ----------
+  ProductFilter.prototype.autofillPreview = function (phase) {
+	phase = phase || 'measure';
+	var root = this.formPrev;
+	var g = q(root, '.facets__groups');
+	if (!root || !g) return;
+
+	var self = this;
+	function outerW(el){ var r=el.getBoundingClientRect(), cs=getComputedStyle(el), ml=parseFloat(cs.marginLeft)||0, mr=parseFloat(cs.marginRight)||0; return Math.ceil(r.width+ml+mr); }
+	function gapX(){ var cs=getComputedStyle(g), v=cs.columnGap||cs.gap||'0'; return parseFloat(v)||0; }
+	function badge(){
+	  var b=self.openBtn; if (!b) return;
+	  var k=q(b,'.badge'); if(!k){ k=document.createElement('span'); k.className='badge'; b.appendChild(k); }
+	  var n=parseInt(self.dataset.hiddenCount||'0',10)||0; k.textContent=n?('+'+n):''; k.hidden=!n;
+	}
+	function measure() {
+	  var max   = parseInt(self.dataset.maxPreview||'0',10)||0;
+	  var items = [].slice.call(qa(g,'details.facet'));
+	  if (!items.length) return;
+	
+	  items.forEach(function(el){ el.classList.remove('facet--hidden'); });
+	
+	  var prevOverflow = g.style.overflow;
+	  g.style.overflow = 'hidden';
+	
+	  try {
+		var vis = items;
+		if (max > 0 && items.length > max) vis = items.slice(0, max);
+	
+		var gap = gapX();
+		// trek buffer af (ruimte voor sort dropdown / andere rechter elementen)
+		var sortEl = q(root, '.facets__sort');
+		var buffer = sortEl ? sortEl.getBoundingClientRect().width + 16 : 0; 
+		//var buffer = 196; // px
+		var W   = Math.max(0, Math.floor(g.clientWidth) - buffer);
+	
+		var widths = vis.map(function(el, i){ return outerW(el) + (i ? gap : 0); });
+	
+		items.forEach(function(el){ el.classList.add('facet--hidden'); });
+	
+		var used = 0;
+		for (var i = 0; i < vis.length; i++) {
+		  var w = widths[i];
+		  if ((i === 0 && w > W) || used + w <= W || used === 0) {
+			vis[i].classList.remove('facet--hidden');
+			used += w;
+		  }
+		}
+	
+		if (max > 0 && items.length > max) {
+		  for (var j = max; j < items.length; j++) items[j].classList.add('facet--hidden');
+		}
+	
+		self.dataset.hiddenCount = String(qa(g, '.facet--hidden').length);
+		badge();
+	  } finally {
+		g.style.overflow = prevOverflow;
+	  }
+	}
+
+	if (phase==='setup'){
+	  measure();
+	  if (!this._ro){
+		var ro=new ResizeObserver(function(){ if(self._raf) cancelAnimationFrame(self._raf); self._raf=requestAnimationFrame(measure); });
+		ro.observe(g); this._ro=ro;
+	  }
+	  if (!this._fontsHooked && document.fonts && document.fonts.ready){
+		this._fontsHooked=true; document.fonts.ready.then(function(){ measure(); }).catch(function(){});
+	  }
+	  if (!this._toggleHooked){
+		this._toggleHooked=true;
+		this._onToggle=function(e){ var t=e.target; if (t && t.matches && t.matches('details.facet')){ if(self._raf) cancelAnimationFrame(self._raf); self._raf=requestAnimationFrame(measure); } };
+		root.addEventListener('toggle', this._onToggle);
+	  }
+	  return;
+	}
+	if (phase==='teardown'){
+	  if (this._ro){ try{ this._ro.disconnect(); }catch(e){} this._ro=null; }
+	  if (this._raf) cancelAnimationFrame(this._raf);
+	  if (this._toggleHooked){ root.removeEventListener('toggle', this._onToggle); this._toggleHooked=false; }
+	  return;
+	}
+	if (this._raf) cancelAnimationFrame(this._raf);
+	this._raf=requestAnimationFrame(measure);
+  };
+
+  customElements.define('product-filter', ProductFilter);
+})();
+</script>

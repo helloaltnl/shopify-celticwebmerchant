@@ -1,0 +1,54 @@
+{%- comment -%}
+  Renders product price (optionally compare_at).
+
+  Accepts:
+  - product: Product (required)
+  - variant: Variant (optional, overrides logic)
+  - show: Boolean (default true) → of we iets tonen
+  - from: String (auto|first|first_available|cheapest_available, default: first_available)
+  - show_compare: Boolean (default true)
+
+  Voorbeeld:
+  {% render 'html-product-price', product: product, from: 'cheapest_available' %}
+{%- endcomment -%}
+
+{%- assign show = show | default: true -%}
+{%- if show and product -%}
+  {%- assign v = variant -%}
+  {%- if v == blank -%}
+	{%- assign mode = from | default: 'first_available' -%}
+	{%- case mode -%}
+	  {%- when 'auto' -%}
+		{%- assign v = product.selected_or_first_available_variant | default: product.variants.first -%}
+	  {%- when 'first' -%}
+		{%- assign v = product.variants.first -%}
+	  {%- when 'first_available' -%}
+		{%- for vv in product.variants -%}{%- if vv.available -%}{%- assign v = vv -%}{%- break -%}{%- endif -%}{%- endfor -%}
+		{%- if v == nil -%}{%- assign v = product.variants.first -%}{%- endif -%}
+	  {%- when 'cheapest_available' -%}
+		{%- assign min_price = nil -%}
+		{%- for vv in product.variants -%}
+		  {%- if vv.available -%}
+			{%- if min_price == nil or vv.price < min_price -%}
+			  {%- assign min_price = vv.price -%}
+			  {%- assign v = vv -%}
+			{%- endif -%}
+		  {%- endif -%}
+		{%- endfor -%}
+		{%- if v == nil -%}{%- assign v = product.variants.first -%}{%- endif -%}
+	  {%- else -%}
+		{%- assign v = product.selected_or_first_available_variant | default: product.variants.first -%}
+	{%- endcase -%}
+  {%- endif -%}
+
+  {%- if v -%}
+	<div class="product-card__price">
+		{%- if show_compare != false and v.compare_at_price and v.compare_at_price > v.price -%}
+			<span class="price price--compare">
+				{%- render 'helper-price-formatted', amount: v.compare_at_price -%}
+			</span>
+		{%- endif -%}
+		{%- render 'helper-price-formatted', amount: v.price -%}
+	</div>
+  {%- endif -%}
+{%- endif -%}

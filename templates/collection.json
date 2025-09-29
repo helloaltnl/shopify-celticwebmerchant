@@ -21,10 +21,14 @@
       "type": "block-collection-banners",
       "settings": {}
     },
-    "collection-products": {
-      "type": "block-collection-products",
+    "collection-overview": {
+      "type": "block-product-overview",
       "settings": {}
     },
+    // "collection-products": {
+    //   "type": "block-collection-products",
+    //   "settings": {}
+    // },
     // "product-grid": {
     //   "type": "main-collection-product-grid",
     //   "settings": {
@@ -50,7 +54,8 @@
     "breadcrumbs",
     "collection-top",
     "collection-banners",
-    "collection-products",
+    "collection-overview",
+    //"collection-products",
     "collection-bottom"
   ]
 }

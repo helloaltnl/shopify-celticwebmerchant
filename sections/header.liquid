@@ -27,7 +27,7 @@
     {%- for block in section.blocks -%}
       {%- case block.type -%}
         {%- when '@app' -%}
-          {% render block %}
+          
       {%- endcase -%}
     {%- endfor -%}
     {%- if settings.cart_type == "notification" -%}
@@ -240,7 +240,9 @@
       this.searchModal.close(false);
     }
   }
-  customElements.define('sticky-header', StickyHeader);
+  if (!customElements.get('page-header')) {
+    customElements.define('sticky-header', StickyHeader);
+  }
   
   class PageHeader extends HTMLElement {
     constructor() {
@@ -371,48 +373,10 @@
       }
     }
   }
-  customElements.define('page-header', PageHeader);
+  if (!customElements.get('page-header')) {
+    customElements.define('page-header', PageHeader);
+  }
 {% endjavascript %}
-
-  {% comment %}
-  <{{ header_tag }} {% if header_tag == 'sticky-header' %}data-sticky-type="{{ section.settings.sticky_header_type }}"{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
-  </{{ header_tag }}>
-  {%- liquid
-    if section.settings.menu != blank
-      if section.settings.menu_type_desktop == 'dropdown'
-        render 'header-dropdown-menu'
-      elsif section.settings.menu_type_desktop != 'drawer'
-        render 'header-mega-menu'
-      endif
-    endif
-  %}
-  {%- style -%}
-    .header {
-      padding: {{ section.settings.padding_top | times: 0.5 | round: 0 }}px 3rem {{ section.settings.padding_bottom | times: 0.5 | round: 0 }}px 3rem;
-    }
-  
-    .section-header {
-      position: sticky; /* This is for fixing a Safari z-index issue. PR #2147 */
-      margin-bottom: {{ section.settings.margin_bottom | times: 0.75 | round: 0 }}px;
-    }
-  
-    @media screen and (min-width: 750px) {
-      .section-header {
-        margin-bottom: {{ section.settings.margin_bottom }}px;
-      }
-    }
-  
-    @media screen and (min-width: 990px) {
-      .header {
-        padding-top: {{ section.settings.padding_top }}px;
-        padding-bottom: {{ section.settings.padding_bottom }}px;
-      }
-    }
-  {%- endstyle -%}
-  {%- if section.settings.menu_type_desktop == 'mega' -%}
-    <link rel="stylesheet" href="{{ 'component-mega-menu.css' | asset_url }}" media="print" onload="this.media='all'">
-  {%- endif -%}
-{% endcomment %}
 
 <script type="application/ld+json">
   {

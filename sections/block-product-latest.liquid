@@ -1,0 +1,154 @@
+<section class="block-product-latest-content alignwide">
+	{% comment %}
+	  Latest Products section
+	  - Source: selected collection (defaults to "All" if none selected)
+	  - Tip: set that collection's sort to "Newest" in Admin → Collections → Sort → Newest
+	{% endcomment %}
+	
+	{% liquid
+	  assign source_collection = section.settings.source_collection | default: collections['all']
+	  assign source_count = section.settings.products_to_show | default: 8
+	  assign source_view = section.settings.products_in_view | default: 4
+	%}
+	
+	{% if source_collection and source_collection.products_count > 0 %}
+	
+		{% comment %} 
+		{% assign available_products = source_collection.products | where: 'available', true %}	 
+		{% endcomment %}
+		
+		<h2>{{ 'sections.latest_products.title' | t | default: 'Latest products' }}</h2>
+		<ul class="is-grid is-product-grid" data-readmore="grid" data-readmore-rows="1">
+			{% assign shown_products = 0 %}
+			{%- for product in source_collection.products limit: 48  -%}
+			
+				{% assign valid_product = true %}
+				{%- for v in product.variants -%}
+				  {%- if v.available and v.inventory_quantity > 3 -%}
+					{% assign valid_product = true %}
+					{% break %}
+				  {%- endif -%}
+				{%- endfor -%}
+				
+				{% if valid_product %}
+					<li class="is-grid__item">
+						{% render 'html-product-card', 
+							product: product, 
+							show_secondary_image: true,
+							show_vendor: false, 
+							show_price:true,
+							show_stock: true,
+							show_rating: true,
+							show_badges: true, 
+							quick_add: false 
+						%}
+					  </li>
+					{% assign shown_products = shown_products | plus: 1 %}
+					
+					{% if shown_products == source_view %}
+						<li class="is-grid__item is-grid__item-more">
+							<button data-show-more type="button" class="is-button">
+								<span>{{ 'sections.latest_products.title' | t | default: 'More latest products' }}</span>
+								<i>
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+								</i>
+							</button>
+						</li>
+					{% endif %}
+					
+					{% if shown_products >= source_count %}
+						{% break %}
+					{% endif %}
+					
+				{% endif %}
+			
+			  	
+			  
+			{%- endfor -%}
+		</ul>
+	{% endif %}
+</section>
+
+{%- style -%}
+	.block-product-latest {
+		background-color: var(--theme-color-grey);
+		& .block-product-latest-content {
+			padding-top: 2em; padding-bottom: 2em;
+			& h2 {
+				font-family: 'Absara Pro'; text-align: center; font-size: 2em;
+			}
+			& ul {
+				& li {
+					&.is-grid__item-more {
+						grid-column: 1 / -1; width:100%!important; max-width:100%!important;
+						text-align: center;
+						& button {
+							display: inline-flex; width: max-content; padding:0.5em 1em;
+							background-color: transparent;
+							border-bottom:currentcolor 2px solid;
+						}
+					}
+				}
+			}
+		}
+	}
+	.is-product-grid[data-readmore="grid"]:not(.is-expanded) .is-grid__item-more ~ .is-grid__item { display: none; }
+{%- endstyle -%}
+
+{% javascript %}
+	class LatestProducts extends HTMLElement {
+		constructor() {
+			super();
+		}
+		connectedCallback() {
+			
+		}
+		disconnectedCallback() {
+			
+		}
+	}
+	customElements.define('latest-products', LatestProducts);
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Latest products",
+  "tag": "section",
+  "class": "block-product-latest",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [
+	  {
+		"type": "collection",
+		"id": "collection",
+		"label": "Choose collection"
+	  },
+	  {
+		  "type": "range",
+		  "id": "products_to_show",
+		  "min": 2,
+		  "max": 12,
+		  "step": 1,
+		  "label": "Products in view",
+		  "default": 8
+		},
+	  {
+		"type": "range",
+		"id": "products_in_view",
+		"min": 2,
+		"max": 12,
+		"step": 1,
+		"label": "Products in view",
+		"default": 4
+	  }
+  ],
+  "presets": [
+	{
+	  "name": "Latest products",
+	  "category": "Homework",
+	  "blocks": []
+	}
+  ]
+}
+{% endschema %}

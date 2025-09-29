@@ -1,0 +1,16 @@
+{%- assign v = product.selected_or_first_available_variant -%}
+{%- assign atc_label = 'products.product.add_to_cart' | t | default: 'Toevoegen aan winkelwagen' -%}
+{%- assign sold_out_label = 'products.product.sold_out' | t | default: 'Uitverkocht' -%}
+{%- assign unavailable_label = 'products.product.unavailable' | t | default: 'Niet beschikbaar' -%}
+
+<button type="submit"
+		class="pform__btn{% if full_width %} pform__btn--full{% endif %}"
+		data-atc
+		data-label-default="{{ atc_label | escape }}"
+		data-label-soldout="{{ sold_out_label | escape }}"
+		data-label-unavailable="{{ unavailable_label | escape }}"
+		{% unless v.available %}disabled{% endunless %}>
+  <span data-atc-text>
+	{%- if v.available -%}{{ atc_label }}{%- else -%}{{ sold_out_label }}{%- endif -%}
+  </span>
+</button>

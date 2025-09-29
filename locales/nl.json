@@ -317,6 +317,16 @@
     "footer": {
       "payment": "Betaalmethoden"
     },
+    "latest_products": {
+      "title": "Onze nieuwste producten",
+      "read_more_text": "Alle nieuwste producten"
+    },
+    "selection_products": {
+      "readmore": {
+        "show": "Toon meer producten",
+        "hide": "Toon minder producten"
+      }
+    },
     "featured_blog": {
       "view_all": "Alles bekijken",
       "onboarding_title": "Blogpost",

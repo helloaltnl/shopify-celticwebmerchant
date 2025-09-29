@@ -1,0 +1,5 @@
+{%- assign v = product.selected_or_first_available_variant -%}
+<div class="pform-sku" aria-live="polite">
+  {%- if show_label -%}<span class="pform__label">SKU:</span>{%- endif -%}
+  <span data-sku>{{ v.sku }}</span>
+</div>

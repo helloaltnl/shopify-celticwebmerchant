@@ -16,12 +16,22 @@
       }
     },
     "latest-products": {
-      "type": "block-latest-products",
+      "type": "block-product-latest",
+      "settings": {}
+    },
+    "best-products": {
+      "type": "block-product-selection",
+      "settings": {}
+    },
+    "popular-products": {
+      "type": "block-product-selection",
       "settings": {}
     },
   },
   "order": [
     "main_hero",
-    "latest-products"
+    "latest-products",
+    "best-products",
+    "popular-products"
   ]
 }

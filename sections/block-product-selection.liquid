@@ -1,0 +1,135 @@
+{% liquid
+  assign source_collection = section.settings.collection | default: collections['all']
+  assign source_count = section.settings.products_show | default: 8
+  assign source_view = section.settings.products_rows | default: 1
+%}
+<section class="block-product-selection-content alignwide">
+		{% if source_collection.products.size > 0 %}
+			
+			<h2>{{ source_collection.title }}</h2>
+			
+			{% assign available_products = source_collection.products | where: 'available', true %}
+			<ul class="is-grid product-grid" 
+				data-readmore="grid" 
+				data-readmore-rows="{{ source_view }}"
+				>
+				
+				{% for product in available_products limit: source_count %}
+					<li class="is-grid__item">
+					  {% render 'html-product-card', 
+						  product: product, 
+						  show_secondary_image: true,
+						  show_vendor: false, 
+						  show_price:true,
+						  show_stock: true,
+						  show_rating: true,
+						  show_badges: true, 
+						  quick_add: false 
+					  %}
+					</li>
+				{% endfor %}
+				<li class="is-grid__item is-grid__item-more">
+					{% assign more_label = section.settings.readmore_label %}
+					{% if more_label == blank %}
+					  {% assign more_label = 'sections.selection_products.readmore.show' | t %}
+					{% endif %}
+					
+					{% assign less_label = section.settings.readless_label %}
+					{% if less_label == blank %}
+					  {% assign less_label = 'sections.selection_products.readmore.hide' | t %}
+					{% endif %}
+					<button 
+						data-show-more 
+						data-more-label="{{ more_label | escape }}"
+						data-less-label="{{ less_label | escape }}"
+						class="is-button" type="button" >
+						<span>{{more_label}}</span>
+						<i>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+						</i>
+					</button>
+				</li>
+			</ul>
+		{% endif %}
+</section>
+
+{%- style -%}
+	.block-product-selection {
+		background-color: var(--theme-color-grey);
+		& .block-product-selection-content {
+			padding-top: 2em; padding-bottom: 2em;
+			& h2 {
+				font-family: 'Absara Pro'; text-align: center; font-size: 2em;
+			}
+			& ul {
+				& li {
+					&.is-grid__item-more {
+						grid-column: 1 / -1; width:100%!important; max-width:100%!important;
+						text-align: center;
+						& button {
+							display: inline-flex; width: max-content; padding:0.5em 1em;
+							background-color: transparent;
+							border-bottom:currentcolor 2px solid;
+						}
+					}
+				}
+			}
+		}
+	}
+	.product-grid[data-readmore="grid"]:not(.is-expanded) .is-grid__item-more ~ .is-grid__item { display: none; }
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Selection products",
+  "tag": "section",
+  "class": "block-product-selection",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [
+	    {
+			"type": "collection",
+			"id": "collection",
+			"label": "Choose collection"
+		},
+		{
+			"type": "range",
+			"id": "products_show",
+			"min": 5,
+			"max": 12,
+			"step": 1,
+			"label": "Products to show",
+			"default": 12
+		},
+		{
+			"type": "range",
+			"id": "products_rows",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"label": "Products in rows",
+			"default": 1
+	    },
+		{
+			"type": "text",
+			"id": "readmore_label",
+			"label": "Read more button text",
+			// "default": "Show more"
+		},
+		{
+			"type": "text",
+			"id": "readless_label",
+			"label": "Read less button text",
+			// "default": "Show less"
+		}
+  ],
+  "presets": [
+	{
+	  "name": "Latest products",
+	  "category": "Homework",
+	  "blocks": []
+	}
+  ]
+}
+{% endschema %}

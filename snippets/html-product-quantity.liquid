@@ -1,0 +1,11 @@
+<label class="pform__label" for="Quantity-{{ product.id }}">
+  {{ 'products.product.quantity.label' | t | default: 'Aantal' }}
+</label>
+<input id="Quantity-{{ product.id }}"
+	   class="pform__input"
+	   type="number"
+	   name="quantity"
+	   min="1"
+	   value="1"
+	   inputmode="numeric"
+	   pattern="[0-9]*">

@@ -1,0 +1,111 @@
+{%- comment -%}
+  Product Card
+  Accepts:
+  - product: {Object} (required)
+  - show_secondary_image: {Boolean} (default false)
+  - show_vendor: {Boolean} (default false)
+  - show_price: {Boolean} (default false)
+  - show_price_from: {String} auto | first | first_available | cheapest_available
+  - show_stock: {Boolean} (default false)
+  - show_stock_from: {String} auto | first | first_available | cheapest_available (fallback: show_price_from)
+  - show_rating: {Boolean} (default false, requires metafields.reviews)
+  - show_badges: {Boolean} (default true)
+  - quick_add: {Boolean} (default false)
+{%- endcomment -%}
+
+{%- assign p = product | default: card_product -%}
+{%- if p and p != empty -%}
+  <div class="product-card">
+	<!-- Media -->
+	<figure class="product-card__media">
+		<a href="{{ p.url }}"> </a>
+		<picture>
+	    
+		{%- if p.featured_media -%}
+		  {%- assign alt_main = p.featured_media.alt | default: p.title | escape -%}
+		  {{ p.featured_media
+			| image_url: width: 640
+			| image_tag:
+			  alt: alt_main,
+			  loading: 'lazy',
+			  class: 'product-card__img',
+			  widths: '320,480,640,800,960,1200',
+			  sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+		  }}
+		  {%- if show_secondary_image and p.media[1] -%}
+			{%- assign alt_second = p.media[1].alt | default: p.title | escape -%}
+			{{ p.media[1]
+			  | image_url: width: 800
+			  | image_tag:
+				alt: alt_second,
+				loading: 'lazy',
+				class: 'product-card__img product-card__img--secondary'
+			}}
+		  {%- endif -%}
+		{%- else -%}
+		  <div class="product-card__placeholder" aria-hidden="true"></div>
+		{%- endif -%}
+	   
+		</picture>
+	</figure>
+	<!-- Content -->
+	<div class="product-card__content">
+	  <h3 class="product-card__title">
+		<a href="{{ p.url }}">{{ p.title | escape }}</a>
+	  </h3>
+
+	  {%- if show_vendor -%}
+		<div class="product-card__vendor">{{ p.vendor }}</div>
+	  {%- endif -%}
+
+	  {%- if show_rating and p.metafields.reviews.rating.value != blank -%}
+		{%- assign rating = p.metafields.reviews.rating.value -%}
+		<div class="product-card__rating">
+		  ⭐ {{ rating.rating }} / {{ rating.scale_max }} ({{ rating.rating_count }})
+		</div>
+	  {%- endif -%}
+
+	  {%- if show_price -%}
+		{%- render 'html-product-price',
+		  product: p,
+		  show: show_price,
+		  from: show_price_from,
+		  show_compare: true
+		-%}
+	  {%- endif -%}
+	  
+	  {%- if show_stock -%}
+		{%- render 'html-product-stock',
+		  product: p,
+		  show: show_stock,
+		  from: show_stock_from | default: show_price_from,
+		  show_low_stock: true,
+		  low_stock_threshold: 2
+		-%}
+	  {%- endif -%}
+
+	  {%- if show_badges != false -%}
+		<div class="product-card__badges">
+		  {%- if p.available == false -%}
+			<span class="badge badge--soldout">{{ 'products.product.sold_out' | t }}</span>
+		  {%- elsif p.compare_at_price > p.price -%}
+			<span class="badge badge--sale">{{ 'products.product.on_sale' | t }}</span>
+		  {%- endif -%}
+		</div>
+	  {%- endif -%}
+
+	  {%- if quick_add -%}
+		<form method="post" action="/cart/add" class="product-card__form">
+		  <input type="hidden" name="id" value="{{ p.selected_or_first_available_variant.id }}">
+		  <button type="submit" class="btn btn--add" {% unless p.available %}disabled{% endunless %}>
+			{%- if p.available -%}
+			  {{ 'products.product.add_to_cart' | t }}
+			{%- else -%}
+			  {{ 'products.product.sold_out' | t }}
+			{%- endif -%}
+		  </button>
+		</form>
+	  {%- endif -%}
+	</div>
+  </div>
+{%- endif -%}

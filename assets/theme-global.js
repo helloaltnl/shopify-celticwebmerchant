@@ -96,3 +96,103 @@
 	
 	scrollDetect();
 })();
+(() => {
+  const SEL = 'ul[data-readmore="grid"]';
+  const ROW_TOL = 1; // px tolerance for grouping rows by offsetTop
+
+  function groupRows(items){
+	const rows = [];
+	let top = null;
+	for (const el of items) {
+	  const t = el.offsetTop;
+	  if (top === null || Math.abs(t - top) > ROW_TOL) {
+		rows.push([]);
+		top = t;
+	  }
+	  rows[rows.length - 1].push(el);
+	}
+	return rows;
+  }
+
+  function placeMore(grid){
+	if (grid.classList.contains('is-expanded')) return;
+
+	const more = grid.querySelector('.is-grid__item-more');
+	if (!more) return;
+
+	// temporarily remove "more" so it doesn't affect row measurement
+	const ph = document.createComment('readmore-placeholder');
+	if (more.parentNode === grid) grid.replaceChild(ph, more);
+
+	const items = Array.from(grid.querySelectorAll('.is-grid__item:not(.is-grid__item-more)'));
+	if (!items.length) {
+	  ph.replaceWith(more);
+	  grid.appendChild(more);
+	  return;
+	}
+
+	const rows = groupRows(items);
+	const rowsToShow = Math.max(1, parseInt(grid.dataset.readmoreRows, 10) || 1);
+	const insertIndex = Math.min(
+	  rows.slice(0, rowsToShow).reduce((n, r) => n + r.length, 0),
+	  items.length
+	);
+
+	grid.insertBefore(more, items[insertIndex] || null);
+	ph.remove();
+  }
+
+  function settleAndPlace(grid){
+	// single rAF to keep it snappy; no image waits
+	cancelAnimationFrame(grid.__rmRAF);
+	grid.__rmRAF = requestAnimationFrame(() => placeMore(grid));
+  }
+
+  function toggle(grid){
+	const more = grid.querySelector('.is-grid__item-more');
+	const btn  = more?.querySelector('button[data-show-more]');
+	const span = btn?.querySelector('span');
+	const moreLabel = btn?.dataset.moreLabel || 'Show more';
+	const lessLabel = btn?.dataset.lessLabel || 'Show less';
+  
+	const expanded = grid.classList.toggle('is-expanded');
+	if (expanded) {
+	  grid.appendChild(more);
+	  if (span) span.textContent = lessLabel;
+	} else {
+	  if (span) span.textContent = moreLabel;
+	  settleAndPlace(grid);
+	}
+  }
+
+  function initOne(grid){
+	if (grid.__rmInited) return;
+	grid.__rmInited = true;
+
+	const btn = grid.querySelector('.is-grid__item-more button[data-show-more]');
+	if (btn) btn.addEventListener('click', () => toggle(grid));
+
+	// initial placement
+	settleAndPlace(grid);
+
+	// light resize handling (tiny debounce)
+	const onResize = () => { if (!grid.classList.contains('is-expanded')) settleAndPlace(grid); };
+	const debounced = (() => { let t; return () => { clearTimeout(t); t=setTimeout(onResize, 100); }; })();
+	window.addEventListener('resize', debounced, { passive: true });
+  }
+
+  function initAll(scope = document){
+	scope.querySelectorAll(SEL).forEach(initOne);
+  }
+
+  if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', () => initAll());
+  } else {
+	initAll();
+  }
+
+  // optional: for Shopify Theme Editor live reloads
+  document.addEventListener('shopify:section:load',   e => initAll(e.target));
+  document.addEventListener('shopify:section:select', e => initAll(e.target));
+  document.addEventListener('shopify:section:reorder',e => initAll(e.target));
+})();

@@ -1,0 +1,16 @@
+{%- if product.selling_plan_groups.size > 0 -%}
+  <div class="pform-selling" data-selling-plans>
+	{%- for spg in product.selling_plan_groups -%}
+	  <label class="pform__label" for="Selling-{{ product.id }}-{{ forloop.index0 }}">{{ spg.name }}</label>
+	  <select id="Selling-{{ product.id }}-{{ forloop.index0 }}"
+			  name="selling_plan"
+			  class="pform__select"
+			  data-selling-plan-select>
+		<option value="">{{ 'products.product.onetime_purchase' | t | default: 'Eenmalige aankoop' }}</option>
+		{%- for sp in spg.selling_plans -%}
+		  <option value="{{ sp.id }}">{{ sp.name }}</option>
+		{%- endfor -%}
+	  </select>
+	{%- endfor -%}
+  </div>
+{%- endif -%}

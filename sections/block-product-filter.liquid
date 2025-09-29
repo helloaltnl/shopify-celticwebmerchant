@@ -1,0 +1,203 @@
+{%- comment -%}
+  Section: block-product-filter.liquid
+  - Werkt op collection én search.
+  - Verwacht snippet: snippets/html-facets.liquid
+  - JS inline in javascript zodat het alleen geladen wordt als deze section gebruikt wordt.
+{%- endcomment -%}
+
+{%- liquid
+  assign resource = collection
+  if resource == blank and search
+	assign resource = search
+  endif
+-%}
+<section class="block-filter-products-content alignwide">
+  <product-filter class="product-filter"
+				  data-section-id="{{ section.id }}"
+				  data-auto-submit="{{ section.settings.auto_submit | default: false }}"
+				  data-auto-fill="{{ section.settings.auto_fill_preview | default: true }}"
+				  data-max-preview="{{ section.settings.max_preview_filters | default: 4 }}">
+	{%- render 'html-facets-preview', object: resource, section_id: section.id -%}
+	{%- render 'html-facets-active',  object: resource, section_id: section.id -%}
+	{%- render 'html-facets-aside',   object: resource, section_id: section.id -%}
+  </product-filter>
+</section>
+
+{% javascript %}
+class ProductFilter extends HTMLElement {
+  constructor() {
+	super();
+	this.drawer    = null;
+	this.openBtn   = null;
+	this.closeBtn  = null;
+	this.backdrop  = null;
+	this.formFull  = null;
+	this.formPrev  = null;
+	this.lastFocus = null;
+  }
+
+  connectedCallback() {
+	  console.log('BAM');
+	const sectionId = this.dataset.sectionId;
+
+	this.drawer   = this.querySelector('#filter-drawer-' + sectionId);
+	this.openBtn  = this.querySelector('.product-filter__open');
+	this.closeBtn = this.querySelector('.product-filter__close');
+	this.backdrop = this.querySelector('.product-filter__backdrop');
+	this.formFull = this.querySelector('#FacetFiltersForm-' + sectionId);
+	this.formPrev = this.querySelector('.facets--preview');
+
+	this.openBtn?.addEventListener('click', this.openDrawer.bind(this));
+	this.closeBtn?.addEventListener('click', this.closeDrawer.bind(this));
+	this.backdrop?.addEventListener('click', this.closeDrawer.bind(this));
+	window.addEventListener('keydown', this.onKeydown);
+
+	if (this.dataset.autoSubmit === 'true') {
+	  this.enableAutoSubmit(this.formFull);
+	  this.enableAutoSubmit(this.formPrev);
+	}
+	if (this.dataset.autoFill === 'true') {
+	  this.autofillPreview('setup');
+	}
+  }
+
+  disconnectedCallback() {
+	window.removeEventListener('keydown', this.onKeydown);
+	this.autofillPreview('teardown');
+  }
+
+  onKeydown = (e) => {
+	if (e.key === 'Escape') this.closeDrawer();
+  }
+
+  openDrawer() {
+	  console.log('BAM');
+	this.lastFocus = document.activeElement;
+	this.drawer.setAttribute('aria-hidden', 'false');
+	this.openBtn?.setAttribute('aria-expanded','true');
+	this.backdrop.hidden = false;
+	document.documentElement.classList.add('is-drawer-open');
+	this.drawer.focus({preventScroll:true});
+  }
+
+  closeDrawer() {
+	this.drawer.setAttribute('aria-hidden', 'true');
+	this.openBtn?.setAttribute('aria-expanded','false');
+	this.backdrop.hidden = true;
+	document.documentElement.classList.remove('is-drawer-open');
+	if (this.lastFocus && document.body.contains(this.lastFocus)) {
+	  this.lastFocus.focus({preventScroll:true});
+	} else {
+	  this.openBtn?.focus({preventScroll:true});
+	}
+  }
+
+  enableAutoSubmit(form) {
+	if (!form) return;
+	form.addEventListener('change', () => {
+	  if (form.requestSubmit) form.requestSubmit();
+	  else form.submit();
+	});
+  }
+  
+  autofillPreview(p='measure'){
+	const root=this.formPrev, g=root?.querySelector('.facets__groups'); if(!root||!g) return;
+	const ow = el => { const r=el.getBoundingClientRect(), cs=getComputedStyle(el); return Math.ceil(r.width+(parseFloat(cs.marginLeft)||0)+(parseFloat(cs.marginRight)||0)); };
+	const cx = ()=>{ const cs=getComputedStyle(g); return parseFloat(cs.columnGap||cs.gap||'0')||0; };
+	const badge = ()=>{
+	  const b=this.openBtn; if(!b) return;
+	  let k=b.querySelector('.badge'); if(!k){ k=document.createElement('span'); k.className='badge'; b.appendChild(k); }
+	  const n=+this.dataset.hiddenCount||0; k.textContent=n?`+${n}`:''; k.hidden=!n;
+	};
+	const measure=()=>{
+	  const max=+this.dataset.maxPreview||0, items=[...g.querySelectorAll('details.facet')]; if(!items.length) return;
+	  items.forEach(e=>e.classList.remove('facet--hidden'));
+	  let vis=items; if(max&&items.length>max){ vis=items.slice(0,max); for(let i=max;i<items.length;i++) items[i].classList.add('facet--hidden'); }
+	  const W=Math.floor(g.getBoundingClientRect().width), gap=cx(); let used=0;
+	  vis.forEach((e,i)=>{ const w=ow(e)+(i?gap:0); if(!i&&w>W){ for(let j=1;j<vis.length;j++) vis[j].classList.add('facet--hidden'); return; }
+		if(used+w<=W||!used) used+=w; else e.classList.add('facet--hidden'); });
+	  this.dataset.hiddenCount=String(g.querySelectorAll('.facet--hidden').length); badge();
+	};
+  
+	if (p==='setup'){
+	  measure();
+	  if(!this._ro){ this._ro=new ResizeObserver(()=>{ cancelAnimationFrame(this._raf); this._raf=requestAnimationFrame(measure); }); this._ro.observe(g); }
+	  if(!this._fontsHooked&&document.fonts?.ready){ this._fontsHooked=true; document.fonts.ready.then(()=>measure()).catch(()=>{}); }
+	  if(!this._orientHooked){ this._orientHooked=true; this._onOrient=()=>{ cancelAnimationFrame(this._raf); this._raf=requestAnimationFrame(measure); }; window.addEventListener('orientationchange',this._onOrient,{passive:true}); }
+	  if(!this._toggleHooked){ this._toggleHooked=true; this._onToggle=e=>{ if(e.target?.matches?.('details.facet')){ cancelAnimationFrame(this._raf); this._raf=requestAnimationFrame(measure); } };
+		root.addEventListener('toggle',this._onToggle); }
+	  return;
+	}
+	if (p==='teardown'){
+	  if(this._ro){ try{ this._ro.disconnect(); }catch(e){} this._ro=null; }
+	  if(this._raf) cancelAnimationFrame(this._raf);
+	  if(this._orientHooked){ window.removeEventListener('orientationchange',this._onOrient); this._orientHooked=false; }
+	  if(this._toggleHooked){ root.removeEventListener('toggle',this._onToggle); this._toggleHooked=false; }
+	  return;
+	}
+	cancelAnimationFrame(this._raf); this._raf=requestAnimationFrame(measure);
+  }
+  
+}
+if (!customElements.get('product-filter')) {
+  customElements.define('product-filter', ProductFilter);
+}
+{% endjavascript %}
+
+{% style %}
+.block-filter-products {
+	background-color: var(--theme-color-grey); 
+}
+.block-filter-products-content {
+	padding-bottom: 1em;
+}
+.product-filter { display:block; }
+.product-filter__preview { display:flex; flex-wrap: nowrap; align-items: flex-start; gap:1em; width: 100%; position: relative; z-index: 10;}
+.product-filter__preview > .facets { flex-grow: 1; display: flex;}
+.product-filter__preview > .facets .facets__active { display:none;flex-basis: 100%; }
+.product-filter__preview > .facets .facets__groups { flex-grow: 1; display: flex; flex-wrap: nowrap;}
+.product-filter__preview > .facets .facets__groups .facet { flex-basis: 196px; min-width:  min-content; position: relative;}
+.product-filter__preview > .facets .facets__groups .facet .facet__summary {}
+.product-filter__preview > .facets .facets__groups .facet .facet__fieldset { 
+	position: absolute; left:0; top:100%;
+	border:none; padding:0; margin: 0; background-color: #fff;
+}
+.product-filter__preview > .facets .facets__groups .facet--hidden { display: none !important; }
+.product-filter__preview > .facets .facets__sort { flex-grow: 0;}
+.product-filter__preview > button { flex-grow: 0;}
+.product-filter__preview > button .bagde {}
+.product-filter__preview > button .badge[hidden] { display: none;}
+
+.product-filter__open { white-space:nowrap; }
+
+.product-filter__drawer {
+  position:fixed; z-index: 100; inset:0 0 0 auto; width:min(560px, 95vw);
+  transform:translateX(100%); transition:transform .25s ease;
+  background: var(--bg, #fff); color: inherit; z-index: 60;
+  box-shadow:-12px 0 24px rgba(0,0,0,.12); outline:0;
+}
+.product-filter__drawer[aria-hidden="false"] { transform:translateX(0); }
+.product-filter__drawer-head { display:flex; align-items:center; justify-content:space-between; padding:1rem; border-bottom:1px solid rgb(0 0 0 / .08); }
+.product-filter__drawer-body { padding:1rem; overflow:auto; height:calc(100dvh - 64px); }
+.product-filter__drawer-actions { position:sticky; bottom:0; padding-top:.75rem; background: linear-gradient(to top, var(--bg,#fff) 60%, transparent); }
+
+.product-filter__backdrop { position:fixed; inset:0; background:rgb(0 0 0 / .25); z-index:50; }
+html.is-drawer-open .product-filter__backdrop { display:block; }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Product filter",
+  "class": "block-filter-products",
+  "settings": [
+	{ "type": "checkbox", "id": "show_sort", "label": "Show sorting", "default": true },
+	{ "type": "range", "id": "max_preview_filters", "label": "Max filters in preview", "min": 1, "max": 10, "step": 1, "default": 4 },
+	{ "type": "checkbox", "id": "auto_fill_preview", "label": "Auto-fill (preview overflow verbergen)", "default": true },
+	{ "type": "text", "id": "drawer_title", "label": "Drawer title", "default": "Filters" },
+	{ "type": "text", "id": "open_button_label", "label": "Open button label", "default": "Alle filters" },
+	{ "type": "text", "id": "apply_button_label", "label": "Apply button label", "default": "Toepassen" },
+	{ "type": "checkbox", "id": "auto_submit", "label": "Auto-submit bij wijzigen", "default": true }
+  ],
+  "presets": [{ "name": "Product filter (S&D)" }]
+}
+{% endschema %}
