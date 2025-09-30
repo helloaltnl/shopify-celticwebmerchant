@@ -8,6 +8,7 @@
   - show_price_from: {String} auto | first | first_available | cheapest_available
   - show_stock: {Boolean} (default false)
   - show_stock_from: {String} auto | first | first_available | cheapest_available (fallback: show_price_from)
+  - show_delivery: {Boolean} (default false, requires metafields.ism_deliverydate.deliverydate )
   - show_rating: {Boolean} (default false, requires metafields.reviews)
   - show_badges: {Boolean} (default true)
   - quick_add: {Boolean} (default false)
@@ -84,7 +85,7 @@
 		-%}
 	  {%- endif -%}
 
-	  {%- if show_badges != false -%}
+	  {%- if show_badges -%}
 		<div class="product-card__badges">
 		  {%- if p.available == false -%}
 			<span class="badge badge--soldout">{{ 'products.product.sold_out' | t }}</span>
@@ -92,6 +93,12 @@
 			<span class="badge badge--sale">{{ 'products.product.on_sale' | t }}</span>
 		  {%- endif -%}
 		</div>
+	  {%- endif -%}
+	  
+	  {%- if show_delivery -%}
+	  	{%- render 'html-product-delivery',
+			product: p
+		 -%}
 	  {%- endif -%}
 
 	  {%- if quick_add -%}

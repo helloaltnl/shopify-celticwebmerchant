@@ -1,0 +1,83 @@
+{%- comment -%} sections/block-product-recommendations.liquid {%- endcomment -%}
+<section id="product-recommendations-{{ section.id }}" class="product-recommendations-content alignwide">
+  <h2>{{ section.settings.heading | default: 'Aanbevolen producten' }}</h2>
+  <div class="product-recommendations" data-list></div>
+
+  {%- comment -%} SERVER RENDER PAD (gebruikt door section_id fetch) {%- endcomment -%}
+  {%- if recommendations and recommendations.performed and recommendations.products_count > 0 -%}
+	<ul class="is-grid is-product-grid js-recos" role="list">
+	  {%- for p in recommendations.products limit: section.settings.limit -%}
+	  	<li class="class="grid__item">
+		{%- render 'html-product-card', 
+			product: p, 
+			show_secondary_image: true,
+			show_vendor: false, 
+			show_price:true,
+			show_stock: true,
+			show_delivery: true,
+			show_rating: true,
+			show_badges: true, 
+			quick_add: false, 
+			context: 'recommendations' 
+		-%}
+		  </li>
+	  {%- endfor -%}
+	</ul>
+  {%- endif -%}
+</section>
+
+<script>
+(function(){
+  var root = document.getElementById('product-recommendations-{{ section.id }}');
+  if (!root) return;
+  var host = root.querySelector('[data-list]');
+  var productId = {{ product.id }};
+  var limit = {{ section.settings.limit | default: 4 }};
+
+  var url = '/recommendations/products'
+		  + '?product_id=' + encodeURIComponent(productId)
+		  + '&limit=' + encodeURIComponent(limit)
+		  + '&section_id={{ section.id }}';
+
+  fetch(url)
+	.then(function(r){ return r.ok ? r.text() : Promise.reject(r); })
+	.then(function(html){
+	  var doc = new DOMParser().parseFromString(html, 'text/html');
+	  var sec = doc.getElementById('shopify-section-{{ section.id }}');
+	  if (!sec) return;
+	  var ul = sec.querySelector('.js-recos');
+	  if (!ul) return;
+	  host.innerHTML = '';
+	  host.appendChild(ul);
+	})
+	.catch(function(){ /* stil falen ok */ });
+})();
+</script>
+
+{% style %}
+.block-product-recommendations {
+	background-color: var(--theme-color-grey);
+	padding-top: 4em; padding-bottom: 4em;
+}
+.block-product-recommendations-content {
+	
+}
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Product recommendations",
+  "tag": "section",
+  "class": "block-product-recommendations",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [],
+  "presets": [
+	{
+	  "name": "Product recommendations",
+	  "category": "Homework",
+	}
+  ]
+}
+{% endschema %}

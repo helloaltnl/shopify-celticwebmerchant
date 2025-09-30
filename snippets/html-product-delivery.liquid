@@ -1,0 +1,35 @@
+{%- if product.metafields.ism_deliverydate.deliverydate != blank -%}
+	{%- assign delivery_raw = product.metafields.ism_deliverydate.deliverydate.value -%}
+	{%- if delivery_raw != blank -%}
+		{%- assign delivery = delivery_raw | parse_json -%}
+		
+		{%- assign stock_status = '' -%}
+		{%- if product and product.available == false -%}
+			{%- assign stock_status = 'out' -%}
+		{%- else -%}
+		
+		{%- assign v = product.selected_or_first_available_variant | default: product.variants.first -%}
+		{%- if v and v.inventory_management -%}
+			{%- if v.inventory_quantity > 0 -%}
+				{%- assign stock_status = 'in' -%}
+			{%- else -%}
+				{%- if v.inventory_policy == 'continue' -%}
+					{%- assign stock_status = 'in' -%}
+				{%- else -%}
+					{%- assign stock_status = 'out' -%}
+				{%- endif -%}
+			{%- endif -%}
+		{%- else -%}
+			{%- assign stock_status = 'in' -%}
+		{%- endif -%}
+		<div class="product-card__delivery" data-delivery-title="{{ delivery.title }}">
+			{%- case stock_status -%}
+				{%- when 'in' -%}
+					<span>{{ delivery.inStockMessage }}</span>
+				{%- else -%}
+					<span>{{ delivery.outStockMessage }}</span>
+			{%- endcase -%}
+		</div>	
+		{%- endif -%}
+	{%- endif -%}
+{%- endif -%}

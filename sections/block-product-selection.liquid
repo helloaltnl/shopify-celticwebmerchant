@@ -9,7 +9,7 @@
 			<h2>{{ source_collection.title }}</h2>
 			
 			{% assign available_products = source_collection.products | where: 'available', true %}
-			<ul class="is-grid product-grid" 
+			<ul class="is-grid is-product-grid" 
 				data-readmore="grid" 
 				data-readmore-rows="{{ source_view }}"
 				>
@@ -22,6 +22,7 @@
 						  show_vendor: false, 
 						  show_price:true,
 						  show_stock: true,
+						  show_delivery: true,
 						  show_rating: true,
 						  show_badges: true, 
 						  quick_add: false 

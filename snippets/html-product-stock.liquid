@@ -1,6 +1,4 @@
 {%- comment -%}
-  Renders stock status tag(s) with the same API style as html-product-price.
-
   Accepts:
   - product: Product (required unless `variant` is passed)
   - variant: Variant (optional, overrides selection)
@@ -9,9 +7,7 @@
   - show_backorder: Boolean (default true)
   - show_low_stock: Boolean (default false)
   - low_stock_threshold: Number (default 3)
-
-  - dynamic: Boolean (default false)
-  - dynamic_in_stock_label, dynamic_low_in_stock_label, dynamic_out_of_stock_label, dynamic_backorder_label (String) optional overrides
+  - show_stock_count: Boolean (default false)
 
   Examples:
   render 'html-product-stock', product: product, from: 'first_available', show_low_stock: true 
@@ -24,77 +20,94 @@
 	{%- assign show_backorder = show_backorder | default: true -%}
 	{%- assign show_low_stock = show_low_stock | default: false -%}
 	{%- assign low_stock_threshold = low_stock_threshold | default: 3 -%}
+	{%- assign show_stock_count = show_stock_count | default: false -%}
 
 	{%- assign v = variant -%}
 	{%- if v == blank and product -%}
-	{%- assign mode = from | default: 'first_available' -%}
-	{%- case mode -%}
-		{%- when 'auto' -%}
-		{%- assign v = product.selected_or_first_available_variant | default: product.variants.first -%}
-		{%- when 'first' -%}
-		{%- assign v = product.variants.first -%}
-		{%- when 'first_available' -%}
-		{%- for vv in product.variants -%}
-			{%- if vv.available -%}{%- assign v = vv -%}{%- break -%}{%- endif -%}
-		{%- endfor -%}
-		{%- if v == nil -%}{%- assign v = product.variants.first -%}{%- endif -%}
-		{%- when 'cheapest_available' -%}
-		{%- assign min_price = nil -%}
-		{%- for vv in product.variants -%}
-			{%- if vv.available -%}
-			{%- if min_price == nil or vv.price < min_price -%}
-				{%- assign min_price = vv.price -%}
-				{%- assign v = vv -%}
-			{%- endif -%}
-			{%- endif -%}
-		{%- endfor -%}
-		{%- if v == nil -%}{%- assign v = product.variants.first -%}{%- endif -%}
-		{%- else -%}
-		{%- assign v = product.selected_or_first_available_variant | default: product.variants.first -%}
-	{%- endcase -%}
-	{%- endif -%}	
-	
-	{%- assign stock_status = '' -%}
-	{%- if product and product.available == false -%}
-	{%- assign stock_status = 'out' -%}
-	{%- else -%}
-	{%- if v and v.inventory_management -%}
-		{%- if v.inventory_quantity > 0 -%}
-		{%- if show_low_stock and v.inventory_quantity <= low_stock_threshold -%}
-			{%- assign stock_status = 'low' -%}
-		{%- else -%}
-			{%- assign stock_status = 'in' -%}
-		{%- endif -%}
-		{%- else -%}
-		{%- if show_backorder and v.inventory_policy == 'continue' -%}
-			{%- assign stock_status = 'backorder' -%}
-		{%- else -%}
+		{%- assign mode = from | default: 'first_available' -%}
+		{%- case mode -%}
+			{%- when 'auto' -%}
+				{%- assign v = product.selected_or_first_available_variant | default: product.variants.first -%}
+			{%- when 'first' -%}
+				{%- assign v = product.variants.first -%}
+			{%- when 'first_available' -%}
+				{%- for vv in product.variants -%}
+					{%- if vv.available -%}{%- assign v = vv -%}{%- break -%}{%- endif -%}
+				{%- endfor -%}
+				{%- if v == nil -%}{%- assign v = product.variants.first -%}{%- endif -%}
+			{%- when 'cheapest_available' -%}
+				{%- assign min_price = nil -%}
+				{%- for vv in product.variants -%}
+					{%- if vv.available -%}
+					{%- if min_price == nil or vv.price < min_price -%}
+						{%- assign min_price = vv.price -%}
+						{%- assign v = vv -%}
+					{%- endif -%}
+					{%- endif -%}
+				{%- endfor -%}
+				{%- if v == nil -%}{%- assign v = product.variants.first -%}{%- endif -%}
+			{%- else -%}
+				{%- assign v = product.selected_or_first_available_variant | default: product.variants.first -%}
+			{%- endcase -%}
+		{%- endif -%}	
+		
+		{%- assign stock_status = '' -%}
+		{%- if product and product.available == false -%}
 			{%- assign stock_status = 'out' -%}
+		{%- else -%}
+		{%- if v and v.inventory_management -%}
+			{%- if v.inventory_quantity > 0 -%}
+				{%- if show_low_stock and v.inventory_quantity <= low_stock_threshold -%}
+					{%- assign stock_status = 'low' -%}
+				{%- else -%}
+					{%- assign stock_status = 'in' -%}
+				{%- endif -%}
+			{%- else -%}
+				{%- if show_backorder and v.inventory_policy == 'continue' -%}
+					{%- assign stock_status = 'backorder' -%}
+				{%- else -%}
+					{%- assign stock_status = 'out' -%}
+				{%- endif -%}
+			{%- endif -%}
+		{%- else -%}
+			{%- comment -%} Niet getrackt → ga uit van beschikbaar (dus niet in, maar backorder, geen telling mogelijk) {%- endcomment -%}
+			{%- assign stock_status = 'backorder' -%}
 		{%- endif -%}
-		{%- endif -%}
-	{%- else -%}
-		{%- comment -%} Niet getrackt → ga uit van beschikbaar {%- endcomment -%}
-		{%- assign stock_status = 'in' -%}
-	{%- endif -%}
 	{%- endif -%}
 
-	<div class="product-card__stock" data-stock="{{ stock_status }}"> x
+	<div class="product-card__stock" data-stock="{{ stock_status }}">
 	{%- case stock_status -%}
 		{%- when 'in' -%}
 		<span class="stock-tag stock-tag--in">
-		{{ 'products.product.inventory_in_stock' | t }}
+			{% if show_stock_count %}
+				{{ 'products.product.inventory_in_stock_show_count' | t: quantity: v.inventory_quantity}}
+			{% else %}
+				{{ 'products.product.inventory_in_stock' | t }}
+			{%- endif -%}
 		</span>
 		{%- when 'low' -%}
 		<span class="stock-tag stock-tag--low">
-		{{ 'products.product.inventory_low_stock' | t }}
+			{% if show_stock_count %}
+				{{ 'products.product.inventory_low_stock_show_count' | t: quantity: v.inventory_quantity}}
+			{% else %}
+				{{ 'products.product.inventory_low_stock' | t }}
+			{%- endif -%}
 		</span>
 		{%- when 'backorder' -%}
 		<span class="stock-tag stock-tag--backorder">
-		{{ 'products.product.inventory_out_of_stock_continue_selling' | t }}
+			{% if show_stock_count %}
+				{{ 'products.product.inventory_out_of_stock_continue_selling' | t }}
+			{% else %}
+				{{ 'products.product.inventory_out_of_stock_continue_selling' | t }}
+			{%- endif -%}
 		</span>
 		{%- else -%}
 		<span class="stock-tag stock-tag--out">
-		{{ 'products.product.inventory_out_of_stock' | t }}
+			{% if show_stock_count %}
+				{{ 'products.product.inventory_out_of_stock' | t }}
+			{% else %}
+				{{ 'products.product.inventory_out_of_stock' | t }}
+			{%- endif -%}
 		</span>
 	{%- endcase -%}
 	</div>

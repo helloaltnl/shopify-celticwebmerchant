@@ -65,13 +65,16 @@
 		body.classList.toggle('is-scrolled-halfway', scrollY >= (docHeight - windowHeight) / 2);
 	  
 		// is-scrolled-up / is-scrolled-down
-		if (scrollY > lastScrollY) {
-		  body.classList.add('is-scrolled-down');
-		  body.classList.remove('is-scrolled-up');
-		} else if (scrollY < lastScrollY) {
-		  body.classList.add('is-scrolled-up');
-		  body.classList.remove('is-scrolled-down');
+		if(scrollY > 0){
+			if (scrollY > lastScrollY) {
+			  body.classList.add('is-scrolled-down');
+			  body.classList.remove('is-scrolled-up');
+			} else if (scrollY < lastScrollY) {
+			  body.classList.add('is-scrolled-up');
+			  body.classList.remove('is-scrolled-down');
+			}
 		}
+		
 	  
 		// random class when within 100px from bottom
 		if (distanceFromBottom <= 96) {
@@ -93,13 +96,11 @@
 	  }
 	  window.addEventListener('scroll', onScroll, { passive: true });
 	};
-	
 	scrollDetect();
 })();
 (() => {
   const SEL = 'ul[data-readmore="grid"]';
   const ROW_TOL = 1; // px tolerance for grouping rows by offsetTop
-
   function groupRows(items){
 	const rows = [];
 	let top = null;
@@ -113,7 +114,6 @@
 	}
 	return rows;
   }
-
   function placeMore(grid){
 	if (grid.classList.contains('is-expanded')) return;
 
@@ -141,13 +141,11 @@
 	grid.insertBefore(more, items[insertIndex] || null);
 	ph.remove();
   }
-
   function settleAndPlace(grid){
 	// single rAF to keep it snappy; no image waits
 	cancelAnimationFrame(grid.__rmRAF);
 	grid.__rmRAF = requestAnimationFrame(() => placeMore(grid));
   }
-
   function toggle(grid){
 	const more = grid.querySelector('.is-grid__item-more');
 	const btn  = more?.querySelector('button[data-show-more]');
@@ -164,7 +162,6 @@
 	  settleAndPlace(grid);
 	}
   }
-
   function initOne(grid){
 	if (grid.__rmInited) return;
 	grid.__rmInited = true;
@@ -180,17 +177,14 @@
 	const debounced = (() => { let t; return () => { clearTimeout(t); t=setTimeout(onResize, 100); }; })();
 	window.addEventListener('resize', debounced, { passive: true });
   }
-
   function initAll(scope = document){
 	scope.querySelectorAll(SEL).forEach(initOne);
   }
-
   if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', () => initAll());
   } else {
 	initAll();
   }
-
   // optional: for Shopify Theme Editor live reloads
   document.addEventListener('shopify:section:load',   e => initAll(e.target));
   document.addEventListener('shopify:section:select', e => initAll(e.target));

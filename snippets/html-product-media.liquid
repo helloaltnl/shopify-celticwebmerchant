@@ -1,74 +1,225 @@
-{% comment %}
-  Renders a product media gallery. Should be used with 'media-gallery.js'
-  Also see 'product-media-modal'
-
-  Accepts:
-  - product: {Object} Product liquid object
-  - variant_images: {Array} Product images associated with a variant
-  - limit: {Number} (optional) When passed, limits the number of media items to render
+{%- comment -%}
+  html-product-media-grid
+  Renders all product media as equal tiles:
+  - Images:   <ul><li><figure><picture><img>...</figure></li></ul>
+  - Videos:   <ul><li><figure><video>...</figure></li></ul>
+  - Ext video: falls back to <video> preview image (no autoplay/iframe here)
+  - 3D model: falls back to preview image
 
   Usage:
-  {% render 'product-media-gallery' %}
-{% endcomment %}
-<ul class="product-media-list" role="list" data-gallery="gallery-{{ section.id }}" >
-  {%- if product.selected_or_first_available_variant.featured_media != null -%}
-    {%- assign featured_media = product.selected_or_first_available_variant.featured_media -%}
-    <li id="gallery-{{ section.id }}-{{ featured_media.id }}" class="product__media-item" data-media-id="{{ section.id }}-{{ featured_media.id }}" data-media-type="{{featured_media.media_type}}" >
-      {%- assign media_position = 1 -%}
-      {% render 'product-thumbnail',
-        media: featured_media,
-        media_count: media_count,
-        position: media_position,
-        desktop_layout: section.settings.gallery_layout,
-        mobile_layout: section.settings.mobile_thumbnails,
-        loop: section.settings.enable_video_looping,
-        modal_id: section.id,
-        xr_button: true,
-        media_width: 50,
-        media_fit: section.settings.media_fit,
-        constrain_to_viewport: section.settings.constrain_to_viewport,
-        lazy_load: false
-      %}
-    </li>
-  {%- endif -%}
-  {%- for media in product.media -%}
-    {% if media_position >= limit
-      or media_position >= 1
-      and section.settings.hide_variants
-      and variant_images contains media.src
-    %}
-      {% continue %}
-    {% endif %}
+  {% render 'html-product-media-grid', product: product %}
+  {% render 'html-product-media-grid', product_handle: product.handle %}
 
-    {%- unless media.id == product.selected_or_first_available_variant.featured_media.id -%}
-      <li
-        id="Slide-{{ section.id }}-{{ media.id }}"
-        class="product__media-item grid__item slider__slide{% if single_media_visible %} product__media-item--single{% endif %}{% if product.selected_or_first_available_variant.featured_media == nil and forloop.index == 1 %} is-active{% endif %}{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
-        data-media-id="{{ section.id }}-{{ media.id }}" data-media-type="{{media.media_type}}" 
-      >
-        {%- liquid
-          assign media_position = media_position | default: 0 | plus: 1
-          assign lazy_load = false
-          if media_position > 1
-            assign lazy_load = true
-          endif
-        -%}
-        {% render 'product-thumbnail',
-          media: media,
-          media_count: media_count,
-          position: media_position,
-          desktop_layout: section.settings.gallery_layout,
-          mobile_layout: section.settings.mobile_thumbnails,
-          loop: section.settings.enable_video_looping,
-          modal_id: section.id,
-          xr_button: true,
-          media_width: media_width,
-          media_fit: section.settings.media_fit,
-          constrain_to_viewport: section.settings.constrain_to_viewport,
-          lazy_load: lazy_load
-        %}
-      </li>
-    {%- endunless -%}
+  Params (optional):
+  - product: Product object
+  - product_handle: String (fallback if no product object)
+  - columns: Number (default 4)  → CSS grid-columns
+  - ratio: String (default '1/1') e.g. '4/5', '3/2' → CSS aspect-ratio
+  - gap: String (default '0.75rem')
+  - loading: 'lazy'|'eager' (default 'lazy')
+  - img_width: Number (default 800) → base width per tile for srcset
+{%- endcomment -%}
+
+{%- assign p = product -%}
+{%- if p == blank and product_handle != blank -%}
+  {%- assign p = all_products[product_handle] -%}
+{%- endif -%}
+<div class="pmedia-grid">
+{%- if p == blank -%}
+  <ul class="pmedia-grid-container pmedia-grid--empty"><li>No product media</li></ul>
+{%- endif -%}
+
+{%- assign columns   = columns   | default: 4 -%}
+{%- assign ratio     = ratio     | default: '2/3' -%}
+{%- assign gap       = gap       | default: '0.75rem' -%}
+{%- assign loading   = loading   | default: 'lazy' -%}
+{%- assign img_width = img_width | default: 800 -%}
+
+{%- comment -%} Helper: build srcset widths around desired tile width {%- endcomment -%}
+{%- assign w1 = img_width | plus: 0 -%}
+{%- assign w2 = w1 | times: 1.5 | round -%}
+{%- assign w3 = w1 | times: 2 | round -%}
+
+<ul class="pmedia-grid__container"
+    data-product-media-grid
+    style="--pm-cols: {{ columns }}; --pm-gap: {{ gap }}; --pm-ratio: {{ ratio }};">
+  {%- for media in p.media -%}
+
+    {%- comment -%} Verzamel variant ids die deze media als featured gebruiken {%- endcomment -%}
+    {%- capture variant_ids -%}
+      {%- assign wrote = false -%}
+      {%- for v in p.variants -%}
+        {%- if v.featured_media and v.featured_media.id == media.id -%}
+          {%- if wrote -%},{%- endif -%}{{ v.id }}{%- assign wrote = true -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+    {%- capture variant_ids_json -%}[{{ variant_ids | strip }}]{%- endcapture -%}
+
+    <li class="pmedia-grid__item"
+        data-media-id="{{ media.id }}"
+        data-media-type="{{ media.media_type }}"
+        data-variant-ids='{{ variant_ids_json }}'>
+
+      <figure class="pmedia-grid__figure">
+        {%- case media.media_type -%}
+          {%- when 'image' -%}
+            {%- assign alt = media.alt | default: p.title -%}
+            <picture class="pmedia-grid__picture">
+              {%- comment -%} WebP source {%- endcomment -%}
+              <source
+                srcset="{{ media | image_url: width: w1, format: 'webp' }} {{ w1 }}w, {{ media | image_url: width: w2, format: 'webp' }} {{ w2 }}w, {{ media | image_url: width: w3, format: 'webp' }} {{ w3 }}w"
+                type="image/webp"
+                sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw" />
+              {%- comment -%} Fallback JPEG/PNG {%- endcomment -%}
+              <img
+                class="pmedia-grid__img"
+                src="{{ media | image_url: width: w1 }}"
+                srcset="{{ media | image_url: width: w1 }} {{ w1 }}w, {{ media | image_url: width: w2 }} {{ w2 }}w, {{ media | image_url: width: w3 }} {{ w3 }}w"
+                sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw"
+                alt="{{ alt | escape }}"
+                loading="{{ loading }}"
+                width="{{ media.width }}"
+                height="{{ media.height }}" />
+            </picture>
+
+          {%- when 'video' -%}
+            <video class="pmedia-grid__video"
+                   controls
+                   preload="metadata"
+                   playsinline
+                   {% if loading == 'lazy' %}loading="lazy"{% endif %}>
+              {%- for source in media.sources -%}
+                <source src="{{ source.url }}" type="{{ source.mime_type }}">
+              {%- endfor -%}
+              {{ 'sections.video.load_error' | t | default: 'Your browser does not support the video tag.' }}
+            </video>
+
+          {%- when 'external_video' -%}
+            {%- comment -%}
+              We tonen hier de preview als image-tile; echte embeds kun je later conditioneel doen.
+            {%- endcomment -%}
+            {%- assign alt = media.alt | default: p.title -%}
+            {%- if media.preview_image -%}
+              <picture class="pmedia-grid__picture">
+                <source
+                  srcset="{{ media.preview_image | image_url: width: w1, format: 'webp' }} {{ w1 }}w, {{ media.preview_image | image_url: width: w2, format: 'webp' }} {{ w2 }}w, {{ media.preview_image | image_url: width: w3, format: 'webp' }} {{ w3 }}w"
+                  type="image/webp"
+                  sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw" />
+                <img
+                  class="pmedia-grid__img"
+                  src="{{ media.preview_image | image_url: width: w1 }}"
+                  srcset="{{ media.preview_image | image_url: width: w1 }} {{ w1 }}w, {{ media.preview_image | image_url: width: w2 }} {{ w2 }}w, {{ media.preview_image | image_url: width: w3 }} {{ w3 }}w"
+                  sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw"
+                  alt="{{ alt | escape }}"
+                  loading="{{ loading }}"
+                  width="{{ media.preview_image.width }}"
+                  height="{{ media.preview_image.height }}" />
+              </picture>
+            {%- else -%}
+              <div class="pmedia-grid__fallback">External video</div>
+            {%- endif -%}
+
+          {%- when 'model' -%}
+            {%- if media.preview_image -%}
+              {%- assign alt = media.alt | default: p.title -%}
+              <picture class="pmedia-grid__picture">
+                <source
+                  srcset="{{ media.preview_image | image_url: width: w1, format: 'webp' }} {{ w1 }}w, {{ media.preview_image | image_url: width: w2, format: 'webp' }} {{ w2 }}w, {{ media.preview_image | image_url: width: w3, format: 'webp' }} {{ w3 }}w"
+                  type="image/webp"
+                  sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw" />
+                <img
+                  class="pmedia-grid__img"
+                  src="{{ media.preview_image | image_url: width: w1 }}"
+                  srcset="{{ media.preview_image | image_url: width: w1 }} {{ w1 }}w, {{ media.preview_image | image_url: width: w2 }} {{ w2 }}w, {{ media.preview_image | image_url: width: w3 }} {{ w3 }}w"
+                  sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw"
+                  alt="{{ alt | escape }}"
+                  loading="{{ loading }}"
+                  width="{{ media.preview_image.width }}"
+                  height="{{ media.preview_image.height }}" />
+              </picture>
+            {%- else -%}
+              <div class="pmedia-grid__fallback">3D</div>
+            {%- endif -%}
+
+          {%- else -%}
+            <div class="pmedia-grid__fallback">{{ media.media_type }}</div>
+        {%- endcase -%}
+      </figure>
+    </li>
   {%- endfor -%}
 </ul>
-{{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+</div>
+<style>
+/* Outer slider defines the height: 100vw * 9/16 */
+.pmedia-grid {
+  width: 100vw;
+  aspect-ratio: 16 / 9;   /* container always 16:9 of viewport width */
+  overflow: hidden;
+}
+
+.pmedia-grid__container {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  overflow-x: auto;
+  height: 100%;           /* inherits 16:9 height */
+}
+
+.pmedia-grid__item {
+  flex: 0 0 auto;
+  margin: 0; padding: 0;
+  height: 100%;           /* match parent height */
+  display: flex;          /* center inner figure */
+  justify-content: center;
+  align-items: center;
+}
+
+.pmedia-grid__figure {
+  margin:0; padding:0;
+}
+
+/* Video: fills fully */
+.pmedia-grid__item[data-media-type="video"] .pmedia-grid__figure {
+  aspect-ratio: 16 / 9;
+  height: 100%;
+}
+.pmedia-grid__item[data-media-type="video"] .pmedia-grid__picture {
+  aspect-ratio: 16 / 9;
+  height: 100%;
+}
+.pmedia-grid__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Image: keep 2:3, scale to full height */
+.pmedia-grid__item[data-media-type="image"] .pmedia-grid__figure {
+  aspect-ratio: 2 / 3;
+  height: 100%;
+}
+.pmedia-grid__item[data-media-type="image"] .pmedia-grid__picture {
+  aspect-ratio: 2 / 3;
+  height: 100%;
+}
+.pmedia-grid__img {
+  width: auto;
+  height: 100%;           /* full height, auto width → gutters left/right */
+  object-fit: contain;    /* or 'cover' if you want crop/bleed */
+}
+@media (min-width: 960px) {
+  .pmedia-grid {
+    max-height: 70vh;
+  }
+  .pmedia-grid__container {
+    
+  }
+  .pmedia-grid__container::after {
+    content:''; display: block;
+    height:100%; min-width: 42vw;
+  }
+}
+</style>

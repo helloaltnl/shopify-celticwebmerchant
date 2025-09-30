@@ -1,29 +1,49 @@
 {%- assign threshold = threshold_dropdown | default: 10 -%}
+
+{%- comment %} Is er überhaupt iets te kiezen? {% endcomment -%}
+{%- assign show_picker = false -%}
+{%- for opt in product.options_with_values -%}
+  {%- if opt.values.size > 1 -%}
+	{%- assign show_picker = true -%}{%- break -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- if show_picker -%}
 <fieldset class="pform-variants" data-variant-picker>
   {%- for option in product.options_with_values -%}
-	<div class="pform-variants__group">
-	  <legend class="pform__label">{{ option.name }}</legend>
+	{%- if option.values.size > 1 -%}
+	  <div class="pform-variants__group">
+		<legend class="pform__label">{{ option.name }}</legend>
 
-	  {%- if option.values.size > threshold -%}
-		<select class="pform__select" data-option-select data-option-index="{{ forloop.index0 }}">
-		  {%- for v in option.values -%}
-			<option value="{{ v | escape }}" {% if option.selected_value == v %}selected{% endif %}>{{ v }}</option>
-		  {%- endfor -%}
-		</select>
-	  {%- else -%}
-		<div class="pform__swatchgroup">
-		  {%- for v in option.values -%}
-			{%- assign id = 'opt-' | append: product.id | append: '-' | append: forloop.parentloop.index0 | append: '-' | append: forloop.index0 -%}
-			<input class="sr-only"
-				   type="radio"
-				   id="{{ id }}"
-				   name="options[{{ option.name }}]"
-				   value="{{ v | escape }}"
-				   {% if option.selected_value == v %}checked{% endif %}>
-			<label class="pform__swatch" for="{{ id }}">{{ v }}</label>
-		  {%- endfor -%}
-		</div>
-	  {%- endif -%}
-	</div>
+		{%- if option.values.size > threshold -%}
+		  <select class="pform__select" data-option-select data-option-index="{{ forloop.index0 }}">
+			{%- for v in option.values -%}
+			  <option value="{{ v | escape }}" {% if option.selected_value == v %}selected{% endif %}>{{ v }}</option>
+			{%- endfor -%}
+		  </select>
+		{%- else -%}
+		  <div class="pform__swatchgroup">
+			{%- for v in option.values -%}
+			  {%- assign id = 'opt-' | append: product.id | append: '-' | append: forloop.parentloop.index0 | append: '-' | append: forloop.index0 -%}
+			  <input class="sr-only"
+					 type="radio"
+					 id="{{ id }}"
+					 name="options[{{ option.name }}]"
+					 value="{{ v | escape }}"
+					 {% if option.selected_value == v %}checked{% endif %}>
+			  <label class="pform__swatch" for="{{ id }}">{{ v }}</label>
+			{%- endfor -%}
+		  </div>
+		{%- endif -%}
+	  </div>
+	{%- else -%}
+	  {# Geen UI nodig; stuur de enige waarde mee als hidden voor consistentie #}
+	  <input type="hidden" name="options[{{ option.name }}]" value="{{ option.selected_value | escape }}">
+	{%- endif -%}
   {%- endfor -%}
 </fieldset>
+{%- else -%}
+	{%- comment %}
+  {# Alles single-value → niets tonen. Desgewenst kun je hier ook hidden inputs renderen, maar je hebt al de hidden variant id. #}
+  {% endcomment -%}
+{%- endif -%}

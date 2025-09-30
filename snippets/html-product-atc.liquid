@@ -3,14 +3,39 @@
 {%- assign sold_out_label = 'products.product.sold_out' | t | default: 'Uitverkocht' -%}
 {%- assign unavailable_label = 'products.product.unavailable' | t | default: 'Niet beschikbaar' -%}
 
-<button type="submit"
-		class="pform__btn{% if full_width %} pform__btn--full{% endif %}"
-		data-atc
-		data-label-default="{{ atc_label | escape }}"
-		data-label-soldout="{{ sold_out_label | escape }}"
-		data-label-unavailable="{{ unavailable_label | escape }}"
-		{% unless v.available %}disabled{% endunless %}>
-  <span data-atc-text>
-	{%- if v.available -%}{{ atc_label }}{%- else -%}{{ sold_out_label }}{%- endif -%}
-  </span>
-</button>
+{%- assign q_max = nil -%}
+{%- if v and v.inventory_management -%}
+  {%- if v.inventory_policy == 'deny' -%}
+	{%- assign q_max = v.inventory_quantity -%}
+  {%- endif -%}
+{%- endif -%}
+
+<div class="product-atc">
+	<div>
+		<label class="pform__label" for="Quantity-{{ product.id }}">
+		  {{ 'products.product.quantity.label' | t | default: 'Aantal' }}
+		</label>
+		<input id="Quantity-{{ product.id }}"
+			   class="pform__input"
+			   type="number"
+			   name="quantity"
+			   min="1"
+			   max="{% if q_max %}{{ q_max }}{% endif %}" 
+			   value="1"
+			   inputmode="numeric"
+			   pattern="[0-9]*">
+	</div>
+	<div>
+		<button type="submit"
+				class="is-button pform__btn{% if full_width %} pform__btn--full{% endif %}"
+				data-atc
+				data-label-default="{{ atc_label | escape }}"
+				data-label-soldout="{{ sold_out_label | escape }}"
+				data-label-unavailable="{{ unavailable_label | escape }}"
+				{% unless v.available %}disabled{% endunless %}>
+		<span data-atc-text>
+			{%- if v.available -%}{{ atc_label }}{%- else -%}{{ sold_out_label }}{%- endif -%}
+		</span>
+		</button>
+	</div>
+</div>
