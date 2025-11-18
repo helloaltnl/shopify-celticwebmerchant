@@ -1,0 +1,491 @@
+<section class="page-loyalty-content alignwide">
+	{% assign ref_entry = page.metafields.custom['page-assist-reference'] %}
+	{% if ref_entry and ref_entry.value %}
+		{% assign ref = ref_entry.value %}
+		<section id="assist" class="page-assist-content" data-locale="{{ request.locale.iso_code }}">
+		  <section class="page-assist-start page-assist-path">
+			<h1>{{ ref.title }}</h1>
+		
+			{% if ref.subs and ref.subs.value %}
+			  <ul id="assist-subs" class="grid-list" data-metaobject-type="assist-reference">
+				{% for sub_entry in ref.subs.value %}
+				  <li>
+					<article>
+					  {%- assign sub_full = shop.metaobjects['assist-reference'][sub_entry.system.handle] -%}
+					  {% if sub_full.subs and sub_full.subs.value %}
+					  	<a href="#" class="assist-link" data-handle="{{ sub_entry.system.handle | escape }}"></a>
+					  {% elsif sub_entry.link %}
+					  	<a href="{{ sub_entry.link }}" class="assist-link"></a>
+					  {% endif %}
+					  
+					  {% if sub_entry.image %}
+						<figure>
+						  <img
+							src="{{ sub_entry.image | image_url: width: 496 }}"
+							alt="{{ sub_entry.title | default: ref.title | escape }}"
+						  >
+						</figure>
+					  {% endif %}
+					  <section>
+						<h3>{{ sub_entry.title }}</h3>
+						{% if sub_entry.link %}
+							  <a href="{{ sub_entry.link }}" class="assist-link">
+								  <span>Lees meer</span>
+								  <i><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></i>
+							  </a>
+						{% endif %}
+					  </section>
+					</article>
+				  </li>
+				{% endfor %}
+			  </ul>
+			{% endif %}
+		  </section>		
+		  <template id="assist-item-template">
+			<li>
+			  <article>
+				<!-- overlay link (position absolute in your CSS) -->
+				<a href="#" class="assist-link" data-role="overlay"></a>
+		  
+				<figure data-fig>
+				  <img data-img src="" alt="">
+				</figure>
+		  
+				<section>
+				  <h3 data-title></h3>
+		  
+				  <!-- CTA link (text link inside the card, visible only when external link exists) -->
+				  <a href="" class="assist-cta" data-role="cta" target="_blank" rel="noopener">
+					<span>Lees meer</span>
+					<i>
+					  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+						   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+						   stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right">
+						<line x1="5" y1="12" x2="19" y2="12"></line>
+						<polyline points="12 5 19 12 12 19"></polyline>
+					  </svg>
+					</i>
+				  </a>
+				</section>
+			  </article>
+			</li>
+		  </template>
+		</section>
+		<script>
+		(function(){
+		  // ── Storefront API config ──────────────────────────────────────────────────
+		  const STOREFRONT_DOMAIN = '5z0af7-xt.myshopify.com';
+		  const STOREFRONT_API_VERSION = '2025-07';
+		  const STOREFRONT_API_TOKEN = 'fbd7061115103f4ff6d9daf922ea75db';
+		  const endpoint = `https://${STOREFRONT_DOMAIN}/api/${STOREFRONT_API_VERSION}/graphql.json`;
+		
+		  // ── Queries ────────────────────────────────────────────────────────────────
+		  const QUERY = `
+			query GetMetaobject($type: String!, $handle: String!) {
+			  metaobject(handle: { type: $type, handle: $handle }) {
+				id handle type
+				fields {
+				  key type value
+				  reference {
+					__typename
+					... on MediaImage { image { url altText } }
+					... on GenericFile { url }
+				  }
+				  references(first: 100) {
+					nodes {
+					  __typename
+					  ... on Metaobject {
+						id handle type
+						fields {
+						  key type value
+						  reference {
+							__typename
+							... on MediaImage { image { url altText } }
+							... on GenericFile { url }
+						  }
+						  references(first: 100) { nodes { __typename ... on Metaobject { id handle type } } }
+						}
+					  }
+					}
+				  }
+				}
+			  }
+			}
+		  `;
+		  const FILE_BY_ID = `
+			query FileById($id: ID!) {
+			  node(id: $id) {
+				__typename
+				... on MediaImage { image { url altText } }
+				... on GenericFile { url }
+			  }
+			}
+		  `;
+		
+		  // ── GQL helper ─────────────────────────────────────────────────────────────
+		  async function gql(query, variables){
+			// pull locale from #assist wrapper
+			const root = document.getElementById('assist');
+			const locale = root?.getAttribute('data-locale') || 'en';
+		  
+			const res = await fetch(endpoint, {
+			  method: 'POST',
+			  headers: {
+				'Content-Type': 'application/json',
+				'X-Shopify-Storefront-Access-Token': STOREFRONT_API_TOKEN,
+				'Accept-Language': locale   // 👈 tell Shopify which language to return
+			  },
+			  body: JSON.stringify({ query, variables })
+			});
+			const json = await res.json();
+			if (json.errors) throw new Error(json.errors.map(e => e.message).join('; '));
+			return json.data;
+		  }
+		  async function fetchMetaobjectByHandle(type, handle){
+			const data = await gql(QUERY, { type, handle });
+			return data?.metaobject ?? null;
+		  }
+		
+		  // ── Data helpers ───────────────────────────────────────────────────────────
+		  const getField = (node, key) => node?.fields?.find(f => f.key === key);
+		  const getValue = (node, key) => getField(node, key)?.value;
+		  const getListRefs = (node, key='subs') => {
+			const f = getField(node, key);
+			const nodes = f?.references?.nodes || [];
+			return nodes.filter(n => n.__typename === 'Metaobject');
+		  };
+		  const looksLikeImageURL = u => typeof u === 'string' && /\.(png|jpe?g|webp|gif|avif)(\?|$)/i.test(u);
+		  const withWidthParam = (url, w=496) => url ? `${url}${url.includes('?') ? '&' : '?'}width=${w}` : url;
+		
+		  // Resolve file_reference gid -> URL (cache)
+		  const fileCache = new Map();
+		  async function resolveFileGID(gid){
+			if (!gid) return null;
+			if (fileCache.has(gid)) return fileCache.get(gid);
+			const data = await gql(FILE_BY_ID, { id: gid });
+			const node = data?.node;
+			let out = null;
+			if (node?.__typename === 'MediaImage' && node.image?.url) {
+			  out = { url: node.image.url, alt: node.image.altText || '' };
+			} else if (node?.__typename === 'GenericFile' && node.url && looksLikeImageURL(node.url)) {
+			  out = { url: node.url, alt: '' };
+			}
+			fileCache.set(gid, out);
+			return out;
+		  }
+		
+		  // Image: prefer key 'image' (reference or gid in value)
+		  function extractImageHint(node){
+			if (!node?.fields) return null;
+			const f = getField(node, 'image');
+			if (f) {
+			  if (f.reference) {
+				const r = f.reference;
+				if (r.__typename === 'MediaImage' && r.image?.url) return { url: r.image.url, alt: r.image.altText || '' };
+				if (r.__typename === 'GenericFile' && looksLikeImageURL(r.url)) return { url: r.url, alt: '' };
+			  }
+			  if ((f.type === 'file_reference' || f.type === 'file') && typeof f.value === 'string' && f.value.startsWith('gid://')) {
+				return { gid: f.value };
+			  }
+			  if (f.value && looksLikeImageURL(f.value)) return { url: f.value, alt: '' };
+			}
+			return null;
+		  }
+		
+		  // ── Template helpers ───────────────────────────────────────────────────────
+		  function cloneItemTemplate(){
+			const tpl = document.getElementById('assist-item-template');
+			return tpl ? tpl.content.firstElementChild.cloneNode(true) : null;
+		  }
+		
+		  async function hydrateImageForItem(itemEl, hint, title){
+			const fig   = itemEl.querySelector('[data-fig]');
+			const imgEl = itemEl.querySelector('[data-img]');
+			if (!imgEl || !fig) return;
+		
+			if (hint?.url) {
+			  imgEl.src = withWidthParam(hint.url, 496);
+			  imgEl.alt = title || '';
+			  return;
+			}
+			if (hint?.gid) {
+			  const file = await resolveFileGID(hint.gid);
+			  if (file?.url) {
+				imgEl.src = withWidthParam(file.url, 496);
+				imgEl.alt = title || '';
+				return;
+			  }
+			}
+			fig.remove();
+		  }
+		
+		  // ── Render a NEW section each time ─────────────────────────────────────────
+		  function renderChildren(containerRoot, metaobject, listFieldKey='subs'){
+			const parent = containerRoot.closest('.page-assist-content') || containerRoot;
+		
+			const section = document.createElement('section');
+			section.className = 'page-assist-children page-assist-path';
+		
+			const title = getValue(metaobject, 'title') || metaobject.handle;
+			const children = getListRefs(metaobject, listFieldKey);
+		
+			const headerHTML = `
+			  <a href="#" class="assist-link" data-back>
+				<i>
+				  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+					   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+					   stroke-linecap="round" stroke-linejoin="round">
+					<line x1="19" y1="12" x2="5" y2="12"></line>
+					<polyline points="12 19 5 12 12 5"></polyline>
+				  </svg>
+				</i>
+				<span>Terug</span>
+			  </a>
+			  <h1>${title}</h1>
+			`;
+		
+			if (!children.length){
+			  section.innerHTML = `${headerHTML}<p><em>Geen subitems</em></p>`;
+			  parent.appendChild(section);
+			  section.scrollIntoView({ behavior:'smooth', block:'start' });
+			  return;
+			}
+		
+			const ul = document.createElement('ul');
+			ul.className = 'assist-reference__subs--nested grid-list';
+		
+			const pending = [];
+			children.forEach(n => {
+			  const item = cloneItemTemplate();
+			  if (!item) return;
+		
+			  const t        = getValue(n, 'title') || n.handle;
+			  const hint     = extractImageHint(n);
+			  const hasKids  = getListRefs(n, 'subs').length > 0;
+			  const external = getValue(n, 'link'); // optional external URL field
+		
+			  // Title
+			  const h3 = item.querySelector('[data-title]');
+			  if (h3) h3.textContent = t;
+		
+			  // Overlay link (full-card)
+			  const overlay = item.querySelector('[data-role="overlay"]');
+			  if (hasKids) {
+				overlay.setAttribute('href', '#');
+				overlay.setAttribute('data-handle', n.handle);
+				overlay.removeAttribute('target');
+			  } else if (external) {
+				overlay.setAttribute('href', external);
+				overlay.removeAttribute('data-handle');
+				overlay.setAttribute('target', '_blank');
+				overlay.setAttribute('rel', 'noopener');
+			  } else {
+				overlay.remove(); // no subs, no external link
+			  }
+		
+			  // CTA link inside the section (only for external links)
+			  const cta = item.querySelector('[data-role="cta"]');
+			  if (external) {
+				cta.setAttribute('href', external);
+				cta.setAttribute('target', '_blank');
+				cta.setAttribute('rel', 'noopener');
+			  } else {
+				cta.remove();
+			  }
+		
+			  // Image (async if gid)
+			  pending.push(hydrateImageForItem(item, hint, t));
+		
+			  ul.appendChild(item);
+			});
+		
+			section.innerHTML = headerHTML;
+			section.appendChild(ul);
+			parent.appendChild(section);
+			section.scrollIntoView({ behavior:'smooth', block:'start' });
+		
+			Promise.allSettled(pending).catch(()=>{});
+		  }
+		
+		  // ── Click handling (overlay drilldown / back / external link) ──────────────
+		  const assistRoot = document.getElementById('assist');
+		  const listEl     = document.getElementById('assist-subs');
+		  if (!assistRoot || !listEl) return;
+		  const type = listEl.getAttribute('data-metaobject-type') || 'assist-reference';
+		
+		  assistRoot.addEventListener('click', async (e) => {
+			const el = e.target.closest('.assist-link, .assist-cta, [data-handle], [data-back]');
+			if (!el) return;
+		
+			const hasHandle = el.hasAttribute('data-handle');
+			const isBack    = el.hasAttribute('data-back');
+		
+			if (hasHandle) {
+			  e.preventDefault();
+			  const handle = el.getAttribute('data-handle');
+			  try {
+				const meta = await fetchMetaobjectByHandle(type, handle);
+				if (!meta) return;
+				renderChildren(assistRoot, meta, 'subs');
+			  } catch(err){ console.error(err); }
+			  return;
+			}
+		
+			if (isBack) {
+			  e.preventDefault();
+			  const sec = el.closest('section.page-assist-path');
+			  if (sec && sec.classList.contains('page-assist-children')) {
+				sec.remove(); // your CSS shows previous section again
+			  }
+			  return;
+			}
+		
+			// Otherwise: external links (overlay without data-handle, or CTA) just navigate normally.
+		  });
+		})();
+		</script>
+	{% endif %}
+</section>
+
+{%- style -%}
+	section.page-assist-content {
+		padding-bottom: 6em;
+		& a[data-back]{
+			display: inline-flex; flex-direction: row; flex-wrap: wrap;
+			align-items: center; justify-content: center; column-gap: 0.4em;
+			background-color: var(--theme-color-blue); border:none; padding:0.4em 0.8em;
+			font-family: inherit; font-size: inherit; text-decoration: none;
+			& > i { 
+				color:#fff;
+				width: 1em; height:1em; line-height: 1em;
+				& svg { width:100%; height:100%; vertical-align: bottom;}
+			}
+			& > span { color:#fff;}
+			&:hover {
+				cursor: pointer;
+			}
+		}
+		& h1 { font-weight: 700; margin: 0; margin-bottom: 1em;}
+		& #assist {
+			& ul {
+				&.grid-list {
+					--min: 220px;           /* minimum card width */
+					--gap: 1rem;
+					
+					list-style: none;
+					margin: 0;
+					padding: 0;
+					
+					display: grid;
+					grid-template-columns: repeat(auto-fit, minmax(var(--min), 1fr));
+					gap: var(--gap);
+					display: grid;
+					& > li {
+						position: relative; overflow: hidden;
+						background: #fff;
+						border: 1px solid #e6e6e6;
+						border-radius: 0px;
+						padding: 0;
+						min-height:24em;
+					}
+				
+				}
+			}
+			
+			& article {
+				position: relative; overflow: hidden;
+				width:100%; height:100%; isolation: isolate;
+				align-content: end; background-color: var(--theme-color-blue);
+				text-align: center;
+				
+				& figure {
+					position: absolute; overflow: hidden;
+					left:0; top:0; right:0; bottom:0; z-index: -1;
+					margin: 0; padding:0;
+					& img { 
+						width:100%; height:100%; object-fit: cover; vertical-align: bottom; opacity: 0.8;
+						transition: opacity 125ms linear, transform 125ms ease-in-out;
+					}
+					
+				}
+				& section {
+					position: relative; z-index: 1; isolation: isolate;
+					padding:1em; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) calc(100% - 1em) );
+					& h3 { font-family: 'Absara Pro'; font-size: 1.4em; font-weight: 700; color:#fff; margin: 0 0 0.5em 0;}
+					& a {
+						position: relative; 
+						display: inline-flex; flex-direction: row; flex-wrap: wrap;
+						align-items: center; justify-content: center; column-gap: 0.4em;
+						background-color: var(--theme-color-blue); border:none; padding:0.4em 0.8em;
+						font-family: inherit; font-size: inherit; text-decoration: none;
+						& > i { 
+							color:#fff;
+							width: 1em; height:1em; line-height: 1em;
+							& svg { width:100%; height:100%; vertical-align: bottom;}
+						}
+						& > span { color:#fff;}
+						&:hover {
+							background-color: #fff; 
+							cursor: pointer;
+							& > i {
+								color:var(--theme-color-blue);
+							}
+							& > span {
+								color:var(--theme-color-blue);
+							}
+						}
+					}
+					&::before { 
+						content:''; display:block; position: absolute; z-index: -1; left:0px; top:auto; right:0px; bottom:0; height:0.2em; background: var(--theme-color-blue);
+					}
+					&::after { 
+						content:''; display:block; position: absolute; z-index: -2; left:0px; top:0em; right:0px; bottom:0px; background: #000; transform: scaleX(-1); background: var(--theme-color-blue);
+						mask-image: url('data:image/svg+xml;utf8,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 4 4" style="enable-background:new 0 0 4 4;" xml:space="preserve" opacity="1" stroke-width="0.5"> <line stroke="black" class="st0" x1="0" y1="0" x2="4" y2="4"/> <line stroke="black" x1="-0.4" y1="3.6" x2="0.4" y2="4.4"/> <line stroke="black" x1="3.6" y1="-0.4" x2="4.4" y2="0.4"/> </svg>');
+						mask-repeat: repeat; mask-size: 12px; mask-position: center center;
+					  }
+					
+				}
+				& a {
+					display: block;
+					position: absolute; overflow: hidden;
+					left:0; top:0; right:0; bottom:0; z-index: 0;
+					margin: 0; padding:0; text-decoration: none;
+					&:hover {
+						& + figure {
+							& img {
+								transform: scale(1.1);
+							}
+						}
+					}
+					
+				}
+				
+			}
+			
+			& .page-assist-path:not(:last-of-type){
+				display: none;
+			}
+		}
+	}
+	
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Page loyalty",
+  "tag": "section",
+  "class": "page-loyalty",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [],
+  "blocks": [],
+  "presets": [
+	{
+	  "name": "Page loyalty section",
+	  "category": "Homework",
+	  "blocks": []
+	}
+  ]
+}
+{% endschema %}

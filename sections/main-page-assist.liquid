@@ -5,8 +5,11 @@
 		<section id="assist" class="page-assist-content" data-locale="{{ request.locale.iso_code }}">
 		  <section class="page-assist-start page-assist-path">
 			<h1>{{ ref.title }}</h1>
-		
-			{% if ref.subs and ref.subs.value %}
+			
+			{% assign ref_subs = ref.subs.value %}
+			{% assign pst_subs = ref.posts.value %}
+			
+			{% if ref_subs or pst_subs %}
 			  <ul id="assist-subs" class="grid-list" data-metaobject-type="assist-reference">
 				{% for sub_entry in ref.subs.value %}
 				  <li>
@@ -14,6 +17,8 @@
 					  {%- assign sub_full = shop.metaobjects['assist-reference'][sub_entry.system.handle] -%}
 					  {% if sub_full.subs and sub_full.subs.value %}
 					  	<a href="#" class="assist-link" data-handle="{{ sub_entry.system.handle | escape }}"></a>
+					  {% elsif sub_full.posts and sub_full.posts.value %}
+						<a href="#" class="assist-link" data-handle="{{ sub_entry.system.handle | escape }}"></a>
 					  {% elsif sub_entry.link %}
 					  	<a href="{{ sub_entry.link }}" class="assist-link"></a>
 					  {% endif %}
@@ -35,6 +40,33 @@
 							  </a>
 						{% endif %}
 					  </section>
+					</article>
+				  </li>
+				{% endfor %}
+				{% for sub_entry in ref.posts.value %}
+				  <li>
+					<article>
+						{% if sub_entry.link.value %}
+					    	<a href="{{ sub_entry.link.value.url }}" class="assist-link"></a>
+					    {% endif %}
+						
+					    {% if sub_entry.thumb %}
+						<figure>
+						  <img
+							src="{{ sub_entry.thumb | image_url: width: 496 }}"
+							alt="{{ sub_entry.title | default: ref.title | escape }}"
+						  >
+						</figure>
+						{% endif %}
+						<section>
+							<h3>{{ sub_entry.title }}</h3>
+							{% if sub_entry.link.value %}
+								<a href="{{ sub_entry.link.value.url }}" class="assist-link">
+									<span>Lees meer</span>
+									<i><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></i>
+								</a>
+							{% endif %}
+						</section>
 					</article>
 				  </li>
 				{% endfor %}
@@ -103,7 +135,12 @@
 							... on MediaImage { image { url altText } }
 							... on GenericFile { url }
 						  }
-						  references(first: 100) { nodes { __typename ... on Metaobject { id handle type } } }
+						  references(first: 100) {
+							nodes {
+							  __typename
+							  ... on Metaobject { id handle type }
+							}
+						  }
 						}
 					  }
 					}
@@ -124,16 +161,14 @@
 		
 		  // ── GQL helper ─────────────────────────────────────────────────────────────
 		  async function gql(query, variables){
-			// pull locale from #assist wrapper
 			const root = document.getElementById('assist');
 			const locale = root?.getAttribute('data-locale') || 'en';
-		  
 			const res = await fetch(endpoint, {
 			  method: 'POST',
 			  headers: {
 				'Content-Type': 'application/json',
 				'X-Shopify-Storefront-Access-Token': STOREFRONT_API_TOKEN,
-				'Accept-Language': locale   // 👈 tell Shopify which language to return
+				'Accept-Language': locale
 			  },
 			  body: JSON.stringify({ query, variables })
 			});
@@ -154,10 +189,20 @@
 			const nodes = f?.references?.nodes || [];
 			return nodes.filter(n => n.__typename === 'Metaobject');
 		  };
+		  const getListRefsMany = (node, keys = ['subs','posts']) => {
+			const out = [];
+			keys.forEach(k => {
+			  const f = getField(node, k);
+			  const nodes = f?.references?.nodes || [];
+			  nodes.forEach(n => { if (n.__typename === 'Metaobject') out.push(n); });
+			});
+			return out;
+		  };
+		
 		  const looksLikeImageURL = u => typeof u === 'string' && /\.(png|jpe?g|webp|gif|avif)(\?|$)/i.test(u);
 		  const withWidthParam = (url, w=496) => url ? `${url}${url.includes('?') ? '&' : '?'}width=${w}` : url;
 		
-		  // Resolve file_reference gid -> URL (cache)
+		  // file_reference gid -> URL (cache)
 		  const fileCache = new Map();
 		  async function resolveFileGID(gid){
 			if (!gid) return null;
@@ -174,11 +219,14 @@
 			return out;
 		  }
 		
-		  // Image: prefer key 'image' (reference or gid in value)
+		  // ⬇️ Image extractor: eerst 'image', dan 'thumb'
 		  function extractImageHint(node){
 			if (!node?.fields) return null;
-			const f = getField(node, 'image');
-			if (f) {
+		
+			const pick = (key) => {
+			  const f = getField(node, key);
+			  if (!f) return null;
+		
 			  if (f.reference) {
 				const r = f.reference;
 				if (r.__typename === 'MediaImage' && r.image?.url) return { url: r.image.url, alt: r.image.altText || '' };
@@ -188,7 +236,41 @@
 				return { gid: f.value };
 			  }
 			  if (f.value && looksLikeImageURL(f.value)) return { url: f.value, alt: '' };
+			  return null;
+			};
+		
+			return pick('image') || pick('thumb');
+		  }
+		
+		  // ⬇️ Link extractor: ondersteunt string URL of JSON met { text, url }
+		  function getExternalLink(node){
+			const raw = getValue(node, 'link');
+			if (!raw) return null;
+		
+			// Als het er al uitziet als URL-string
+			if (typeof raw === 'string') {
+			  const trimmed = raw.trim();
+			  // JSON?
+			  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+				try {
+				  const obj = JSON.parse(trimmed);
+				  if (obj && typeof obj.url === 'string' && obj.url.trim()) {
+					return { url: obj.url.trim(), text: typeof obj.text === 'string' ? obj.text.trim() : null };
+				  }
+				} catch(e){ /* fallthrough to plain string */ }
+			  }
+			  // Plain URL als fallback
+			  if (/^(https?:)?\/\//i.test(trimmed) || trimmed.startsWith('/')) {
+				return { url: trimmed, text: null };
+			  }
+			  return null;
 			}
+		
+			// In zeldzame gevallen kan het al een object zijn
+			if (raw && typeof raw === 'object' && typeof raw.url === 'string') {
+			  return { url: raw.url.trim(), text: typeof raw.text === 'string' ? raw.text.trim() : null };
+			}
+		
 			return null;
 		  }
 		
@@ -219,15 +301,17 @@
 			fig.remove();
 		  }
 		
-		  // ── Render a NEW section each time ─────────────────────────────────────────
-		  function renderChildren(containerRoot, metaobject, listFieldKey='subs'){
+		  // ── Render drill-down section ──────────────────────────────────────────────
+		  function renderChildren(containerRoot, metaobject){
 			const parent = containerRoot.closest('.page-assist-content') || containerRoot;
 		
 			const section = document.createElement('section');
 			section.className = 'page-assist-children page-assist-path';
 		
 			const title = getValue(metaobject, 'title') || metaobject.handle;
-			const children = getListRefs(metaobject, listFieldKey);
+		
+			// Neem zowel subs als posts mee
+			const children = getListRefsMany(metaobject, ['subs','posts']);
 		
 			const headerHTML = `
 			  <a href="#" class="assist-link" data-back>
@@ -261,10 +345,10 @@
 		
 			  const t        = getValue(n, 'title') || n.handle;
 			  const hint     = extractImageHint(n);
-			  const hasKids  = getListRefs(n, 'subs').length > 0;
-			  const external = getValue(n, 'link'); // optional external URL field
+			  const hasKids  = getListRefsMany(n, ['subs','posts']).length > 0; // ⬅️ subs + posts
+			  const linkObj  = getExternalLink(n); // { url, text } | null
 		
-			  // Title
+			  // Titel
 			  const h3 = item.querySelector('[data-title]');
 			  if (h3) h3.textContent = t;
 		
@@ -274,26 +358,29 @@
 				overlay.setAttribute('href', '#');
 				overlay.setAttribute('data-handle', n.handle);
 				overlay.removeAttribute('target');
-			  } else if (external) {
-				overlay.setAttribute('href', external);
+				overlay.removeAttribute('rel');
+			  } else if (linkObj?.url) {
+				overlay.setAttribute('href', linkObj.url);
 				overlay.removeAttribute('data-handle');
 				overlay.setAttribute('target', '_blank');
 				overlay.setAttribute('rel', 'noopener');
 			  } else {
-				overlay.remove(); // no subs, no external link
+				overlay.remove(); // geen subs/posts en geen externe link
 			  }
 		
-			  // CTA link inside the section (only for external links)
+			  // CTA link binnen de card (alleen bij externe links)
 			  const cta = item.querySelector('[data-role="cta"]');
-			  if (external) {
-				cta.setAttribute('href', external);
+			  if (linkObj?.url) {
+				cta.setAttribute('href', linkObj.url);
 				cta.setAttribute('target', '_blank');
 				cta.setAttribute('rel', 'noopener');
+				const span = cta.querySelector('span');
+				if (span) span.textContent = linkObj.text || 'Lees meer';
 			  } else {
 				cta.remove();
 			  }
 		
-			  // Image (async if gid)
+			  // Afbeelding (async bij gid)
 			  pending.push(hydrateImageForItem(item, hint, t));
 		
 			  ul.appendChild(item);
@@ -302,7 +389,11 @@
 			section.innerHTML = headerHTML;
 			section.appendChild(ul);
 			parent.appendChild(section);
-			section.scrollIntoView({ behavior:'smooth', block:'start' });
+			
+			const y = section.getBoundingClientRect().top + window.scrollY - 256; // 100px offset naar boven
+			window.scrollTo({ top: y, behavior: 'smooth' });
+			
+			//section.scrollIntoView({ behavior:'smooth', block:'start' });
 		
 			Promise.allSettled(pending).catch(()=>{});
 		  }
@@ -326,7 +417,7 @@
 			  try {
 				const meta = await fetchMetaobjectByHandle(type, handle);
 				if (!meta) return;
-				renderChildren(assistRoot, meta, 'subs');
+				renderChildren(assistRoot, meta);
 			  } catch(err){ console.error(err); }
 			  return;
 			}
@@ -335,12 +426,12 @@
 			  e.preventDefault();
 			  const sec = el.closest('section.page-assist-path');
 			  if (sec && sec.classList.contains('page-assist-children')) {
-				sec.remove(); // your CSS shows previous section again
+				sec.remove(); // vorige sectie wordt weer zichtbaar
 			  }
 			  return;
 			}
 		
-			// Otherwise: external links (overlay without data-handle, or CTA) just navigate normally.
+			// Anders: externe links (normale navigatie).
 		  });
 		})();
 		</script>
@@ -348,13 +439,14 @@
 </section>
 
 {%- style -%}
+	section.page-assist { }
 	section.page-assist-content {
-		padding-bottom: 6em;
+		padding-bottom: 6em; padding-top: 1em;
 		& a[data-back]{
 			display: inline-flex; flex-direction: row; flex-wrap: wrap;
 			align-items: center; justify-content: center; column-gap: 0.4em;
 			background-color: var(--theme-color-blue); border:none; padding:0.4em 0.8em;
-			font-family: inherit; font-size: inherit; text-decoration: none;
+			font-family: inherit; font-size: inherit; text-decoration: none; margin-bottom: 1em;
 			& > i { 
 				color:#fff;
 				width: 1em; height:1em; line-height: 1em;
@@ -365,28 +457,32 @@
 				cursor: pointer;
 			}
 		}
-		& h1 { font-weight: 700; margin: 0; margin-bottom: 1em;}
+		& h1 { font-weight: 500; margin: 0; margin-bottom: 1em; margin-top: 0;}
 		& #assist {
 			& ul {
 				&.grid-list {
 					--min: 220px;           /* minimum card width */
-					--gap: 1rem;
+					--gap: 0.5em;
 					
 					list-style: none;
 					margin: 0;
 					padding: 0;
 					
 					display: grid;
-					grid-template-columns: repeat(auto-fit, minmax(var(--min), 1fr));
+					grid-template-columns: repeat(auto-fill, minmax(var(--min), 1fr));
 					gap: var(--gap);
 					display: grid;
+					
+					animation: fadeIn 0.4s ease forwards;
+					
 					& > li {
 						position: relative; overflow: hidden;
 						background: #fff;
 						border: 1px solid #e6e6e6;
 						border-radius: 0px;
 						padding: 0;
-						min-height:24em;
+						min-height:12em;
+						
 					}
 				
 				}
@@ -394,9 +490,9 @@
 			
 			& article {
 				position: relative; overflow: hidden;
-				width:100%; height:100%; isolation: isolate;
+				width:100%; isolation: isolate;
 				align-content: end; background-color: var(--theme-color-blue);
-				text-align: center;
+				text-align: center; aspect-ratio: 2/3;
 				
 				& figure {
 					position: absolute; overflow: hidden;
@@ -461,11 +557,30 @@
 				}
 				
 			}
-			
+			& .page-assist-path {
+				
+			}
 			& .page-assist-path:not(:last-of-type){
 				display: none;
 			}
 		}
+	}
+	@media only screen and (min-width: 640px) {
+		section.page-assist-content {
+			& #assist {
+				& ul {
+					&.grid-list {
+						--min: 14em;           /* minimum card width */
+						--gap: 0.5em;
+					}
+					
+				}
+			}
+		}
+	}
+	@keyframes fadeIn {
+	  from { opacity: 0; transform: translateY(1em); }
+	  to   { opacity: 1; transform: none; }
 	}
 	
 {%- endstyle -%}

@@ -38,3 +38,7 @@ Thumbs.db
 # PHPSTORM #
 .idea
 .idea/*
+
+# DOCS #
+docs/
+docs/*

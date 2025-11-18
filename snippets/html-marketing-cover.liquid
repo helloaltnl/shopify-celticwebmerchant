@@ -1,0 +1,257 @@
+{% comment %}
+  HTML Marketing Component: Cover
+  Hero/cover image with overlay text & CTA
+  
+  Parameters:
+  - image: {Object} Background image (required)
+  - heading: {String} Main heading
+  - subheading: {String} Subheading text
+  - text: {String} Body text
+  - cta_text: {String} Button text
+  - cta_url: {String} Button URL
+  - cta_style: {String} primary | secondary | outline - default: primary
+  - overlay_opacity: {String} light | medium | dark - default: medium
+  - text_alignment: {String} left | center | right - default: center
+  - text_position: {String} top | center | bottom - default: center
+  - height: {String} small | medium | large | full - default: medium
+{% endcomment %}
+
+{%- liquid
+  assign heading = heading | default: ''
+  assign subheading = subheading | default: ''
+  assign text = text | default: ''
+  assign cta_text = cta_text | default: ''
+  assign cta_url = cta_url | default: ''
+  assign cta_style = cta_style | default: 'primary'
+  assign overlay_opacity = overlay_opacity | default: 'medium'
+  assign text_alignment = text_alignment | default: 'center'
+  assign text_position = text_position | default: 'center'
+  assign height = height | default: 'medium'
+-%}
+
+<div class="marketing-cover marketing-cover--height-{{ height }} marketing-cover--overlay-{{ overlay_opacity }} marketing-cover--align-{{ text_alignment }} marketing-cover--position-{{ text_position }}">
+  {%- if image -%}
+    <div class="marketing-cover__image">
+      <img
+        src="{{ image | image_url: width: 1920 }}"
+        srcset="
+          {{ image | image_url: width: 750 }} 750w,
+          {{ image | image_url: width: 1100 }} 1100w,
+          {{ image | image_url: width: 1500 }} 1500w,
+          {{ image | image_url: width: 1920 }} 1920w
+        "
+        sizes="100vw"
+        alt="{{ image.alt | escape }}"
+        width="{{ image.width }}"
+        height="{{ image.height }}"
+        loading="eager"
+      />
+    </div>
+  {%- else -%}
+    <div class="marketing-cover__placeholder">
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'marketing-cover__placeholder-svg' }}
+    </div>
+  {%- endif -%}
+  
+  <div class="marketing-cover__overlay"></div>
+  
+  <div class="marketing-cover__content">
+    <div class="marketing-cover__inner">
+      {%- if subheading != blank -%}
+        <p class="marketing-cover__subheading">{{ subheading | escape }}</p>
+      {%- endif -%}
+      
+      {%- if heading != blank -%}
+        <h2 class="marketing-cover__heading">{{ heading | escape }}</h2>
+      {%- endif -%}
+      
+      {%- if text != blank -%}
+        <div class="marketing-cover__text">{{ text }}</div>
+      {%- endif -%}
+      
+      {%- if cta_text != blank and cta_url != blank -%}
+        <div class="marketing-cover__cta">
+          {%- render 'html-marketing-cta',
+            text: cta_text,
+            url: cta_url,
+            style: cta_style,
+            size: 'large',
+            alignment: text_alignment
+          -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<style>
+  .marketing-cover {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Height variations */
+  .marketing-cover--height-small {
+    min-height: 300px;
+  }
+  
+  .marketing-cover--height-medium {
+    min-height: 500px;
+  }
+  
+  .marketing-cover--height-large {
+    min-height: 700px;
+  }
+  
+  .marketing-cover--height-full {
+    min-height: 100vh;
+  }
+  
+  /* Image */
+  .marketing-cover__image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  
+  .marketing-cover__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Placeholder */
+  .marketing-cover__placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f0f0f0;
+    z-index: 0;
+  }
+  
+  .marketing-cover__placeholder-svg {
+    width: 100%;
+    height: 100%;
+    opacity: 0.2;
+  }
+  
+  /* Overlay */
+  .marketing-cover__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    z-index: 1;
+  }
+  
+  .marketing-cover--overlay-light .marketing-cover__overlay {
+    opacity: 0.2;
+  }
+  
+  .marketing-cover--overlay-medium .marketing-cover__overlay {
+    opacity: 0.4;
+  }
+  
+  .marketing-cover--overlay-dark .marketing-cover__overlay {
+    opacity: 0.6;
+  }
+  
+  /* Content */
+  .marketing-cover__content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 2rem;
+    color: #fff;
+  }
+  
+  .marketing-cover__inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* Text position */
+  .marketing-cover--position-top .marketing-cover__content {
+    align-self: flex-start;
+    padding-top: 4rem;
+  }
+  
+  .marketing-cover--position-center .marketing-cover__content {
+    align-self: center;
+  }
+  
+  .marketing-cover--position-bottom .marketing-cover__content {
+    align-self: flex-end;
+    padding-bottom: 4rem;
+  }
+  
+  /* Text alignment */
+  .marketing-cover--align-left .marketing-cover__inner {
+    text-align: left;
+    margin-left: 0;
+  }
+  
+  .marketing-cover--align-center .marketing-cover__inner {
+    text-align: center;
+  }
+  
+  .marketing-cover--align-right .marketing-cover__inner {
+    text-align: right;
+    margin-right: 0;
+  }
+  
+  /* Typography */
+  .marketing-cover__subheading {
+    font-size: 1rem;
+    margin: 0 0 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.9;
+  }
+  
+  .marketing-cover__heading {
+    font-size: 3rem;
+    margin: 0 0 1rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  
+  .marketing-cover__text {
+    font-size: 1.125rem;
+    margin: 0 0 2rem;
+    line-height: 1.6;
+  }
+  
+  .marketing-cover__cta {
+    margin-top: 2rem;
+  }
+  
+  /* Responsive */
+  @media (max-width: 749px) {
+    .marketing-cover--height-medium {
+      min-height: 400px;
+    }
+    
+    .marketing-cover--height-large {
+      min-height: 500px;
+    }
+    
+    .marketing-cover__heading {
+      font-size: 2rem;
+    }
+    
+    .marketing-cover__content {
+      padding: 1.5rem;
+    }
+  }
+</style>

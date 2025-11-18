@@ -24,6 +24,7 @@
 		{%- else -%}
 		  <div class="pform__swatchgroup">
 			{%- for v in option.values -%}
+			  <span class="pform__swatchgroup-item">
 			  {%- assign id = 'opt-' | append: product.id | append: '-' | append: forloop.parentloop.index0 | append: '-' | append: forloop.index0 -%}
 			  <input class="sr-only"
 					 type="radio"
@@ -32,6 +33,7 @@
 					 value="{{ v | escape }}"
 					 {% if option.selected_value == v %}checked{% endif %}>
 			  <label class="pform__swatch" for="{{ id }}">{{ v }}</label>
+			  </span>
 			{%- endfor -%}
 		  </div>
 		{%- endif -%}

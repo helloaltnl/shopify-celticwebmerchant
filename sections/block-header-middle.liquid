@@ -153,9 +153,23 @@
 	  {%- style -%}
 		nav#short-menu {
 		  & ul {
-			list-style: none; margin:0; padding:0; overflow: hidden;
-			& > li {
+			list-style: none; margin:0; padding:0;
+			& li {
 			  position: relative; display: block;
+			  & ul { 
+				  z-index: 5;
+				  & > li {
+					  & > a {
+						  white-space: nowrap; color: var(--theme-color-brown);
+					  }
+				  }
+			  }
+			  &:hover {
+				  & > ul { 
+					  opacity: 1!important; pointer-events: all!important;
+					  background-color: #fff;
+				  }
+			  }
 			}
 		  }
 		  & ul.depth-first {
@@ -164,7 +178,7 @@
 		  }
 		  & ul.depth-second {
 			position: absolute; top:100%; left:0;
-			opacity: 0; pointer-events: none;
+			opacity: 0; pointer-events: none; padding:1em!important;
 		  }
 		  & ul.depth-third {
 			height:0; 

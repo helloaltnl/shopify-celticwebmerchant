@@ -1,0 +1,168 @@
+{% comment %}
+  HTML Marketing Component: USP
+  Unique selling points / Trust badges
+  
+  Parameters:
+  - items: {Array} Array of {icon, text} objects (required)
+  - layout: {String} horizontal | grid - default: horizontal
+  - style: {String} minimal | boxed | highlighted - default: minimal
+  - alignment: {String} left | center - default: center
+{% endcomment %}
+
+{%- liquid
+  assign items = items | default: ''
+  assign layout = layout | default: 'horizontal'
+  assign style = style | default: 'minimal'
+  assign alignment = alignment | default: 'center'
+-%}
+
+<div class="marketing-usp marketing-usp--{{ layout }} marketing-usp--{{ style }} marketing-usp--align-{{ alignment }}">
+  {%- if items != blank and items.size > 0 -%}
+    <div class="marketing-usp__list">
+      {%- for item in items -%}
+        <div class="marketing-usp__item">
+          {%- if item.icon != blank -%}
+            <div class="marketing-usp__icon">
+              {{ item.icon }}
+            </div>
+          {%- endif -%}
+          
+          <p class="marketing-usp__text">{{ item.text | escape }}</p>
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- else -%}
+    <div class="marketing-usp__placeholder">
+      <p>Add trust badges or USPs</p>
+    </div>
+  {%- endif -%}
+</div>
+
+<style>
+  .marketing-usp {
+    padding: 1.5rem 0;
+  }
+  
+  /* List */
+  .marketing-usp__list {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  /* Layout - Horizontal */
+  .marketing-usp--horizontal .marketing-usp__list {
+    flex-direction: row;
+  }
+  
+  /* Layout - Grid */
+  .marketing-usp--grid .marketing-usp__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  /* Alignment */
+  .marketing-usp--align-left .marketing-usp__list {
+    justify-content: flex-start;
+  }
+  
+  .marketing-usp--align-center .marketing-usp__list {
+    justify-content: center;
+  }
+  
+  .marketing-usp--align-left .marketing-usp__item {
+    text-align: left;
+  }
+  
+  .marketing-usp--align-center .marketing-usp__item {
+    text-align: center;
+  }
+  
+  /* Item */
+  .marketing-usp__item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .marketing-usp--align-center .marketing-usp__item {
+    flex-direction: column;
+  }
+  
+  /* Style variations */
+  .marketing-usp--boxed .marketing-usp__item {
+    padding: 1.5rem;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+  }
+  
+  .marketing-usp--highlighted .marketing-usp__item {
+    padding: 1.5rem;
+    background-color: #000;
+    color: #fff;
+    border-radius: 8px;
+  }
+  
+  /* Icon */
+  .marketing-usp__icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .marketing-usp__icon svg,
+  .marketing-usp__icon img {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Text */
+  .marketing-usp__text {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  
+  /* Placeholder */
+  .marketing-usp__placeholder {
+    background-color: #f5f5f5;
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+  }
+  
+  /* Responsive */
+  @media (max-width: 989px) {
+    .marketing-usp--horizontal .marketing-usp__list {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .marketing-usp--horizontal .marketing-usp__item {
+      justify-content: center;
+    }
+  }
+  
+  @media (max-width: 749px) {
+    .marketing-usp__list {
+      gap: 1rem;
+    }
+    
+    .marketing-usp__item {
+      min-width: 100%;
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .marketing-usp--boxed .marketing-usp__item,
+    .marketing-usp--highlighted .marketing-usp__item {
+      padding: 1rem;
+    }
+  }
+</style>

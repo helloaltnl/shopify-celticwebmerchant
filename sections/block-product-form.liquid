@@ -1,13 +1,13 @@
 {%- comment -%} Block Product Form (brains) {%- endcomment -%}
 {%- assign p = product -%}
 {%- if p == blank and section.settings.product != blank -%}
-{%- assign p = section.settings.product -%} {# <-- geen all_products[] #}
+{%- assign p = section.settings.product -%}
 {%- endif -%}
 
 {%- if p != blank -%}
-<section class="product-order-content">
+<section class="product-order-content alignwide">
 	<section class="product-order__media">
-		{% render 	'html-product-media', 
+		{% render 	'html-product-gallery', 
 					product: p %}
 	</section>
 	<section class="product-order__form">
@@ -30,6 +30,8 @@
 						data-fragment="{{ block.type }}"
 						{{ block.shopify_attributes }}>
 					{%- case block.type -%}
+						
+							
 						{%- when 'heading' -%}
 						{% render 'html-product-heading', product: p, text: block.settings.text %}
 						
@@ -49,6 +51,9 @@
 						{%- when 'sku' -%}
 						{% render 'html-product-sku', product: p, show_label: block.settings.show_label %}
 			
+						{%- when 'upsell' -%}
+						{% render 'html-product-upsell', product: p %}
+						
 						{%- when 'quantity' -%}
 						{% render 'html-product-quantity', product: p %}
 			
@@ -60,12 +65,19 @@
 			
 						{%- when 'dynamic_checkout' -%}
 						{% render 'html-product-dynamic_checkout', product: p %}
+						
+						{%- when '@app' -%}
+						{% render block %}
+						
 					{%- endcase -%}
 					</div>
 				{%- endfor -%}
 			
 				</div>
 			</form>
+			{% render 'html-product-trust', product: p %}
+			
+			
 		</div>
 	</section>
 </section>
@@ -82,10 +94,13 @@
 	display:flex; flex-direction: row; flex-wrap: nowrap;
 	align-items: stretch; justify-content: center;
 	& > .product-order__media { 
-		flex-grow: 1; flex-basis: 20em; overflow: hidden;
+		position: relative; z-index: 1;
+		flex-grow: 1; flex-basis: 20em; max-width: 58vw;
 	}
 	& > .product-order__form {
+		position: relative; z-index: 0;
 		flex-grow: 1; flex-basis: 10em;
+		background-color: #fff;
 		& .pform {
 			padding:2em;
 		}
@@ -94,30 +109,85 @@
 .pform__form {
 	& > .pform__segments {
 		& .pform__block {
-			&[data-block-key="heading"] {
+			&[data-fragment="heading"] {
 				& heading {
 					& h1 { font-size: 2.6em; margin-top: 0px;}
 				}
 			}
-			&[data-block-key="price"] {
-				& span.price {
+			&[data-fragment="price"] {
+				& .product-card__price > span.price {
 					font-size: 1.4em;
+					&:not(.price--compare){ font-size: 1.8em; }
 				}
 			}
-			&[data-block-key="description"] {
+			&[data-fragment="description"] {
 				& p {
 					letter-spacing: -0.02em;
+					 & a { color: inherit;}
 				}
 			}
-			&[data-block-key="atc"] {
+			&[data-fragment="variant_picker"] {
+				margin-bottom: 1em;
+				& fieldset.pform-variants {
+					border:none; padding:0; margin:0;
+					& > .pform-variants__group {
+						& legend.pform__label {}
+						& .pform__swatchgroup {
+							display: flex; flex-direction: row; flex-wrap: wrap;
+							align-content: flex-start; justify-content: flex-start;
+							column-gap: 0.5em; row-gap: 0.5em; margin-bottom: 1em;
+							& .pform__swatchgroup-item {
+								background-color: var(--theme-color-grey); 
+								
+								& > label {
+									display: block; padding: 0.5em 1em;
+									font-weight: 500; 
+									color: var(--theme-color-blue); border:var(--theme-color-grey) 2px solid;
+									&:hover {
+										cursor: pointer;
+									}
+								}
+								& > input[type="radio"] {
+									display: none;
+									&:checked + label {
+										background-color: var(--theme-color-grey); color: var(--theme-color-blue);
+										border:var(--theme-color-blue) 2px solid;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			&[data-fragment="upsell"] {
+				opacity:1!important;
+			}
+			&[data-fragment="atc"] {
 				& div.product-atc {
 					display: flex; flex-direction: row; flex-wrap:nowrap;
 					align-items: center; justify-content: flex-start;
-					column-gap: 1em;
+					column-gap: 0.5em;
 					padding:1em 0;
 				}
-				& button {
-					padding: 0.5em 1em;
+				& .pform__label { display: none;}
+				& input[type="number"] {
+					-webkit-appearance: none; appearance: none;
+					width: auto; height:2.5em; width:2.5em; text-align: center;
+					padding:1em 0; border:var(--theme-color-blue) 2px solid; 
+					font-family: inherit; font-weight: 500;
+					font-size: inherit; line-height: 1em;
+					&::-webkit-inner-spin-button,
+					&::-webkit-outer-spin-button {
+					  -webkit-appearance: none;
+					  margin: 0;
+					}
+				}
+				& button.pform__btn {
+					padding: 0.5em 1em; background-color: var(--theme-color-green); color:#fff;
+					&[disabled] { 
+						background-color: var(--theme-color-orange);
+						&:hover { cursor: not-allowed;}
+					}
 				}
 			}
 		}
@@ -127,325 +197,439 @@
 .pform__label{font-weight:600}
 .pform__btn{min-height:48px}
 
-.product-media-list {
-	list-style: none; margin: 0; padding:0;
-	display: flex; flex-direction: row; flex-wrap: nowrap;
-	& .product-media-image { margin: 0; padding:0;}
-}
-
 @media (max-width: 960px) {
 	.product-order-content {
 		flex-wrap: wrap;
-		& > .product-order__media { flex-grow: 1; flex-basis: 100%;}
+		& > .product-order__media { flex-grow: 1; flex-basis: 100%; max-width: 100vw;}
 		& > .product-order__form { flex-grow: 1; flex-basis: 100%;}
 	}
 }
 
+[data-product-form].is-rendering [data-fragment-skip]:not([data-fragment-skip="upsells"]) {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+
+[data-product-form]:not(.is-rendering):not(.is-quickupdate) [data-fragment-skip] {
+  opacity: 1;
+  transition: opacity .3s ease .05s;
+}
 
 {%- endstylesheet -%}
 
 <script>
 (() => {
-// ---------- Boot ----------
-const READY = /complete|interactive/;
-const onReady = fn => READY.test(document.readyState) ? fn() : document.addEventListener('DOMContentLoaded', fn);
+  // ------------------------------
+  // Boot
+  // ------------------------------
+  const READY = /complete|interactive/;
+  const onReady = fn => READY.test(document.readyState) ? fn() : document.addEventListener('DOMContentLoaded', fn);
 
-onReady(() => {
-	// Dev-sanity: verwijder dubbele preconnects/prefetches (no-op in live)
-	dedupeResourceHints();
-
+  onReady(() => {
 	document.querySelectorAll('[data-product-form]').forEach(root => initProductForm(root));
-});
+  });
 
-// ---------- Init per section ----------
-function initProductForm(root){
+  // ------------------------------
+  // Init per Product Form
+  // ------------------------------
+  function initProductForm(root){
 	const sectionId = root.getAttribute('data-section-id');
 	const product   = safeJSON(root.getAttribute('data-product-json'));
-	const segments  = root.querySelector('[data-fragment-parent="product-form"]');
-	if (!sectionId || !product || !segments) return;
+	const parent    = root.querySelector('[data-fragment-parent="product-form"]');
+	if (!sectionId || !product || !parent) return;
 
-	let inflight;               // AbortController voor fetches
+	// 1) Variant-picker isoleren: laat change NIET doorbubbelen naar het form
+	isolateVariantPicker(root);
+
+	let inflight;                 // AbortController voor fetches
 	let prevState = snapshotState(root);
 
+	// 2) Centrale change-handler op root (bubbelt van form-af, behalve variant-picker)
 	root.addEventListener('change', (ev) => {
-		if (!ev.target.closest('form')) return;
-		if (ev.target.closest('[data-fragment="atc"], [data-no-track]')) return;
-	
-		// 1) Bepaal huidige variant vanuit UI
-		const variant = findVariant(product, readCurrentOptions(root, product));
-	
-		// 2) Snelle client-side updates (prijs/ATC), voelt snappy
-		quickClientUpdates(root, variant);
-	
-		// 3) Check of iets relevants echt veranderde
-		const nextState = snapshotState(root);
-		if (equalStates(prevState, nextState)) return;
-		prevState = nextState;
-	
-		// 4) Sharable URL (werkt voor multi-option)
-		if (nextState.variantId) pushVariantToURL(nextState.variantId);
-	
-		// 5) Haal alleen server truth op en reconcile blokken
-		inflight = fetchAndReplaceFragments(root, sectionId, nextState, inflight);
-	});
-}
+	  if (!ev.target.closest('form')) return;
+	  const form = ev.target.closest('form');
+	  if (!form) return;
 
-// ---------- Helpers: variant/selectie ----------
-function readCurrentOptions(root, product){
+	  // 1) Bepaal huidige variant op basis van UI
+	  const opts    = readCurrentOptions(root, product);
+	  const variant = findVariant(product, opts);
+
+	  // 2) Snelle client-side feedback
+	  quickClientUpdates(root, variant);
+
+	  // 3) Is er iets relevants veranderd?
+	  const nextState = snapshotState(root);
+	  if (equalStates(prevState, nextState)) {
+		// Zelfde state → toch een AFTER zodat apps (wishlist) kunnen initialiseren
+		dispatchLifecycle(root, 'product:fragments:after', { sectionId, product, state: nextState, variant });
+		return;
+	  }
+	  prevState = nextState;
+
+	  // 4) Maak URL deelbaar
+	  if (nextState.variantId) pushVariantToURL(nextState.variantId);
+
+	  // 5) Server-truth ophalen & reconcile (alleen relevante delen)
+	  inflight = fetchAndReplaceFragments(root, sectionId, product, nextState, inflight);
+	});
+
+	// Eerste AFTER zodat apps ook op first paint initten
+	dispatchLifecycle(root, 'product:fragments:after', {
+	  sectionId,
+	  product,
+	  state: prevState,
+	  variant: currentVariantFromState(product, prevState)
+	});
+  }
+
+  // ------------------------------
+  // Variant-picker isolatie
+  // ------------------------------
+  function isolateVariantPicker(root){
+	const sel = '[data-variant-picker] select,[data-variant-picker] input[name^="options["]';
+	root.querySelectorAll(sel).forEach(ctrl => {
+	  ctrl.addEventListener('change', (ev) => {
+		// voorkom bubbelen naar <form> — wij sturen later ZELF één change
+		ev.stopPropagation();
+		// trigger een synthetische change OP HET FORM zelf (bubbles: true)
+		const form = root.querySelector('form');
+		if (form){
+		  requestAnimationFrame(() => {
+			try { form.dispatchEvent(new Event('change', { bubbles:true })); } catch(_) {}
+		  });
+		}
+	  });
+	});
+  }
+
+  // ------------------------------
+  // Lifecycle helper
+  // ------------------------------
+  function dispatchLifecycle(root, name, detail){
+	const payload = { ...detail, root };
+	// Binnen section (bubbling)
+	root.dispatchEvent(new CustomEvent(name, { detail: payload, bubbles: true }));
+	// Globaal, voor third-party scripts
+	document.dispatchEvent(new CustomEvent(name, { detail: payload }));
+	if (isDev() && name !== 'product:fragments:fetch') {
+	  console.debug(`📦 ${name}`, payload);
+	}
+  }
+
+  // ------------------------------
+  // Selectie / Variant helpers
+  // ------------------------------
+  function readCurrentOptions(root, product){
 	return (product.options || []).map((name, idx) => {
-	const sel = root.querySelector(`[data-option-select][data-option-index="${idx}"]`);
-	if (sel) return sel.value;
-	const checked = root.querySelector(`input[name="options[${CSS.escape(name)}]"]:checked`);
-	if (checked) return checked.value;
-	const owv = product.options_with_values && product.options_with_values[idx];
-	return owv ? owv.selected_value : null;
+	  const sel = root.querySelector(`[data-option-select][data-option-index="${idx}"]`);
+	  if (sel) return sel.value;
+	  const checked = root.querySelector(`input[name="options[${CSS.escape(name)}]"]:checked`);
+	  if (checked) return checked.value;
+	  const owv = product.options_with_values && product.options_with_values[idx];
+	  return owv ? owv.selected_value : null;
 	});
-}
-function findVariant(product, opts){
-	return product.variants.find(v => v.options.every((val,i) => val === opts[i]));
-}
+  }
+  function findVariant(product, opts){
+	return product.variants.find(v => v.options.every((val, i) => val === opts[i]));
+  }
+  function currentVariantFromState(product, state){
+	const id = Number(state?.variantId);
+	return Number.isFinite(id) ? product.variants.find(v => v.id === id) || null : null;
+  }
 
-// ---------- Helpers: state & URL ----------
-function snapshotState(root){
+  // ------------------------------
+  // State & URL helpers
+  // ------------------------------
+  function snapshotState(root){
 	return {
-	variantId:   (root.querySelector('[data-variant-id]') || {}).value || '',
-	sellingPlan: (root.querySelector('[name="selling_plan"]') || {}).value || '',
-	quantity:    (root.querySelector('input[name="quantity"]') || {}).value || '',
-	focusSel: (() => {
+	  variantId:   (root.querySelector('[data-variant-id]') || {}).value || '',
+	  sellingPlan: (root.querySelector('[name="selling_plan"]') || {}).value || '',
+	  quantity:    (root.querySelector('input[name="quantity"]') || {}).value || '',
+	  focusSel: (() => {
 		const a = document.activeElement;
 		if (!a || !root.contains(a)) return '';
 		if (a.id) return '#' + CSS.escape(a.id);
 		const n = a.getAttribute('name'); if (n) return `[name="${CSS.escape(n)}"]`;
 		return '';
-	})(),
-	scrollY: window.scrollY
+	  })(),
+	  scrollY: window.scrollY
 	};
-}
-function equalStates(a,b){
-	return a.variantId === b.variantId &&
-		a.sellingPlan === b.sellingPlan &&
-		a.quantity === b.quantity;
-}
-function pushVariantToURL(variantId){
+  }
+  function equalStates(a,b){
+	return a.variantId   === b.variantId &&
+		   a.sellingPlan === b.sellingPlan &&
+		   a.quantity    === b.quantity;
+  }
+  function pushVariantToURL(variantId){
 	const url = new URL(window.location.href);
 	url.searchParams.set('variant', variantId);
 	history.replaceState({}, '', url.toString());
-}
+  }
 
-// ---------- Snelle client updates ----------
-function quickClientUpdates(root, variant){
+  // ------------------------------
+  // Snelle client updates (geen netwerk)
+  // ------------------------------
+  function quickClientUpdates(root, variant){
 	// Hidden variant id
 	const idEl = root.querySelector('[data-variant-id]');
 	if (variant?.id && idEl) idEl.value = variant.id;
 
-	// Prijs (client-side, server refresh volgt)
-	if (variant && typeof variant.price === 'number' && window.Shopify?.formatMoney) {
-	root.querySelectorAll('[data-fragment="price"] [data-price]').forEach(el => el.textContent = Shopify.formatMoney(variant.price));
-	root.querySelectorAll('[data-fragment="price"] [data-compare-at]').forEach(el => {
-		if (typeof variant.compare_at_price === 'number' && variant.compare_at_price > variant.price) {
-		el.textContent = Shopify.formatMoney(variant.compare_at_price);
-		el.hidden = false;
-		} else el.hidden = true;
-	});
-	}
+	root.classList.add('is-quickupdate');
 	
-	// Quantity: max bijwerken + waarde clampen
+	// Prijs (client-side)
+	if (variant && typeof variant.price === 'number' && window.Shopify?.formatMoney) {
+	  root.querySelectorAll('[data-fragment="price"] [data-price]').forEach(el => {
+		el.textContent = Shopify.formatMoney(variant.price);
+	  });
+	  root.querySelectorAll('[data-fragment="price"] [data-compare-at]').forEach(el => {
+		if (typeof variant.compare_at_price === 'number' && variant.compare_at_price > variant.price) {
+		  el.textContent = Shopify.formatMoney(variant.compare_at_price);
+		  el.hidden = false;
+		} else {
+		  el.hidden = true;
+		}
+	  });
+	}
+
+	// Quantity clamp (gebruik min/max van input)
 	root.querySelectorAll('input[name="quantity"]').forEach(input => {
-	  const min = parseInt(input.getAttribute('min') || '1', 10);
+	  const min = toInt(input.getAttribute('min'), 1);
 	  const hasMax = input.hasAttribute('max') && input.getAttribute('max') !== '';
-	  const max = hasMax ? parseInt(input.getAttribute('max'), 10) : Infinity;
-	  let v = parseInt(input.value || String(min), 10);
-	  if (!Number.isFinite(v)) v = min;
+	  const max = hasMax ? toInt(input.getAttribute('max'), Infinity) : Infinity;
+	  let v = toInt(input.value, min);
 	  v = Math.max(min, Math.min(max, v));
-	  if (String(v) !== input.value) input.value = String(v); // geen change-event
+	  if (String(v) !== input.value) input.value = String(v);
 	});
 
 	// ATC state
 	root.querySelectorAll('[data-fragment="atc"] [data-atc]').forEach(btn => {
-	const txt = btn.querySelector('[data-atc-text]') || btn;
-	if (!variant) {
+	  const txt = btn.querySelector('[data-atc-text]') || btn;
+	  if (!variant) {
 		btn.disabled = true; txt.textContent = btn.getAttribute('data-label-unavailable') || 'Unavailable';
-	} else if (variant.available) {
+	  } else if (variant.available) {
 		btn.disabled = false; txt.textContent = btn.getAttribute('data-label-default') || 'Add to cart';
-	} else {
+	  } else {
 		btn.disabled = true; txt.textContent = btn.getAttribute('data-label-soldout') || 'Sold out';
-	}
+	  }
 	});
-	
-	root.dispatchEvent(new CustomEvent('product:variant:preview', {
-	  detail: { variant }, // hele variant meegeven is handig
-	  bubbles: true
-	}));
-}
 
-// ---------- Fetch + Reconcile ----------
-async function fetchAndReplaceFragments(root, sectionId, state, prevCtrl){
+	// Live preview event
+	root.dispatchEvent(new CustomEvent('product:variant:preview', {
+	  detail: { variant, root }, bubbles: true
+	}));
+	document.dispatchEvent(new CustomEvent('product:variant:preview', {
+	  detail: { variant, root }
+	}));
+	
+	requestAnimationFrame(() => root.classList.remove('is-quickupdate'));
+  }
+
+  // ------------------------------
+  // Fetch + Reconcile
+  // ------------------------------
+  async function fetchAndReplaceFragments(root, sectionId, product, state, prevCtrl){
+	// Annuleer vorige fetch
 	prevCtrl?.abort?.();
 	const ctrl = new AbortController();
 
-	const url = new URL(window.location.href);
-	// Option 1: keep section_id (your current path)
-	url.searchParams.set('section_id', sectionId);
+	// BEFORE (vóór netwerk)
+	dispatchLifecycle(root, 'product:fragments:before', { sectionId, product, state });
 
+	const url = new URL(window.location.href);
+	url.searchParams.set('section_id', sectionId);
 	if (state.variantId)   url.searchParams.set('variant', state.variantId); else url.searchParams.delete('variant');
 	if (state.sellingPlan) url.searchParams.set('selling_plan', state.sellingPlan); else url.searchParams.delete('selling_plan');
-
-	// DEV: force-unique URL to avoid 304/old bodies
-	if (isDevEnv()) url.searchParams.set('_cb', cacheBuster());
+	if (isDev()) url.searchParams.set('_cb', String(Date.now()));
 
 	root.classList.add('is-rendering');
 
+	let tpl = null;
+
 	try {
-	const res = await fetch(url.toString(), {
+	  const res = await fetch(url.toString(), {
 		method: 'GET',
 		headers: {
-		'X-Requested-With': 'XMLHttpRequest',
-		// strong anti-cache hints (some proxies respect these):
-		'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
-		'Pragma': 'no-cache',
-		'Expires': '0'
+		  'X-Requested-With': 'XMLHttpRequest',
+		  'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+		  'Pragma': 'no-cache',
+		  'Expires': '0'
 		},
-		cache: isDevEnv() ? 'no-store' : 'default', // safari likes 'reload' too if needed
+		cache: isDev() ? 'no-store' : 'default',
 		signal: ctrl.signal,
 		credentials: 'same-origin'
-	});
+	  });
 
-	if (res.status === 304) return ctrl;        // nothing changed → skip
-	if (!res.ok) { console.warn('Section render non-200', res.status); return ctrl; }
+	  if (res.status === 304) return ctrl;
+	  if (!res.ok) { console.warn('Section render non-200', res.status); return ctrl; }
 
-	const html = await res.text();
-	// Quick sanity: if your stock snippet had '-x-' marker in dev,
-	// you can assert it's present:
-	// if (isDevEnv() && !html.includes('-x-')) console.warn('Dev cache still stale?');
+	  const html = await res.text();
 
-	const tpl = document.createElement('template');
-	tpl.innerHTML = html;
+	  tpl = document.createElement('template');
+	  tpl.innerHTML = html;
+	  // ruis weg in dev
+	  tpl.content.querySelectorAll('script, link[rel="preconnect"], link[rel="prefetch"]').forEach(n => n.remove());
 
-	// strip noisy tags that sometimes get injected in dev
-	tpl.content.querySelectorAll('script, link[rel="preconnect"], link[rel="prefetch"]').forEach(n => n.remove());
+	  // FETCH (na parse, vóór reconcile)
+	  dispatchLifecycle(root, 'product:fragments:fetch', { sectionId, product, state, template: tpl.content });
 
-	// Reconcile blocks (your existing function)
-	reconcileBlocks(root, tpl.content, {
-		replaceTypes: ['price','stock','sku','selling_plans','atc'],
+	  // Reconcile/replace (incl. fragment-skip eilanden)
+	  reconcileBlocks(root, tpl.content, {
+		replaceTypes: ['price','stock','sku','selling_plans','atc'], // variant_picker blijft staan
 		addIfMissing: true,
 		removeIfGone: true
-	});
+	  });
 
-	// Restore small state
-	const qty = root.querySelector('input[name="quantity"]'); if (qty && state.quantity) qty.value = state.quantity;
-	const sp  = root.querySelector('[name="selling_plan"]'); if (sp && state.sellingPlan) sp.value = state.sellingPlan;
-	if (state.focusSel) { const f = root.querySelector(state.focusSel); try { f?.focus({preventScroll:true}); } catch(e){} }
-	window.scrollTo({ top: state.scrollY });
+	  // Klein state herstel
+	  const qty = root.querySelector('input[name="quantity"]'); if (qty && state.quantity) qty.value = state.quantity;
+	  const sp  = root.querySelector('[name="selling_plan"]'); if (sp && state.sellingPlan) sp.value = state.sellingPlan;
+	  if (state.focusSel) { const f = root.querySelector(state.focusSel); try { f?.focus({preventScroll:true}); } catch(e){} }
+	  window.scrollTo({ top: state.scrollY });
+
+	  // Wacht één frame voor layout settle
+	  await new Promise(requestAnimationFrame);
+
+	  // AFTER (na plaatsen + herstel)
+	  dispatchLifecycle(root, 'product:fragments:after', { sectionId, product, state, variant: currentVariantFromState(product, state) });
+
+	  // ✨ Nudge voor apps die naar form-change luisteren (wishlist e.d.)
+	  const form = root.querySelector('form');
+	  if (form) requestAnimationFrame(() => { try { form.dispatchEvent(new Event('change', { bubbles:true })); } catch(_) {} });
+
+	  // (optioneel) publiek app-signaal met IDs
+	  const vId = Number(state?.variantId) || null;
+	  try { window.wlProductVariantChange?.(product?.id, vId); } catch(_) {}
+	  try { window.wlBackInStockProductVariantChange?.(product?.id, vId); } catch(_) {}
 
 	} catch (e) {
-	if (e.name !== 'AbortError') console.error('Fragment render failed', e);
+	  if (e.name !== 'AbortError') console.error('Fragment render failed', e);
 	} finally {
-	root.classList.remove('is-rendering');
+	  root.classList.remove('is-rendering');
 	}
 
 	return ctrl;
-}
+  }
 
-// ---------- Reconcile volgens server volgorde ----------
-function reconcileBlocks(root, incoming, { addIfMissing = true, removeIfGone = true, replaceTypes = [] } = {}){
+  // ------------------------------
+  // Reconcile met servervolgorde + fragment-skip eilanden
+  // ------------------------------
+  function reconcileBlocks(root, incoming, { addIfMissing = true, removeIfGone = true, replaceTypes = [] } = {}){
 	const parentSel = '[data-fragment-parent="product-form"]';
 	const curParent = root.querySelector(parentSel);
 	const incParent = incoming.querySelector(parentSel);
 	if (!curParent || !incParent) return;
 
-	// Servervolgorde ophalen
-	let order = [];
-	try { order = JSON.parse(incParent.getAttribute('data-block-order') || '[]'); } catch(e){ order = []; }
+	// Bewaar 'eilanden' uit huidige DOM
+	const islandMap = captureSkipIslands(curParent);
 
-	// Indexeer huidige & inkomende blokken
+	// Servervolgorde
+	let order = [];
+	try { order = JSON.parse(incParent.getAttribute('data-block-order') || '[]'); } catch(_){ order = []; }
+
 	const curByKey = new Map([...curParent.querySelectorAll('[data-block-key]')].map(el => [el.getAttribute('data-block-key'), el]));
 	const incByKey = new Map([...incParent.querySelectorAll('[data-block-key]')].map(el => [el.getAttribute('data-block-key'), el]));
 
-	// Mag dit type vervangen?
 	const canReplace = (el) => {
-	if (!replaceTypes || replaceTypes.length === 0) return true;
-	const t = el.getAttribute('data-fragment');
-	return replaceTypes.includes(t);
+	  if (!replaceTypes || replaceTypes.length === 0) return true;
+	  const t = el.getAttribute('data-fragment');
+	  return replaceTypes.includes(t);
 	};
 
-	// Volg servervolgorde bij opbouw
 	let insertAfter = null;
 	order.forEach(key => {
-	const next = incByKey.get(key);
-	if (!next) return;
-	const cur  = curByKey.get(key);
+	  const next = incByKey.get(key);
+	  if (!next) return;
+	  const cur  = curByKey.get(key);
 
-	if (cur) {
+	  if (cur) {
 		if (canReplace(cur)) {
-		cur.replaceWith(next);
-		insertAfter = curParent.querySelector(`[data-block-key="${CSS.escape(key)}"]`);
+		  // Vervang block
+		  cur.replaceWith(next);
+		  // Eilanden terugzetten in het ZOJUIST geplaatste block
+		  restoreSkipIslands(next, islandMap);
+		  insertAfter = curParent.querySelector(`[data-block-key="${CSS.escape(key)}"]`);
 		} else {
-		insertAfter = cur; // niet vervangen, maar wel volgorde respecteren
+		  insertAfter = cur; // volgorde respecteren, inhoud laten staan
 		}
-	} else if (addIfMissing) {
+	  } else if (addIfMissing) {
 		if (insertAfter && insertAfter.parentNode === curParent) {
-		insertAfter.after(next);
+		  insertAfter.after(next);
 		} else {
-		curParent.appendChild(next);
+		  curParent.appendChild(next);
 		}
+		restoreSkipIslands(next, islandMap);
 		insertAfter = next;
-	}
+	  }
 	});
 
-	// Verwijder blokken die de server niet meer noemt
 	if (removeIfGone) {
-	curParent.querySelectorAll('[data-block-key]').forEach(el => {
+	  curParent.querySelectorAll('[data-block-key]').forEach(el => {
 		const key = el.getAttribute('data-block-key');
 		if (!order.includes(key) && canReplace(el)) el.remove();
-	});
+	  });
 	}
-}
+  }
 
-// ---------- Misc helpers ----------
-function safeJSON(str){ try { return JSON.parse(str || '') } catch(_){ return null } }
-function isDevEnv(){
-	const h = location.hostname;
-	// pick your own heuristic if needed:
-	return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.test');
-}
-
-function cacheBuster(){
-	// include variant/selling plan to help proxies create unique keys
-	return String(Date.now());
-}
-
-function dedupeResourceHints(){
-	const seen = new Set();
-	document.querySelectorAll('link[rel="preconnect"], link[rel="prefetch"]').forEach(link => {
-	const key = (link.href || '') + '|' + (link.crossOrigin || '');
-	if (seen.has(key)) link.remove(); else seen.add(key);
+  // ---- fragment-skip helpers ----
+  function captureSkipIslands(scope){
+	// key → Node (levende node behouden, niet clonen)
+	const map = new Map();
+	const all = scope.querySelectorAll('[data-fragment-skip]');
+	let autoIdx = 0;
+	all.forEach(el => {
+	  const raw = (el.getAttribute('data-fragment-skip') || '').trim();
+	  const key = raw || `__auto_${autoIdx++}`;
+	  map.set(key, el);
 	});
-}
+	return map;
+  }
+  function restoreSkipIslands(newBlock, islandMap){
+	if (!islandMap || islandMap.size === 0) return;
+
+	const list = newBlock.querySelectorAll('[data-fragment-skip]');
+	let autoIdx = 0;
+	list.forEach(slot => {
+	  let raw = (slot.getAttribute('data-fragment-skip') || '').trim();
+	  let key = raw || `__auto_${autoIdx++}`;
+	  const old = islandMap.get(key);
+	  if (!old) return;
+
+	  // Vervang placeholder in nieuw fragment door OUDE node (incl. listeners)
+	  slot.replaceWith(old);
+	  // Eventueel placeholder attribute schoonmaken (naar wens):
+	  if (raw === '') { old.setAttribute('data-fragment-skip', ''); }
+	});
+  }
+
+  // ------------------------------
+  // Utils
+  // ------------------------------
+  function safeJSON(str){ try { return JSON.parse(str || '') } catch(_){ return null } }
+  function toInt(v, def){ const n = parseInt(v, 10); return Number.isFinite(n) ? n : def; }
+  function isDev(){
+	const h = location.hostname;
+	return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.test');
+  }
 })();
 </script>
 
+<script>
+  window.productData = {{ product | json }};
+  console.info('Product data:', window.productData);
+</script>
 {%- schema -%}
 {
-"name": "Product form",
-"templates": ["product"], 
-"settings": [
-	{ "type": "product", "id": "product", "label": "Fallback product (niet op PDP)" }
-],
-"blocks": [
-	{ 
-		"type": "heading", 
-		"name": "Heading", 
-		"settings": [{ "type":"text","id":"text","label":"Tekst","default":"Koop dit product"}]
-	},
-	{ 
-		"type": "description", 
-		"name": "Description", 
-		"settings": []
-	},
-	{ 
-		"type": "variant_picker", 
-		"name": "Variant picker", 
-		"settings": [
+	"name": "Product form",
+	"templates": ["product"], 
+	"settings": [
+		{ "type": "product", "id": "product", "label": "Fallback product (niet op PDP)" }
+	],
+	"blocks": [
+		{ "type": "heading", "name": "Heading", "settings": [
+			{ "type":"text","id":"text","label":"Tekst","default":"Koop dit product"}
+		]},
+		{ "type": "description", "name": "Description", "settings": []},
+		{ "type": "variant_picker", "name": "Variant picker", "settings": [
 			{ 
 				"type":"range",
 				"id":"threshold_dropdown",
@@ -455,34 +639,35 @@ function dedupeResourceHints(){
 				"label":"Dropdown vanaf aantal opties",
 				"default":10 
 			}
-		]
-	},
-	{ "type": "price", "name": "Prijs", "settings": []},
-	{ "type": "stock", "name": "Voorraad", "settings": [
-	{ "type":"text","id":"in_label","label":"Op voorraad label","default":"Op voorraad" },
-	{ "type":"text","id":"out_label","label":"Niet op voorraad label","default":"Niet op voorraad"}
-	]},
-	{ "type": "sku", "name": "SKU", "settings": [{ "type":"checkbox","id":"show_label","label":"Toon label","default":true }]},
-	{ "type": "quantity", "name": "Aantal", "settings": []},
-	{ "type": "selling_plans", "name": "Abonnementen", "settings": []},
-	{ "type": "atc", "name": "Add to cart knop", "settings": [{ "type":"checkbox","id":"full_width","label":"Volledige breedte","default":true }]},
-	{ "type": "dynamic_checkout", "name": "Dynamische checkout", "settings": []}
-],
-"presets": [
-	{
-	"name":"Product order",
-	"category": "Products",
-	"blocks":[
-		{"type":"heading"},
-		{"type":"price"},
-		{"type":"description"},
-		{"type":"variant_picker"},
-		{"type":"stock"},
-		{"type":"quantity"},
-		{"type":"atc"},
-		{"type":"dynamic_checkout"}
+		]},
+		{ "type": "upsell", "name": "Upsell", "settings": []},
+		{ "type": "price", "name": "Prijs", "settings": []},
+		{ "type": "stock", "name": "Voorraad", "settings": []},
+		{ "type": "delivery", "name": "Levertijd", "settings": []},
+		{ "type": "sku", "name": "SKU", "settings": [{ "type":"checkbox","id":"show_label","label":"Toon label","default":true }]},
+		{ "type": "quantity", "name": "Aantal", "settings": []},
+		{ "type": "selling_plans", "name": "Abonnementen", "settings": []},
+		{ "type": "atc", "name": "Add to cart knop", "settings": [{ "type":"checkbox","id":"full_width","label":"Volledige breedte","default":true }]},
+		{ "type": "dynamic_checkout", "name": "Dynamische checkout", "settings": []},
+		{ "type": "trust", "name": "Trust icons", "settings": []},
+		{ "type": "@app" }
+	],
+	"presets": [
+		{
+			"name":"Product order",
+			"category": "Products",
+			"blocks":[
+				{"type":"heading"},
+				{"type":"price"},
+				{"type":"description"},
+				{"type":"variant_picker"},
+				{"type":"upsell"},
+				{"type":"stock"},
+				{"type":"quantity"},
+				{"type":"atc"},
+				{"type":"dynamic_checkout"},
+			]
+		}
 	]
-	}
-]
 }
 {%- endschema -%}

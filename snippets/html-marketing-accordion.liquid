@@ -1,0 +1,178 @@
+{% comment %}
+  HTML Marketing Component: Accordion
+  Collapsible content sections
+  
+  Parameters:
+  - items: {Array} Array of {title, content} objects (required)
+  - allow_multiple: {Boolean} Allow multiple items open - default: false
+  - first_open: {Boolean} First item open by default - default: false
+  - style: {String} minimal | bordered | boxed - default: bordered
+{% endcomment %}
+
+{%- liquid
+  assign items = items | default: ''
+  assign allow_multiple = allow_multiple | default: false
+  assign first_open = first_open | default: false
+  assign style = style | default: 'bordered'
+  
+  assign unique_id = 'accordion-' | append: section.id | append: '-' | append: block.id
+-%}
+
+<div class="marketing-accordion marketing-accordion--{{ style }}">
+  {%- if items != blank and items.size > 0 -%}
+    {%- for item in items -%}
+      {%- assign item_id = unique_id | append: '-' | append: forloop.index -%}
+      {%- assign is_open = false -%}
+      {%- if first_open and forloop.first -%}
+        {%- assign is_open = true -%}
+      {%- endif -%}
+      
+      <details class="marketing-accordion__item" {% if is_open %}open{% endif %}>
+        <summary class="marketing-accordion__header">
+          <span class="marketing-accordion__title">{{ item.title | escape }}</span>
+          <span class="marketing-accordion__icon">
+            <svg class="marketing-accordion__icon-plus" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <svg class="marketing-accordion__icon-minus" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </span>
+        </summary>
+        <div class="marketing-accordion__content">
+          {{ item.content }}
+        </div>
+      </details>
+    {%- endfor -%}
+  {%- else -%}
+    <div class="marketing-accordion__placeholder">
+      <p>Add accordion items</p>
+    </div>
+  {%- endif -%}
+</div>
+
+<style>
+  .marketing-accordion {
+    padding: 2rem 0;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* Item */
+  .marketing-accordion__item {
+    border: none;
+  }
+  
+  .marketing-accordion__item + .marketing-accordion__item {
+    margin-top: 0;
+  }
+  
+  /* Style variations */
+  .marketing-accordion--minimal .marketing-accordion__item {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .marketing-accordion--minimal .marketing-accordion__item:first-child {
+    border-top: 1px solid #e0e0e0;
+  }
+  
+  .marketing-accordion--bordered .marketing-accordion__item {
+    border: 1px solid #e0e0e0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .marketing-accordion--boxed .marketing-accordion__item {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  
+  /* Header */
+  .marketing-accordion__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    font-weight: 600;
+    font-size: 1.125rem;
+    transition: background-color 0.2s ease;
+  }
+  
+  .marketing-accordion__header::-webkit-details-marker {
+    display: none;
+  }
+  
+  .marketing-accordion__header:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .marketing-accordion--minimal .marketing-accordion__header {
+    padding: 1rem 0;
+  }
+  
+  .marketing-accordion--minimal .marketing-accordion__header:hover {
+    background-color: transparent;
+  }
+  
+  /* Title */
+  .marketing-accordion__title {
+    flex: 1;
+    margin-right: 1rem;
+  }
+  
+  /* Icon */
+  .marketing-accordion__icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    position: relative;
+  }
+  
+  .marketing-accordion__icon svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  
+  .marketing-accordion__icon-minus {
+    opacity: 0;
+    transform: rotate(-90deg);
+  }
+  
+  .marketing-accordion__item[open] .marketing-accordion__icon-plus {
+    opacity: 0;
+    transform: rotate(90deg);
+  }
+  
+  .marketing-accordion__item[open] .marketing-accordion__icon-minus {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+  
+  /* Content */
+  .marketing-accordion__content {
+    padding: 0 1.5rem 1.5rem;
+    line-height: 1.6;
+  }
+  
+  .marketing-accordion--minimal .marketing-accordion__content {
+    padding: 0 0 1.5rem 0;
+  }
+  
+  .marketing-accordion__content > * + * {
+    margin-top: 1em;
+  }
+  
+  /* Placeholder */
+  .marketing-accordion__placeholder {
+    background-color: #f5f5f5;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #666;
+  }
+</style>

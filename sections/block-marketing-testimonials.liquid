@@ -1,0 +1,224 @@
+<section class="block-marketing-testimonials">
+  <div class="block-marketing-testimonials__inner alignwide is-constrained">
+    {%- if section.settings.heading != blank -%}
+      {%- render 'html-marketing-headline',
+        heading: section.settings.heading,
+        subheading: section.settings.subheading,
+        alignment: 'center',
+        size: section.settings.heading_size
+      -%}
+    {%- endif -%}
+    
+    <div class="block-marketing-testimonials__grid block-marketing-testimonials__grid--{{ section.settings.layout }}">
+      {%- for block in section.blocks -%}
+        <div class="block-marketing-testimonials__item" {{ block.shopify_attributes }}>
+          {%- render 'html-marketing-quote',
+            quote: block.settings.quote,
+            author: block.settings.author,
+            author_title: block.settings.author_title,
+            author_image: block.settings.author_image,
+            rating: block.settings.rating,
+            alignment: section.settings.alignment,
+            style: section.settings.quote_style
+          -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{%- style -%}
+  .block-marketing-testimonials__grid {
+    display: grid;
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+  
+  .block-marketing-testimonials__grid--single {
+    grid-template-columns: 1fr;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .block-marketing-testimonials__grid--two-column {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .block-marketing-testimonials__grid--three-column {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .block-marketing-testimonials__grid--carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 2rem;
+    padding-bottom: 1rem;
+  }
+  
+  .block-marketing-testimonials__grid--carousel .block-marketing-testimonials__item {
+    flex: 0 0 80%;
+    scroll-snap-align: start;
+  }
+  
+  @media (min-width: 750px) {
+    .block-marketing-testimonials__grid--carousel .block-marketing-testimonials__item {
+      flex: 0 0 60%;
+    }
+  }
+  
+  @media (min-width: 990px) {
+    .block-marketing-testimonials__grid--carousel .block-marketing-testimonials__item {
+      flex: 0 0 45%;
+    }
+  }
+  
+  @media (max-width: 989px) {
+    .block-marketing-testimonials__grid--three-column {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 749px) {
+    .block-marketing-testimonials__grid--two-column,
+    .block-marketing-testimonials__grid--three-column {
+      grid-template-columns: 1fr;
+    }
+  }
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Marketing Testimonials",
+  "tag": "section",
+  "class": "block-marketing-testimonials",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "What Our Customers Say"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading Size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "single", "label": "Single Column" },
+        { "value": "two-column", "label": "Two Columns" },
+        { "value": "three-column", "label": "Three Columns" },
+        { "value": "carousel", "label": "Carousel" }
+      ],
+      "default": "two-column"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "quote_style",
+      "label": "Quote Style",
+      "options": [
+        { "value": "minimal", "label": "Minimal" },
+        { "value": "boxed", "label": "Boxed" },
+        { "value": "accent", "label": "Accent Border" }
+      ],
+      "default": "boxed"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Quote",
+          "default": "This product changed my life!"
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Author Name",
+          "default": "John Doe"
+        },
+        {
+          "type": "text",
+          "id": "author_title",
+          "label": "Author Title",
+          "default": "Customer"
+        },
+        {
+          "type": "image_picker",
+          "id": "author_image",
+          "label": "Author Photo"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Star Rating",
+          "min": 0,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Marketing Testimonials",
+      "category": "Homework",
+      "blocks": [
+        {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Amazing quality and fast shipping!",
+            "author": "Sarah Johnson",
+            "rating": 5
+          }
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Best purchase I've made this year.",
+            "author": "Mike Williams",
+            "rating": 5
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

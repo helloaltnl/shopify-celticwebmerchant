@@ -22,11 +22,16 @@
     "header-bottom": {
       "type": "block-header-bottom",
       "settings": {}
+    },
+    "header-product": {
+      "type": "block-product-bar",
+      "settings": {}
     }
   },
   "order": [
     "header-top",
     "header-middle",
     "header-bottom",
+    "header-product",
   ]
 }

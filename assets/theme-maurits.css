@@ -1,0 +1,80 @@
+* Custom CSS /// totalli */
+/* v20251118 */
+/*
+--theme-color-black: #111111;
+--theme-color-brown: #2e130d;
+--theme-color-blue: #0f1f38;
+--theme-color-green: #243406;
+
+--theme-font-size-min: 16;
+--theme-font-size-max: 21;
+--theme-font-view-min: 576;
+--theme-font-view-max: 1640;
+*/
+
+/* = APP: WC Wishlist Club */
+.wishlistClubPage {
+    /* font-family: 'Absara Sans Pro', sans-serif !important; */
+    /* font-size: clamp(
+        calc(var(--theme-font-size-min) * 1px),
+        calc((var(--theme-font-size-min) * 1px) + (var(--theme-font-size-max) - var(--theme-font-size-min)) * ((100vw - (var(--theme-font-view-min) * 1px)) / var(--theme-font-view-max))),
+        calc(var(--theme-font-size-max) * 1px)
+    )!important;  */
+}
+.wishlistClubPage .WishlistClubContainer {
+    padding: 1em 0 2em;
+    letter-spacing: -0.02em;
+
+}
+.WishlistClubContainer .wcButton {
+    font-size: inherit;
+}
+.wcButton.wcFull {
+    padding: 0.5em 1em;
+    color: #fff;
+    background-color: var(--theme-color-green);
+
+}
+.wcProductList .wcProduct_gridView .wcButton {
+    font-size: inherit;
+    border-radius: 0 !important;
+}
+.wcProduct_gridView .wcButton {
+    font-size: inherit;
+    border-radius: 0 !important;
+}
+
+.WishlistClubTabs .wcCategoryNav {
+    padding: .5em 0;
+    border-radius: 0 !important;
+}
+.wcProductCard .wcPcContent h4 a { /* product title */
+    display: inline-block;
+    /* font-size: 17px; */
+    font-size: .7em !important;
+
+}
+
+.wcProductCard .wcPcPrice span { /* price */
+    font-size: initial !important;
+}
+
+.wishlistClubPage select.wcPcSelector {
+    background-color: var(--theme-color-grey) !important;
+    min-height: 40px;
+}
+
+#app a.s2kwpi1{
+    text-decoration: none !important;
+}
+
+/* = APP: Shop the look */
+.shopthelook-section-v2 .ctl-title {
+    font-size: 38px !important;
+    text-transform: initial !important;
+}
+.shopthelook-section-v2 button.btn--primary.stl__btn-primary.shopthelook_add-to-cart {
+    background-color: var(--theme-color-green) !important;
+    border-radius: 0;
+    padding: .85em 1em;
+}

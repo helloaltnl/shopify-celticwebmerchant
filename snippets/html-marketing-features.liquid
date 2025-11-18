@@ -1,0 +1,198 @@
+{% comment %}
+  HTML Marketing Component: Features
+  Feature list with icons
+  
+  Parameters:
+  - features: {Array} Array of {icon, title, description} objects (required)
+  - layout: {String} grid | list - default: grid
+  - columns: {String} 2 | 3 | 4 - default: 3 (for grid)
+  - icon_style: {String} circle | square | none - default: circle
+  - alignment: {String} left | center - default: center
+{% endcomment %}
+
+{%- liquid
+  assign features = features | default: ''
+  assign layout = layout | default: 'grid'
+  assign columns = columns | default: '3'
+  assign icon_style = icon_style | default: 'circle'
+  assign alignment = alignment | default: 'center'
+-%}
+
+<div class="marketing-features marketing-features--{{ layout }} marketing-features--cols-{{ columns }} marketing-features--icon-{{ icon_style }} marketing-features--align-{{ alignment }}">
+  {%- if features != blank and features.size > 0 -%}
+    <div class="marketing-features__grid">
+      {%- for feature in features -%}
+        <div class="marketing-features__item">
+          {%- if feature.icon != blank -%}
+            <div class="marketing-features__icon">
+              {{ feature.icon }}
+            </div>
+          {%- endif -%}
+          
+          <div class="marketing-features__content">
+            {%- if feature.title != blank -%}
+              <h3 class="marketing-features__title">{{ feature.title | escape }}</h3>
+            {%- endif -%}
+            
+            {%- if feature.description != blank -%}
+              <p class="marketing-features__description">{{ feature.description }}</p>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- else -%}
+    <div class="marketing-features__placeholder">
+      <p>Add features to showcase</p>
+    </div>
+  {%- endif -%}
+</div>
+
+<style>
+  .marketing-features {
+    padding: 2rem 0;
+  }
+  
+  /* Grid layout */
+  .marketing-features--grid .marketing-features__grid {
+    display: grid;
+    gap: 2rem;
+  }
+  
+  .marketing-features--grid.marketing-features--cols-2 .marketing-features__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .marketing-features--grid.marketing-features--cols-3 .marketing-features__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .marketing-features--grid.marketing-features--cols-4 .marketing-features__grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  /* List layout */
+  .marketing-features--list .marketing-features__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  .marketing-features--list .marketing-features__item {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+  
+  /* Item */
+  .marketing-features__item {
+    text-align: center;
+  }
+  
+  .marketing-features--align-left .marketing-features__item {
+    text-align: left;
+  }
+  
+  .marketing-features--list .marketing-features__item {
+    text-align: left;
+  }
+  
+  /* Icon */
+  .marketing-features__icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .marketing-features--align-left .marketing-features__icon {
+    margin-left: 0;
+  }
+  
+  .marketing-features--list .marketing-features__icon {
+    margin: 0;
+  }
+  
+  .marketing-features__icon svg,
+  .marketing-features__icon img {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Icon styles */
+  .marketing-features--icon-circle .marketing-features__icon {
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    padding: 1rem;
+  }
+  
+  .marketing-features--icon-square .marketing-features__icon {
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    padding: 1rem;
+  }
+  
+  .marketing-features--icon-none .marketing-features__icon {
+    background-color: transparent;
+    padding: 0;
+  }
+  
+  /* Content */
+  .marketing-features__content {
+    flex: 1;
+  }
+  
+  .marketing-features__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+    line-height: 1.3;
+  }
+  
+  .marketing-features__description {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+    color: #666;
+  }
+  
+  /* Placeholder */
+  .marketing-features__placeholder {
+    background-color: #f5f5f5;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #666;
+  }
+  
+  /* Responsive */
+  @media (max-width: 989px) {
+    .marketing-features--grid.marketing-features--cols-4 .marketing-features__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .marketing-features--grid.marketing-features--cols-3 .marketing-features__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 749px) {
+    .marketing-features--grid .marketing-features__grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .marketing-features--list .marketing-features__item {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .marketing-features--list .marketing-features__icon {
+      margin-bottom: 1rem;
+    }
+  }
+</style>

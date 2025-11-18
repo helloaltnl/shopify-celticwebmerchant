@@ -229,9 +229,16 @@
 				}
 			}  
 		}
+		&.is-flex {
+			display: flex; flex-direction: row; flex-wrap: nowrap;
+			& .hero-banner {
+				flex-basis: 296px; flex-grow: 1; min-width: 296px;
+				height:28em; aspect-ratio: 2/3;
+			}
+		}
 	}
 	.hero-banner {
-		position: relative; overflow: hidden; isolation: isolate; 	background-color: aliceblue;
+		position: relative; overflow: hidden; isolation: isolate; background-color: aliceblue;
 		&.is-banner {
 			display: flex; flex-direction: column; flex-wrap: nowrap; 
 			justify-content: flex-end; align-items: center;
@@ -274,7 +281,7 @@
 		  }
 		  & .banner__content {
 			  color:#fff; width:100%; padding:1em;
-			  & h3 { color: inherit;}
+			  & h3 { color: inherit; font-weight: 700;}
 			  & p { color: inherit;}
 		  }
 		}
@@ -377,6 +384,12 @@
 		},
 		{
 		  "type": "text",
+		  "id": "label",
+		  "label": "Banner label",
+		  "default": "Shop nu met korting"
+		},
+		{
+		  "type": "text",
 		  "id": "heading",
 		  "label": "Banner heading",
 		  "default": "Banner title"
@@ -385,7 +398,11 @@
 		  "type": "textarea",
 		  "id": "text",
 		  "label": "Banner text",
-		  "default": "Short description or tagline"
+		},
+		{
+		  "type": "collection",
+		  "id": "collection",
+		  "label": "t:sections.collage.blocks.collection.settings.collection.label"
 		},
 		{
 		  "type": "select",

@@ -11,22 +11,80 @@
   "sections": {
     "main_hero": {
       "type": "block-hero",
+      "blocks": {
+        "banner_4e8ahr": {
+          "type": "banner",
+          "settings": {
+            "image": "shopify://shop_images/pre-black-friday-sale.jpg",
+            "label": "Shop nu met korting",
+            "heading": "Pre-Black Friday Sale",
+            "text": "",
+            "collection": "age-of-conan",
+            "design": "red"
+          }
+        },
+        "collection_d8mMLm": {
+          "type": "collection",
+          "settings": {
+            "collection": "fantasy-zwaard",
+            "design": "blue"
+          }
+        },
+        "collection_j78UNT": {
+          "type": "collection",
+          "settings": {
+            "collection": "armet",
+            "design": "red"
+          }
+        },
+        "collection_NdXT97": {
+          "type": "collection",
+          "settings": {
+            "collection": "age-of-conan",
+            "design": "green"
+          }
+        }
+      },
+      "block_order": [
+        "banner_4e8ahr",
+        "collection_d8mMLm",
+        "collection_j78UNT",
+        "collection_NdXT97"
+      ],
       "settings": {
-        "heading": "Hero added manually"
+        "heading": "Hero added manually",
+        "subtext": "Here you can highlight promotions, features, or anything else.",
+        "view": "flex"
       }
     },
     "latest-products": {
       "type": "block-product-latest",
-      "settings": {}
+      "settings": {
+        "collection": "",
+        "products_to_show": 8,
+        "products_in_view": 4
+      }
     },
     "best-products": {
       "type": "block-product-selection",
-      "settings": {}
+      "settings": {
+        "collection": "",
+        "products_show": 12,
+        "products_rows": 1,
+        "readmore_label": "",
+        "readless_label": ""
+      }
     },
     "popular-products": {
       "type": "block-product-selection",
-      "settings": {}
-    },
+      "settings": {
+        "collection": "",
+        "products_show": 12,
+        "products_rows": 1,
+        "readmore_label": "",
+        "readless_label": ""
+      }
+    }
   },
   "order": [
     "main_hero",

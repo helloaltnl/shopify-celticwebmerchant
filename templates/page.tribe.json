@@ -1,0 +1,40 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "block_marketing_cover_yk8iXx": {
+      "type": "block-marketing-cover",
+      "name": "Marketing Cover",
+      "settings": {
+        "subheading": "Welcome",
+        "heading": "Your Amazing Store",
+        "text": "<p>Discover our collection</p>",
+        "height": "medium",
+        "overlay_opacity": "medium",
+        "text_position": "center",
+        "text_alignment": "center",
+        "cta_text": "Shop Now",
+        "cta_url": "",
+        "cta_style": "primary"
+      }
+    }
+  },
+  "order": [
+    "block_marketing_cover_yk8iXx",
+    "main"
+  ]
+}

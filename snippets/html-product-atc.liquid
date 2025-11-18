@@ -33,9 +33,12 @@
 				data-label-soldout="{{ sold_out_label | escape }}"
 				data-label-unavailable="{{ unavailable_label | escape }}"
 				{% unless v.available %}disabled{% endunless %}>
-		<span data-atc-text>
-			{%- if v.available -%}{{ atc_label }}{%- else -%}{{ sold_out_label }}{%- endif -%}
-		</span>
+			<span data-atc-text>
+				{%- if v.available -%}{{ atc_label }}{%- else -%}{{ sold_out_label }}{%- endif -%}
+			</span>
 		</button>
+	</div>
+	<div data-fragment-skip="favorites" data-no-track>
+		<div class="th_prd_wl_btn" data-product_id="{{product.id}}" data-variant_id="{{product.selected_or_first_available_variant.id}}"></div>
 	</div>
 </div>

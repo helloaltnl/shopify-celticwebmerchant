@@ -1,0 +1,86 @@
+{% comment %}
+  HTML Marketing Component: Headline
+  Large headline/tagline block
+  
+  Parameters:
+  - heading: {String} Main heading text (required)
+  - subheading: {String} Optional subheading text
+  - heading_tag: {String} HTML tag (h1, h2, h3, etc.) - default: h2
+  - alignment: {String} text-left | text-center | text-right - default: text-center
+  - size: {String} small | medium | large - default: medium
+{% endcomment %}
+
+{%- liquid
+  assign heading = heading | default: 'Your Heading Here'
+  assign subheading = subheading | default: ''
+  assign heading_tag = heading_tag | default: 'h2'
+  assign alignment = alignment | default: 'text-center'
+  assign size = size | default: 'medium'
+-%}
+
+<div class="marketing-headline marketing-headline--{{ size }} {{ alignment }}">
+  <{{ heading_tag }} class="marketing-headline__heading">
+    {{ heading | escape }}
+  </{{ heading_tag }}>
+  
+  {%- if subheading != blank -%}
+    <p class="marketing-headline__subheading">
+      {{ subheading | escape }}
+    </p>
+  {%- endif -%}
+</div>
+
+<style>
+  .marketing-headline {
+    padding: 2rem 0;
+  }
+  
+  .marketing-headline__heading {
+    margin: 0 0 0.5em;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  
+  .marketing-headline__subheading {
+    margin: 0;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    opacity: 0.8;
+  }
+  
+  /* Size variations */
+  .marketing-headline--small .marketing-headline__heading {
+    font-size: 1.75rem;
+  }
+  
+  .marketing-headline--medium .marketing-headline__heading {
+    font-size: 2.5rem;
+  }
+  
+  .marketing-headline--large .marketing-headline__heading {
+    font-size: 3.5rem;
+  }
+  
+  /* Alignment */
+  .marketing-headline.text-left {
+    text-align: left;
+  }
+  
+  .marketing-headline.text-center {
+    text-align: center;
+  }
+  
+  .marketing-headline.text-right {
+    text-align: right;
+  }
+  
+  /* Responsive */
+  @media (max-width: 749px) {
+    .marketing-headline--large .marketing-headline__heading {
+      font-size: 2rem;
+    }
+    .marketing-headline--medium .marketing-headline__heading {
+      font-size: 1.75rem;
+    }
+  }
+</style>

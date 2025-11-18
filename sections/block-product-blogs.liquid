@@ -1,83 +1,7 @@
 <section id="blog-articles">	
-	{% assign blogpost_references = false %}
-	{% assign knowledge_references = false %}
-	{% assign sizechart_references = false %}
-	{% assign sizechart_reference = false %}
-	{% if template == 'collection' %}
-		{% assign blogpost_references = collection.metafields.custom.collection-blogpost-references %}
-		{% assign knowledge_references = collection.metafields.custom.collection-knowledgebase-references %}
-	{% endif %}
-	{% if request.page_type == 'product' %}
-		{% assign blogpost_references = product.metafields.custom.product-blogpost-references %}
-		{% assign knowledge_references = product.metafields.custom.product-knowledgebase-references %}
-		{% assign sizechart_references = product.metafields.custom.product-sizechart-references %}
-		{% assign sizechart_reference = product.metafields.custom.product-sizechart %}
-	{% endif %}
+	{% assign blogpost_references = product.metafields.custom.product-blogpost-references %}
+	{% assign knowledge_references = product.metafields.custom.product-knowledgebase-references %}
 	
-	{% if sizechart_references or sizechart_reference %}
-		<aside class="blog-sizecharts__inner align">
-			<section class="blog-sizecharts__title">
-				<h3>
-					<i><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" viewBox="0 0 24 24"><g><path d="M5.46973 4.53027C5.61621 4.67676 5.80811 4.75 6 4.75C6.19189 4.75 6.38379 4.67676 6.53027 4.53027C6.82324 4.2373 6.82324 3.76269 6.53027 3.46972L4.53027 1.46972C4.39453 1.33398 4.20703 1.25 4 1.25C3.79297 1.25 3.60547 1.33398 3.46973 1.46973L1.46973 3.46973C1.17676 3.7627 1.17676 4.23731 1.46973 4.53028C1.7627 4.82325 2.23731 4.82325 2.53028 4.53028L3.25 3.81055V18C3.25 18.4141 3.58594 18.75 4 18.75C4.41406 18.75 4.75 18.4141 4.75 18V3.81055L5.46973 4.53027Z"></path>
-						<path d="M22.5303 19.4697L20.5303 17.4697C20.2373 17.1768 19.7627 17.1768 19.4697 17.4697C19.1768 17.7627 19.1768 18.2373 19.4697 18.5303L20.1894 19.25H6C5.58594 19.25 5.25 19.5859 5.25 20C5.25 20.4141 5.58594 20.75 6 20.75H20.1894L19.4697 21.4697C19.1768 21.7627 19.1768 22.2373 19.4697 22.5303C19.6162 22.6768 19.8076 22.75 20 22.75C20.1924 22.75 20.3838 22.6768 20.5303 22.5303L22.5303 20.5303C22.666 20.3945 22.75 20.207 22.75 20C22.75 19.793 22.666 19.6055 22.5303 19.4697Z"></path>
-						<path d="M6.25 7V17C6.25 17.4141 6.58594 17.75 7 17.75H17C17.4141 17.75 17.75 17.4141 17.75 17V7C17.75 6.58594 17.4141 6.25 17 6.25H7C6.58594 6.25 6.25 6.58594 6.25 7ZM7.75 7.75H16.25V16.25H7.75V7.75Z"></path></g></svg></i>
-					<span>Maatvoering</span>
-				</h3>	
-			</section>
-			<section class="blog-sizecharts__content">
-				
-				<ul class="is-list-sizecharts is-grid is-list-unstyled">
-					{% if sizechart_reference %}
-						<li>
-							<article class="article-card">
-								<section class="article-card__content">
-									{{ sizechart_reference | metafield_tag | replace: '&lt;', '<' | replace: '&gt;', '>' }}
-								</section>
-							</article>
-						</li>
-					{% endif %}
-					{% if sizechart_references %}
-					{% for sizechart_reference in sizechart_references.value %}
-						<li>
-						<article class="article-card">
-							<section class="article-card__content">
-								<h4>{{ sizechart_reference.title }}</h4>
-								{% if sizechart_reference.excerpt %}
-									<p>{{ sizechart_reference.excerpt }}</p>
-								{% endif %}
-								{% if sizechart_reference.content %}
-									{{ sizechart_reference.content  | metafield_tag | newline_to_br | replace: '&lt;', '<' | replace: '&gt;', '>' }}
-								{% endif %}
-								{% if sizechart_reference.links %}
-																				
-									{% for sizechart_link in sizechart_reference.links.value %}
-									
-										{% comment %} {% assign url_parts 	= sizechart_link.url | split: '/' %}
-										{% assign url_part 		= url_parts.last %}
-										{% assign url_blog 		= 'maattabellen' %}
-										{% assign url_handle	= url_blog | append:"/" | append: url_part %}
-										<!-- Find: {{url_handle}} -->
-										{% for article in blogs.maattabellen.articles %}
-											{% if article.handle == url_handle %}
-												{{article.title}}
-											{% endif %}
-										{% endfor %} {% endcomment %}
-										
-											<a href="{{ sizechart_link.url }}" class="is-button" target="_blank">
-												<span>{{ sizechart_link.text }}</span>
-												<i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i>
-											</a>
-									{% endfor %}
-								{% endif %}
-							</section>
-						</article>
-					</li>
-					{% endfor %}
-				</ul>
-				{% endif %}
-			</section>
-		</aside>
-	{% endif %}
 	{% if blogpost_references or knowledge_references %}
 		<section class="blog-articles__inner align">
 			<section class="blog-articles__title">
@@ -154,7 +78,7 @@
 				padding-top: 3em; padding-bottom: 3em;
 				& section.blog-sizecharts__title {
 					& > h3 {
-						font-size: 2em; font-weight: 700;
+						font-size: 2em; font-weight: 400;
 						text-align: center;
 						& > i { 
 							display:inline-block; height:1em; width:1em; 
@@ -181,7 +105,7 @@
 				}
 				& section.blog-articles__title {
 					& > h3 {
-						font-size: 2em; font-weight: 700;
+						font-size: 2em; font-weight: 400;
 						text-align: center;
 					}
 				}

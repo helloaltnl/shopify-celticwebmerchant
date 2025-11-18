@@ -11,31 +11,127 @@
   "sections": {
     "product-form": {
       "type": "block-product-form",
-      "settings": {},
       "blocks": {
-        "heading": { "type":"heading", "settings": {} },
-        "price": { "type": "price", "settings": {} },
-        "description": { "type":"description", "settings": {} },
-        "variant_picker": {"type":"variant_picker", "settings":{} },
-        "stock": { "type": "stock", "settings": {} },
-        "quantity": {"type":"quantity", "settings": {} },
-        "atc": {"type":"atc", "settings": {} },
-        "dynamic_checkout": {"type":"dynamic_checkout", "settings": {} }
+        "heading_RX6EDQ": {
+          "type": "heading",
+          "settings": {
+            "text": "Koop dit product"
+          }
+        },
+        "price_z8KqXx": {
+          "type": "price",
+          "settings": {}
+        },
+        "description_P6MUtq": {
+          "type": "description",
+          "settings": {}
+        },
+        "variant_picker_FRRdBk": {
+          "type": "variant_picker",
+          "settings": {
+            "threshold_dropdown": 10
+          }
+        },
+        "upsell_zQ93DX": {
+          "type": "upsell",
+          "settings": {}
+        },
+        "stock_P8dwNk": {
+          "type": "stock",
+          "settings": {}
+        },
+        "atc_LyVFKC": {
+          "type": "atc",
+          "settings": {
+            "full_width": true
+          }
+        }
       },
-      "block_order": ["heading","price","description","variant_picker","stock","quantity","atc","dynamic_checkout"]
+      "block_order": [
+        "heading_RX6EDQ",
+        "price_z8KqXx",
+        "description_P6MUtq",
+        "variant_picker_FRRdBk",
+        "upsell_zQ93DX",
+        "stock_P8dwNk",
+        "atc_LyVFKC"
+      ],
+      "settings": {
+        "product": ""
+      }
+    },
+    "product-information": {
+      "type": "block-product-information",
+      "settings": {}
     },
     "product-recommendations": {
       "type": "block-product-recommendations",
-      "settings": {},
+      "settings": {}
     },
     "product-blog": {
-      "type": "main-collection-product-blog",
-      "settings": {}
+      "type": "block-product-blogs",
+      "settings": {
+        "heading": "Welcome to our blog",
+        "subtext": "Here you can highlight promotions, features, or anything else.",
+        "view": "grid"
+      }
+    },
+    "17622440393afaba32": {
+      "type": "apps",
+      "blocks": {
+        "shop_the_look_shop_the_look_awRawz": {
+          "type": "shopify://apps/shop-the-look/blocks/shop-the-look/36dde5f1-9b4e-442e-b806-01ba76d9468d",
+          "settings": {
+            "use_theme_settings": false,
+            "heading_size": 14,
+            "heading_color": "",
+            "title_size": 14,
+            "title_color": "",
+            "price_size": 14,
+            "price_color": "",
+            "button_color": "#000000",
+            "button_hover_color": "",
+            "button_height": 30,
+            "button_padding_x": 10,
+            "button_border_radius": 0
+          }
+        }
+      },
+      "block_order": [
+        "shop_the_look_shop_the_look_awRawz"
+      ],
+      "settings": {
+        "include_margins": true
+      }
+    },
+    "1763017874af4843d9": {
+      "type": "apps",
+      "blocks": {
+        "doran_product_reviews_product_widget_UWRaK3": {
+          "type": "shopify://apps/doran-product-reviews/blocks/product-widget/ca90c3ee-bc39-4c25-90cd-fdf0519c6d11",
+          "settings": {
+            "topPadding": 36,
+            "bottomPadding": 36,
+            "is_hide_if_no_reviews": false,
+            "is_use_shopify_font": false,
+            "shopify_font": "sans_serif_n4"
+          }
+        }
+      },
+      "block_order": [
+        "doran_product_reviews_product_widget_UWRaK3"
+      ],
+      "settings": {
+        "include_margins": true
+      }
     }
   },
   "order": [
     "product-form",
+    "product-information",
     "product-recommendations",
-    "product-blog"
+    "product-blog",
+    "17622440393afaba32",
+    "1763017874af4843d9"
   ]
 }

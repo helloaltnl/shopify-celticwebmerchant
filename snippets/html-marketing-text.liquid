@@ -1,0 +1,110 @@
+{% comment %}
+  HTML Marketing Component: Text
+  Rich text content block
+  
+  Parameters:
+  - text: {String} Rich text content (required)
+  - alignment: {String} text-left | text-center | text-right - default: text-left
+  - width: {String} narrow | medium | wide | full - default: medium
+  - text_size: {String} small | medium | large - default: medium
+{% endcomment %}
+
+{%- liquid
+  assign text = text | default: '<p>Your content here...</p>'
+  assign alignment = alignment | default: 'text-left'
+  assign width = width | default: 'medium'
+  assign text_size = text_size | default: 'medium'
+-%}
+
+<div class="marketing-text marketing-text--{{ width }} marketing-text--{{ text_size }} {{ alignment }}">
+  <div class="marketing-text__content">
+    {{ text }}
+  </div>
+</div>
+
+<style>
+  .marketing-text {
+    padding: 1.5rem 0;
+  }
+  
+  .marketing-text__content {
+    margin: 0 auto;
+  }
+  
+  /* Width variations */
+  .marketing-text--narrow .marketing-text__content {
+    max-width: 600px;
+  }
+  
+  .marketing-text--medium .marketing-text__content {
+    max-width: 800px;
+  }
+  
+  .marketing-text--wide .marketing-text__content {
+    max-width: 1000px;
+  }
+  
+  .marketing-text--full .marketing-text__content {
+    max-width: 100%;
+  }
+  
+  /* Text size variations */
+  .marketing-text--small .marketing-text__content {
+    font-size: 0.875rem;
+  }
+  
+  .marketing-text--medium .marketing-text__content {
+    font-size: 1rem;
+  }
+  
+  .marketing-text--large .marketing-text__content {
+    font-size: 1.125rem;
+  }
+  
+  /* Alignment */
+  .marketing-text.text-left .marketing-text__content {
+    text-align: left;
+  }
+  
+  .marketing-text.text-center .marketing-text__content {
+    text-align: center;
+  }
+  
+  .marketing-text.text-right .marketing-text__content {
+    text-align: right;
+  }
+  
+  /* Rich text element spacing */
+  .marketing-text__content > * + * {
+    margin-top: 1em;
+  }
+  
+  .marketing-text__content h1,
+  .marketing-text__content h2,
+  .marketing-text__content h3,
+  .marketing-text__content h4,
+  .marketing-text__content h5,
+  .marketing-text__content h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+  }
+  
+  .marketing-text__content ul,
+  .marketing-text__content ol {
+    padding-left: 1.5em;
+  }
+  
+  .marketing-text__content li + li {
+    margin-top: 0.5em;
+  }
+  
+  .marketing-text__content a {
+    text-decoration: underline;
+  }
+  
+  .marketing-text__content img {
+    max-width: 100%;
+    height: auto;
+  }
+</style>

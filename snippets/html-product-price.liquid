@@ -7,6 +7,7 @@
   - show: Boolean (default true) → of we iets tonen
   - from: String (auto|first|first_available|cheapest_available, default: first_available)
   - show_compare: Boolean (default true)
+  - show_plus: Boolean (default true)
 
   Voorbeeld:
   {% render 'html-product-price', product: product, from: 'cheapest_available' %}
@@ -43,6 +44,9 @@
 
   {%- if v -%}
 	<div class="product-card__price">
+		{%- if show_plus %}
+			+
+		{%- endif -%}
 		{%- if show_compare != false and v.compare_at_price and v.compare_at_price > v.price -%}
 			<span class="price price--compare">
 				{%- render 'helper-price-formatted', amount: v.compare_at_price -%}

@@ -1,0 +1,130 @@
+<section class="block-marketing-cover">
+  <div class="block-marketing-cover__inner">
+    {%- render 'html-marketing-cover',
+      image: section.settings.image,
+      heading: section.settings.heading,
+      subheading: section.settings.subheading,
+      text: section.settings.text,
+      cta_text: section.settings.cta_text,
+      cta_url: section.settings.cta_url,
+      cta_style: section.settings.cta_style,
+      overlay_opacity: section.settings.overlay_opacity,
+      text_alignment: section.settings.text_alignment,
+      text_position: section.settings.text_position,
+      height: section.settings.height
+    -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Marketing Cover",
+  "tag": "section",
+  "class": "block-marketing-cover",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Background Image"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Welcome"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Your Amazing Store"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Discover our collection</p>"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Height",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" },
+        { "value": "full", "label": "Full Screen" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "overlay_opacity",
+      "label": "Overlay Opacity",
+      "options": [
+        { "value": "light", "label": "Light" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "dark", "label": "Dark" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Text Position",
+      "options": [
+        { "value": "top", "label": "Top" },
+        { "value": "center", "label": "Center" },
+        { "value": "bottom", "label": "Bottom" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Call to Action"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Button Text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "Button URL"
+    },
+    {
+      "type": "select",
+      "id": "cta_style",
+      "label": "Button Style",
+      "options": [
+        { "value": "primary", "label": "Primary" },
+        { "value": "secondary", "label": "Secondary" },
+        { "value": "outline", "label": "Outline" }
+      ],
+      "default": "primary"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Marketing Cover",
+      "category": "Homework"
+    }
+  ]
+}
+{% endschema %}

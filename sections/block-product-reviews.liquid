@@ -1,0 +1,31 @@
+<section id="product-reviews" class="product-reviews-content align">
+	Reviews here
+</section>
+
+{% style %}
+.block-product-reviews {
+	background-color: var(--theme-color-grey);
+	padding-top: 4em; padding-bottom: 4em;
+}
+.product-reviews-content {
+	
+}
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Product reviews",
+  "tag": "section",
+  "class": "block-product-reviews",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [],
+  "presets": [
+	{
+	  "name": "Product reviews",
+	  "category": "Homework",
+	}
+  ]
+}
+{% endschema %}

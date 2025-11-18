@@ -88,9 +88,8 @@
 		<div class="product-filter__drawer-resultcount" >
 			<span class="facets__resultcount" data-facets-resultcount aria-live="polite">
 			{%- if obj and obj.results_count -%}
-				{{ obj.terms }} / 
 				{{ 'products.facets.product_count_simple' 
-				   | t: count: obj.all_products_count }}
+				   | t: count: obj.results_count }}
 			{%- elsif obj and obj.products_count == obj.all_products_count -%}
 				{{ 'products.facets.product_count_simple' 
 				   | t: count: obj.all_products_count }}

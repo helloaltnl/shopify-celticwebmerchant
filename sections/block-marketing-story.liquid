@@ -1,0 +1,180 @@
+<section class="block-marketing-story">
+  <div class="block-marketing-story__inner alignwide is-constrained">
+    {%- if section.settings.heading != blank -%}
+      {%- render 'html-marketing-headline',
+        heading: section.settings.heading,
+        subheading: section.settings.subheading,
+        alignment: 'center'
+      -%}
+    {%- endif -%}
+    
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when 'split' -%}
+          <div class="block-marketing-story__split" {{ block.shopify_attributes }}>
+            {%- liquid
+              assign image_position = 'left'
+              if forloop.index > 1
+                assign remainder = forloop.index | modulo: 2
+                if remainder == 0
+                  assign image_position = 'right'
+                endif
+              endif
+              
+              if section.settings.alternate == false
+                assign image_position = section.settings.default_position
+              endif
+            -%}
+            
+            {%- render 'html-marketing-split',
+              image: block.settings.image,
+              heading: block.settings.heading,
+              text: block.settings.text,
+              cta_text: block.settings.cta_text,
+              cta_url: block.settings.cta_url,
+              cta_style: block.settings.cta_style,
+              image_position: image_position,
+              vertical_alignment: section.settings.vertical_alignment,
+              background_color: block.settings.background_color
+            -%}
+          </div>
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+</section>
+
+{%- style -%}
+  .block-marketing-story__split + .block-marketing-story__split {
+    margin-top: 4rem;
+  }
+  
+  @media (max-width: 749px) {
+    .block-marketing-story__split + .block-marketing-story__split {
+      margin-top: 2rem;
+    }
+  }
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Marketing Story",
+  "tag": "section",
+  "class": "block-marketing-story",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "checkbox",
+      "id": "alternate",
+      "label": "Alternate Image Position",
+      "default": true,
+      "info": "Automatically alternates image left/right for storytelling flow"
+    },
+    {
+      "type": "select",
+      "id": "default_position",
+      "label": "Default Image Position",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left",
+      "info": "Used when alternate is disabled"
+    },
+    {
+      "type": "select",
+      "id": "vertical_alignment",
+      "label": "Vertical Alignment",
+      "options": [
+        { "value": "top", "label": "Top" },
+        { "value": "center", "label": "Center" },
+        { "value": "bottom", "label": "Bottom" }
+      ],
+      "default": "center"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "split",
+      "name": "Story Block",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Our Story"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Share your brand story here...</p>"
+        },
+        {
+          "type": "text",
+          "id": "cta_text",
+          "label": "Button Text"
+        },
+        {
+          "type": "url",
+          "id": "cta_url",
+          "label": "Button URL"
+        },
+        {
+          "type": "select",
+          "id": "cta_style",
+          "label": "Button Style",
+          "options": [
+            { "value": "primary", "label": "Primary" },
+            { "value": "secondary", "label": "Secondary" },
+            { "value": "outline", "label": "Outline" }
+          ],
+          "default": "outline"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Background Color (Text Side)"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "presets": [
+    {
+      "name": "Marketing Story",
+      "category": "Homework",
+      "blocks": [
+        {
+          "type": "split",
+          "settings": {
+            "heading": "Chapter One"
+          }
+        },
+        {
+          "type": "split",
+          "settings": {
+            "heading": "Chapter Two"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,28 @@
+<section class="page-blogs-content alignwide">
+	Blog overzicht hier, gebaseerd op opties
+</section>
+
+{%- style -%}
+	section.page-blogs { }
+	section.page-blogs-content {}
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Page blogs",
+  "tag": "section",
+  "class": "page-blogs",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [],
+  "blocks": [],
+  "presets": [
+	{
+	  "name": "Page blogs section",
+	  "category": "Homework",
+	  "blocks": []
+	}
+  ]
+}
+{% endschema %}

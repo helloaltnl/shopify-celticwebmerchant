@@ -1,0 +1,126 @@
+{% comment %}
+  HTML Marketing Component: CTA
+  Call-to-action button/banner
+  
+  Parameters:
+  - text: {String} Button text (required)
+  - url: {String} Button URL (required)
+  - style: {String} primary | secondary | outline - default: primary
+  - size: {String} small | medium | large - default: medium
+  - alignment: {String} left | center | right - default: center
+  - full_width: {Boolean} Make button full width - default: false
+  - new_tab: {Boolean} Open link in new tab - default: false
+{% endcomment %}
+
+{%- liquid
+  assign text = text | default: 'Click here'
+  assign url = url | default: '#'
+  assign style = style | default: 'primary'
+  assign size = size | default: 'medium'
+  assign alignment = alignment | default: 'center'
+  assign full_width = full_width | default: false
+  assign new_tab = new_tab | default: false
+-%}
+
+<div class="marketing-cta marketing-cta--align-{{ alignment }}">
+  <a 
+    href="{{ url }}" 
+    class="marketing-cta__button marketing-cta__button--{{ style }} marketing-cta__button--{{ size }}{% if full_width %} marketing-cta__button--full{% endif %}"
+    {% if new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+  >
+    {{ text | escape }}
+  </a>
+</div>
+
+<style>
+  .marketing-cta {
+    padding: 1rem 0;
+  }
+  
+  /* Alignment */
+  .marketing-cta--align-left {
+    text-align: left;
+  }
+  
+  .marketing-cta--align-center {
+    text-align: center;
+  }
+  
+  .marketing-cta--align-right {
+    text-align: right;
+  }
+  
+  /* Button base */
+  .marketing-cta__button {
+    display: inline-block;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.2;
+  }
+  
+  /* Size variations */
+  .marketing-cta__button--small {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+  }
+  
+  .marketing-cta__button--medium {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+  }
+  
+  .marketing-cta__button--large {
+    padding: 1rem 2.5rem;
+    font-size: 1.125rem;
+  }
+  
+  /* Full width */
+  .marketing-cta__button--full {
+    display: block;
+    width: 100%;
+  }
+  
+  /* Style variations */
+  .marketing-cta__button--primary {
+    background-color: #000;
+    color: #fff;
+    border-color: #000;
+  }
+  
+  .marketing-cta__button--primary:hover {
+    background-color: #333;
+    border-color: #333;
+  }
+  
+  .marketing-cta__button--secondary {
+    background-color: #666;
+    color: #fff;
+    border-color: #666;
+  }
+  
+  .marketing-cta__button--secondary:hover {
+    background-color: #555;
+    border-color: #555;
+  }
+  
+  .marketing-cta__button--outline {
+    background-color: transparent;
+    color: #000;
+    border-color: #000;
+  }
+  
+  .marketing-cta__button--outline:hover {
+    background-color: #000;
+    color: #fff;
+  }
+  
+  /* Focus state for accessibility */
+  .marketing-cta__button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+</style>

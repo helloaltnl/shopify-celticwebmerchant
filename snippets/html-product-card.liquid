@@ -21,18 +21,24 @@
 	<figure class="product-card__media">
 		<a href="{{ p.url }}"> </a>
 		<picture>
-	    
 		{%- if p.featured_media -%}
-		  {%- assign alt_main = p.featured_media.alt | default: p.title | escape -%}
-		  {{ p.featured_media
-			| image_url: width: 640
-			| image_tag:
-			  alt: alt_main,
-			  loading: 'lazy',
-			  class: 'product-card__img',
-			  widths: '320,480,640,800,960,1200',
-			  sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
-		  }}
+		  {%- assign img = p.featured_media -%}
+		  {%- assign img_alt = p.featured_media.alt | default: p.title | escape -%}
+		  <img
+			class="product-card__img lazy"
+			alt="{{ img_alt | escape }}"
+			width="{{ img.width }}"
+			height="{{ img.height }}"
+			data-src="{{ img | image_url: width: 640 }}"
+			data-srcset="
+			  {{ img | image_url: width: 320  }} 320w,
+			  {{ img | image_url: width: 480  }} 480w,
+			  {{ img | image_url: width: 640  }} 640w,
+			  {{ img | image_url: width: 800  }} 800w,
+			  {{ img | image_url: width: 960  }} 960w,
+			  {{ img | image_url: width: 1200 }} 1200w"
+			data-sizes="(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw"
+		  />
 		  {%- if show_secondary_image and p.media[1] -%}
 			{%- assign alt_second = p.media[1].alt | default: p.title | escape -%}
 			{{ p.media[1]

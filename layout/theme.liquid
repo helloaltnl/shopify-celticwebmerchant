@@ -29,9 +29,11 @@
     {% render 'meta-tags' %}
 
     {{ 'theme-global.css' | asset_url | stylesheet_tag }}
+    {{ 'theme-maurits.css' | asset_url | stylesheet_tag }}
     
     {{ 'vendor-swiperjs.min.css' | asset_url | stylesheet_tag }}
-
+    
+    <script src="{{ 'vendor-lazyload.min.js' | asset_url }}"></script>
     <script src="{{ 'vendor-swiperjs.min.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'theme-global.js' | asset_url }}" defer="defer"></script>
 

@@ -1,0 +1,144 @@
+{% comment %}
+  HTML Marketing Component: Collection Grid
+  Product collection showcase
+  
+  Parameters:
+  - collection: {Object} Shopify collection object (required)
+  - products_to_show: {Number} Number of products to display - default: 4
+  - columns: {String} 2 | 3 | 4 - default: 4
+  - show_view_all: {Boolean} Show 'View All' button - default: true
+{% endcomment %}
+
+{%- liquid
+  assign collection = collection | default: ''
+  assign products_to_show = products_to_show | default: 4
+  assign columns = columns | default: '4'
+  assign show_view_all = show_view_all | default: true
+-%}
+
+<div class="marketing-collection-grid marketing-collection-grid--cols-{{ columns }}">
+  {%- if collection != blank -%}
+    <div class="marketing-collection-grid__header">
+      <h2 class="marketing-collection-grid__title">{{ collection.title | escape }}</h2>
+      {%- if collection.description != blank -%}
+        <p class="marketing-collection-grid__description">{{ collection.description | escape }}</p>
+      {%- endif -%}
+    </div>
+    
+    {%- if collection.products.size > 0 -%}
+      <div class="marketing-collection-grid__products">
+        {%- for product in collection.products limit: products_to_show -%}
+          <div class="marketing-collection-grid__product">
+            {%- render 'html-product-card',
+              product: product,
+              show_vendor: false,
+              show_price: true,
+              show_price_from: 'first_available'
+            -%}
+          </div>
+        {%- endfor -%}
+      </div>
+      
+      {%- if show_view_all -%}
+        <div class="marketing-collection-grid__footer">
+          {%- render 'html-marketing-cta',
+            text: 'View All',
+            url: collection.url,
+            style: 'outline',
+            alignment: 'center'
+          -%}
+        </div>
+      {%- endif -%}
+    {%- else -%}
+      <div class="marketing-collection-grid__empty">
+        <p>This collection is empty</p>
+      </div>
+    {%- endif -%}
+  {%- else -%}
+    <div class="marketing-collection-grid__placeholder">
+      <p>Select a collection to showcase</p>
+    </div>
+  {%- endif -%}
+</div>
+
+<style>
+  .marketing-collection-grid {
+    padding: 2rem 0;
+  }
+  
+  /* Header */
+  .marketing-collection-grid__header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .marketing-collection-grid__title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+  }
+  
+  .marketing-collection-grid__description {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+    color: #666;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* Products grid */
+  .marketing-collection-grid__products {
+    display: grid;
+    gap: 2rem;
+  }
+  
+  .marketing-collection-grid--cols-2 .marketing-collection-grid__products {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .marketing-collection-grid--cols-3 .marketing-collection-grid__products {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .marketing-collection-grid--cols-4 .marketing-collection-grid__products {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  /* Footer */
+  .marketing-collection-grid__footer {
+    margin-top: 3rem;
+  }
+  
+  /* Empty / Placeholder */
+  .marketing-collection-grid__empty,
+  .marketing-collection-grid__placeholder {
+    background-color: #f5f5f5;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: #666;
+  }
+  
+  /* Responsive */
+  @media (max-width: 989px) {
+    .marketing-collection-grid--cols-4 .marketing-collection-grid__products {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .marketing-collection-grid--cols-3 .marketing-collection-grid__products {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 749px) {
+    .marketing-collection-grid__products {
+      grid-template-columns: 1fr !important;
+      gap: 1.5rem;
+    }
+    
+    .marketing-collection-grid__title {
+      font-size: 1.5rem;
+    }
+  }
+</style>

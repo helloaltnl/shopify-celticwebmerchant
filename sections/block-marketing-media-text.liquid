@@ -1,0 +1,294 @@
+<section class="block-marketing-media-text">
+  <div class="block-marketing-media-text__inner alignwide is-constrained">
+    {%- if section.settings.heading != blank -%}
+      {%- render 'html-marketing-headline',
+        heading: section.settings.heading,
+        subheading: section.settings.subheading,
+        alignment: 'center'
+      -%}
+    {%- endif -%}
+    
+    {%- for block in section.blocks -%}
+      <div class="block-marketing-media-text__item" {{ block.shopify_attributes }}>
+        {%- case block.type -%}
+          {%- when 'image_text' -%}
+            {%- render 'html-marketing-split',
+              image: block.settings.image,
+              heading: block.settings.heading,
+              text: block.settings.text,
+              cta_text: block.settings.cta_text,
+              cta_url: block.settings.cta_url,
+              cta_style: block.settings.cta_style,
+              image_position: block.settings.image_position,
+              vertical_alignment: block.settings.vertical_alignment,
+              image_width: block.settings.image_width,
+              background_color: block.settings.background_color
+            -%}
+            
+          {%- when 'video_text' -%}
+            <div class="media-text-video">
+              <div class="media-text-video__media media-text-video__media--{{ block.settings.video_position }}">
+                {%- render 'html-marketing-video',
+                  video_url: block.settings.video_url,
+                  cover_image: block.settings.cover_image,
+                  width: 'full',
+                  aspect_ratio: '16-9'
+                -%}
+              </div>
+              
+              <div class="media-text-video__content">
+                {%- if block.settings.heading != blank -%}
+                  <h3 class="media-text-video__heading">{{ block.settings.heading | escape }}</h3>
+                {%- endif -%}
+                
+                {%- if block.settings.text != blank -%}
+                  <div class="media-text-video__text">{{ block.settings.text }}</div>
+                {%- endif -%}
+                
+                {%- if block.settings.cta_text != blank and block.settings.cta_url != blank -%}
+                  {%- render 'html-marketing-cta',
+                    text: block.settings.cta_text,
+                    url: block.settings.cta_url,
+                    style: block.settings.cta_style,
+                    alignment: 'left'
+                  -%}
+                {%- endif -%}
+              </div>
+            </div>
+        {%- endcase -%}
+      </div>
+      
+      {%- unless forloop.last -%}
+        <div class="block-marketing-media-text__spacer"></div>
+      {%- endunless -%}
+    {%- endfor -%}
+  </div>
+</section>
+
+{%- style -%}
+  .block-marketing-media-text__spacer {
+    height: 4rem;
+  }
+  
+  .media-text-video {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  
+  .media-text-video__media--right {
+    order: 2;
+  }
+  
+  .media-text-video__content {
+    max-width: 600px;
+  }
+  
+  .media-text-video__heading {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 1rem;
+  }
+  
+  .media-text-video__text {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+  
+  @media (max-width: 989px) {
+    .media-text-video {
+      grid-template-columns: 1fr;
+    }
+    
+    .media-text-video__media--right {
+      order: initial;
+    }
+    
+    .block-marketing-media-text__spacer {
+      height: 2rem;
+    }
+  }
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Marketing Media & Text",
+  "tag": "section",
+  "class": "block-marketing-media-text",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section Heading"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Section Subheading"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image_text",
+      "name": "Image + Text",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "select",
+          "id": "image_position",
+          "label": "Image Position",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "select",
+          "id": "image_width",
+          "label": "Image Width",
+          "options": [
+            { "value": "40", "label": "40%" },
+            { "value": "50", "label": "50%" },
+            { "value": "60", "label": "60%" }
+          ],
+          "default": "50"
+        },
+        {
+          "type": "select",
+          "id": "vertical_alignment",
+          "label": "Vertical Alignment",
+          "options": [
+            { "value": "top", "label": "Top" },
+            { "value": "center", "label": "Center" },
+            { "value": "bottom", "label": "Bottom" }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Feature Title"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Add your description here...</p>"
+        },
+        {
+          "type": "text",
+          "id": "cta_text",
+          "label": "Button Text"
+        },
+        {
+          "type": "url",
+          "id": "cta_url",
+          "label": "Button URL"
+        },
+        {
+          "type": "select",
+          "id": "cta_style",
+          "label": "Button Style",
+          "options": [
+            { "value": "primary", "label": "Primary" },
+            { "value": "secondary", "label": "Secondary" },
+            { "value": "outline", "label": "Outline" }
+          ],
+          "default": "primary"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Background Color (Text Side)"
+        }
+      ]
+    },
+    {
+      "type": "video_text",
+      "name": "Video + Text",
+      "settings": [
+        {
+          "type": "text",
+          "id": "video_url",
+          "label": "Video URL",
+          "info": "YouTube or Vimeo URL"
+        },
+        {
+          "type": "image_picker",
+          "id": "cover_image",
+          "label": "Cover Image"
+        },
+        {
+          "type": "select",
+          "id": "video_position",
+          "label": "Video Position",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Watch Our Story"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Learn more about what we do...</p>"
+        },
+        {
+          "type": "text",
+          "id": "cta_text",
+          "label": "Button Text"
+        },
+        {
+          "type": "url",
+          "id": "cta_url",
+          "label": "Button URL"
+        },
+        {
+          "type": "select",
+          "id": "cta_style",
+          "label": "Button Style",
+          "options": [
+            { "value": "primary", "label": "Primary" },
+            { "value": "secondary", "label": "Secondary" },
+            { "value": "outline", "label": "Outline" }
+          ],
+          "default": "outline"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 8,
+  "presets": [
+    {
+      "name": "Marketing Media & Text",
+      "category": "Homework",
+      "blocks": [
+        {
+          "type": "image_text",
+          "settings": {
+            "heading": "Our Approach"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

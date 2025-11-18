@@ -1,0 +1,236 @@
+{% comment %}
+  HTML Marketing Component: Countdown
+  Countdown timer for sales/launches
+  
+  Parameters:
+  - end_date: {String} End date/time in ISO format (required) - e.g., "2025-12-31T23:59:59"
+  - heading: {String} Heading text above countdown
+  - message: {String} Message to show when countdown ends
+  - style: {String} minimal | boxed | highlight - default: minimal
+  - size: {String} small | medium | large - default: medium
+  - alignment: {String} left | center | right - default: center
+{% endcomment %}
+
+{%- liquid
+  assign end_date = end_date | default: ''
+  assign heading = heading | default: ''
+  assign message = message | default: 'Offer expired'
+  assign style = style | default: 'minimal'
+  assign size = size | default: 'medium'
+  assign alignment = alignment | default: 'center'
+  
+  assign unique_id = 'countdown-' | append: section.id | append: '-' | append: block.id
+-%}
+
+<div class="marketing-countdown marketing-countdown--{{ style }} marketing-countdown--{{ size }} marketing-countdown--align-{{ alignment }}" id="{{ unique_id }}">
+  {%- if heading != blank -%}
+    <h3 class="marketing-countdown__heading">{{ heading | escape }}</h3>
+  {%- endif -%}
+  
+  {%- if end_date != blank -%}
+    <div class="marketing-countdown__timer" data-end-date="{{ end_date }}">
+      <div class="marketing-countdown__segment">
+        <span class="marketing-countdown__value" data-days>00</span>
+        <span class="marketing-countdown__label">Days</span>
+      </div>
+      <div class="marketing-countdown__separator">:</div>
+      <div class="marketing-countdown__segment">
+        <span class="marketing-countdown__value" data-hours>00</span>
+        <span class="marketing-countdown__label">Hours</span>
+      </div>
+      <div class="marketing-countdown__separator">:</div>
+      <div class="marketing-countdown__segment">
+        <span class="marketing-countdown__value" data-minutes>00</span>
+        <span class="marketing-countdown__label">Minutes</span>
+      </div>
+      <div class="marketing-countdown__separator">:</div>
+      <div class="marketing-countdown__segment">
+        <span class="marketing-countdown__value" data-seconds>00</span>
+        <span class="marketing-countdown__label">Seconds</span>
+      </div>
+    </div>
+    
+    <div class="marketing-countdown__message" style="display: none;">
+      {{ message | escape }}
+    </div>
+  {%- else -%}
+    <div class="marketing-countdown__placeholder">
+      <p>Set an end date for the countdown</p>
+    </div>
+  {%- endif -%}
+</div>
+
+<style>
+  .marketing-countdown {
+    padding: 2rem 0;
+  }
+  
+  /* Alignment */
+  .marketing-countdown--align-left {
+    text-align: left;
+  }
+  
+  .marketing-countdown--align-center {
+    text-align: center;
+  }
+  
+  .marketing-countdown--align-right {
+    text-align: right;
+  }
+  
+  /* Heading */
+  .marketing-countdown__heading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 1.5rem;
+  }
+  
+  /* Timer */
+  .marketing-countdown__timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  /* Style variations */
+  .marketing-countdown--boxed .marketing-countdown__timer {
+    background-color: #f5f5f5;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+  }
+  
+  .marketing-countdown--highlight .marketing-countdown__timer {
+    background-color: #000;
+    color: #fff;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+  }
+  
+  /* Segment */
+  .marketing-countdown__segment {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* Value */
+  .marketing-countdown__value {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  
+  .marketing-countdown--small .marketing-countdown__value {
+    font-size: 1.5rem;
+  }
+  
+  .marketing-countdown--medium .marketing-countdown__value {
+    font-size: 2.5rem;
+  }
+  
+  .marketing-countdown--large .marketing-countdown__value {
+    font-size: 3.5rem;
+  }
+  
+  /* Label */
+  .marketing-countdown__label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+    opacity: 0.7;
+  }
+  
+  /* Separator */
+  .marketing-countdown__separator {
+    font-weight: 700;
+    opacity: 0.5;
+  }
+  
+  .marketing-countdown--small .marketing-countdown__separator {
+    font-size: 1.5rem;
+  }
+  
+  .marketing-countdown--medium .marketing-countdown__separator {
+    font-size: 2rem;
+  }
+  
+  .marketing-countdown--large .marketing-countdown__separator {
+    font-size: 2.5rem;
+  }
+  
+  /* Message */
+  .marketing-countdown__message {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 1rem;
+  }
+  
+  /* Placeholder */
+  .marketing-countdown__placeholder {
+    background-color: #f5f5f5;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #666;
+  }
+  
+  /* Responsive */
+  @media (max-width: 749px) {
+    .marketing-countdown__timer {
+      gap: 0.25rem;
+    }
+    
+    .marketing-countdown--large .marketing-countdown__value {
+      font-size: 2rem;
+    }
+    
+    .marketing-countdown--medium .marketing-countdown__value {
+      font-size: 1.5rem;
+    }
+    
+    .marketing-countdown--boxed .marketing-countdown__timer,
+    .marketing-countdown--highlight .marketing-countdown__timer {
+      padding: 1rem 1.25rem;
+    }
+  }
+</style>
+
+<script>
+  (function() {
+    const countdowns = document.querySelectorAll('.marketing-countdown__timer[data-end-date]');
+    
+    countdowns.forEach(function(countdown) {
+      const endDate = new Date(countdown.dataset.endDate).getTime();
+      const daysEl = countdown.querySelector('[data-days]');
+      const hoursEl = countdown.querySelector('[data-hours]');
+      const minutesEl = countdown.querySelector('[data-minutes]');
+      const secondsEl = countdown.querySelector('[data-seconds]');
+      const messageEl = countdown.parentElement.querySelector('.marketing-countdown__message');
+      
+      function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = endDate - now;
+        
+        if (distance < 0) {
+          countdown.style.display = 'none';
+          if (messageEl) messageEl.style.display = 'block';
+          clearInterval(interval);
+          return;
+        }
+        
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+        if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+        if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
+      }
+      
+      updateCountdown();
+      const interval = setInterval(updateCountdown, 1000);
+    });
+  })();
+</script>

@@ -1,0 +1,202 @@
+{% comment %}
+  HTML Marketing Component: Banner
+  Promotional banner (can be dismissible)
+  
+  Parameters:
+  - text: {String} Banner text (required)
+  - cta_text: {String} Optional CTA button text
+  - cta_url: {String} Optional CTA URL
+  - style: {String} info | success | warning | error | promo - default: promo
+  - dismissible: {Boolean} Show close button - default: false
+  - position: {String} top | bottom - default: top (for sticky banners)
+  - sticky: {Boolean} Make banner sticky - default: false
+{% endcomment %}
+
+{%- liquid
+  assign text = text | default: 'Important announcement'
+  assign cta_text = cta_text | default: ''
+  assign cta_url = cta_url | default: ''
+  assign style = style | default: 'promo'
+  assign dismissible = dismissible | default: false
+  assign position = position | default: 'top'
+  assign sticky = sticky | default: false
+  
+  assign unique_id = 'banner-' | append: section.id | append: '-' | append: block.id
+-%}
+
+<div 
+  class="marketing-banner marketing-banner--{{ style }}{% if sticky %} marketing-banner--sticky marketing-banner--sticky-{{ position }}{% endif %}" 
+  id="{{ unique_id }}"
+  role="region"
+  aria-label="Promotional banner"
+>
+  <div class="marketing-banner__content">
+    <p class="marketing-banner__text">{{ text }}</p>
+    
+    {%- if cta_text != blank and cta_url != blank -%}
+      <a href="{{ cta_url }}" class="marketing-banner__cta">
+        {{ cta_text | escape }}
+      </a>
+    {%- endif -%}
+    
+    {%- if dismissible -%}
+      <button 
+        class="marketing-banner__close" 
+        aria-label="Close banner"
+        onclick="document.getElementById('{{ unique_id }}').style.display='none';"
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="4" y1="4" x2="16" y2="16"></line>
+          <line x1="16" y1="4" x2="4" y2="16"></line>
+        </svg>
+      </button>
+    {%- endif -%}
+  </div>
+</div>
+
+<style>
+  .marketing-banner {
+    padding: 1rem 2rem;
+    text-align: center;
+  }
+  
+  .marketing-banner__content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  
+  /* Style variations */
+  .marketing-banner--info {
+    background-color: #e3f2fd;
+    color: #1565c0;
+  }
+  
+  .marketing-banner--success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .marketing-banner--warning {
+    background-color: #fff3e0;
+    color: #e65100;
+  }
+  
+  .marketing-banner--error {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  .marketing-banner--promo {
+    background-color: #000;
+    color: #fff;
+  }
+  
+  /* Text */
+  .marketing-banner__text {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  /* CTA */
+  .marketing-banner__cta {
+    display: inline-block;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+  }
+  
+  .marketing-banner__cta:hover {
+    opacity: 0.8;
+  }
+  
+  .marketing-banner--info .marketing-banner__cta {
+    background-color: #1565c0;
+    color: #fff;
+  }
+  
+  .marketing-banner--success .marketing-banner__cta {
+    background-color: #2e7d32;
+    color: #fff;
+  }
+  
+  .marketing-banner--warning .marketing-banner__cta {
+    background-color: #e65100;
+    color: #fff;
+  }
+  
+  .marketing-banner--error .marketing-banner__cta {
+    background-color: #c62828;
+    color: #fff;
+  }
+  
+  .marketing-banner--promo .marketing-banner__cta {
+    background-color: #fff;
+    color: #000;
+  }
+  
+  /* Close button */
+  .marketing-banner__close {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: currentColor;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+  
+  .marketing-banner__close:hover {
+    opacity: 1;
+  }
+  
+  /* Sticky positioning */
+  .marketing-banner--sticky {
+    position: sticky;
+    z-index: 100;
+  }
+  
+  .marketing-banner--sticky-top {
+    top: 0;
+  }
+  
+  .marketing-banner--sticky-bottom {
+    bottom: 0;
+  }
+  
+  /* Responsive */
+  @media (max-width: 749px) {
+    .marketing-banner {
+      padding: 0.75rem 1rem;
+    }
+    
+    .marketing-banner__content {
+      gap: 1rem;
+    }
+    
+    .marketing-banner__text {
+      font-size: 0.8125rem;
+    }
+    
+    .marketing-banner__close {
+      position: relative;
+      transform: none;
+      order: -1;
+      margin-left: auto;
+    }
+  }
+</style>

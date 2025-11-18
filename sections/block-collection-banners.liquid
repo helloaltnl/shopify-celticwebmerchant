@@ -19,16 +19,18 @@
 							{% if link_collection %}
 								{% if link_collection.metafields.custom.collection_menu_thumb  %}
 								<img
-									src="{{ link_collection.metafields.custom.collection_menu_thumb | image_url: width: 96 }}"
+									class="lazy"
+									data-src="{{ link_collection.metafields.custom.collection_menu_thumb | image_url: width: 96 }}"
 									alt="{{ link_collection.metafields.custom.collection_menu_thumb_alt | default: link_collection.title | escape }}"
 								>
 								{% elsif link_collection.metafields.custom.collection_featured_image %}
 								<img
-									src="{{ link_collection.metafields.custom.collection_featured_image | image_url: width: 96 }}"
+									class="lazy"
+									data-src="{{ link_collection.metafields.custom.collection_featured_image | image_url: width: 96 }}"
 									alt="{{ link_collection.metafields.custom.collection_featured_image_alt | default: link_collection.title | escape }}"
 								>
 								{% elsif link_collection.image  %}
-								<img src="{{ link_collection.image | image_url: width: 96 }}" alt="{{ link_collection.image.alt | default: link_collection.title | escape }}">
+								<img class="lazy" data-src="{{ link_collection.image | image_url: width: 96 }}" alt="{{ link_collection.image.alt | default: link_collection.title | escape }}">
 								{% endif %} 
 							{% endif %}	
 							<span>{{ child.title }}</span>
@@ -52,16 +54,18 @@
 									{% if link_collection %}
 										{% if link_collection.metafields.custom.collection_menu_thumb  %}
 										<img
-											src="{{ link_collection.metafields.custom.collection_menu_thumb | image_url: width: 96 }}"
+											class="lazy"
+											data-src="{{ link_collection.metafields.custom.collection_menu_thumb | image_url: width: 96 }}"
 											alt="{{ link_collection.metafields.custom.collection_menu_thumb_alt | default: link_collection.title | escape }}"
 										>
 										{% elsif link_collection.metafields.custom.collection_featured_image %}
 										<img
-											src="{{ link_collection.metafields.custom.collection_featured_image | image_url: width: 96 }}"
+											class="lazy"
+											data-src="{{ link_collection.metafields.custom.collection_featured_image | image_url: width: 96 }}"
 											alt="{{ link_collection.metafields.custom.collection_featured_image_alt | default: link_collection.title | escape }}"
 										>
 										{% elsif link_collection.image  %}
-										<img src="{{ link_collection.image | image_url: width: 96 }}" alt="{{ link_collection.image.alt | default: link_collection.title | escape }}">
+										<img class="lazy" data-src="{{ link_collection.image | image_url: width: 96 }}" alt="{{ link_collection.image.alt | default: link_collection.title | escape }}">
 										{% endif %} 
 									{% endif %}	
 									<span>{{ subchild.title }}</span>
