@@ -31,21 +31,28 @@
 						{{ block.shopify_attributes }}>
 					{%- case block.type -%}
 						
+						{%- when 'reviews' -%}
+						{% render 'html-product-reviews', product: p %}
 							
 						{%- when 'heading' -%}
 						{% render 'html-product-heading', product: p, text: block.settings.text %}
+						
+						{%- when 'price' -%}
+						{% render 'html-product-price', product: p, show: true, from:'auto' %}
 						
 						{%- when 'description' -%}
 						{% render 'html-product-description', product: p %}
 			
 						{%- when 'variant_picker' -%}
 						{% render 'html-product-variant_picker', product: p, threshold_dropdown: block.settings.threshold_dropdown %}
-			
-						{%- when 'price' -%}
-						{% render 'html-product-price', product: p, show: true, from:'auto' %}
-			
+						
+						{%- when 'notify' -%}
+						{% render 'html-product-notify', product: p %}
+						
 						{%- when 'stock' -%}
 						{% render 'html-product-stock', product: p, show: true, from:'auto', show_low_stock:true, show_stock_count:true %}
+						
+						{%- when 'delivery' -%}
 						{% render 'html-product-delivery', product: p, show: true %}
 			
 						{%- when 'sku' -%}
@@ -154,6 +161,16 @@
 										border:var(--theme-color-blue) 2px solid;
 									}
 								}
+								
+								&.is-sold-out {
+									position: relative; opacity: 0.5;
+									&::after {
+										content:'';
+										position: absolute; left:50%; top:50%; height:2px; width:calc(100% - 1em);
+										background-color: var(--theme-color-blue); transform: translate(-50%,-50%) rotate(-12deg);
+									}
+								}
+									
 							}
 						}
 					}
@@ -163,32 +180,7 @@
 				opacity:1!important;
 			}
 			&[data-fragment="atc"] {
-				& div.product-atc {
-					display: flex; flex-direction: row; flex-wrap:nowrap;
-					align-items: center; justify-content: flex-start;
-					column-gap: 0.5em;
-					padding:1em 0;
-				}
-				& .pform__label { display: none;}
-				& input[type="number"] {
-					-webkit-appearance: none; appearance: none;
-					width: auto; height:2.5em; width:2.5em; text-align: center;
-					padding:1em 0; border:var(--theme-color-blue) 2px solid; 
-					font-family: inherit; font-weight: 500;
-					font-size: inherit; line-height: 1em;
-					&::-webkit-inner-spin-button,
-					&::-webkit-outer-spin-button {
-					  -webkit-appearance: none;
-					  margin: 0;
-					}
-				}
-				& button.pform__btn {
-					padding: 0.5em 1em; background-color: var(--theme-color-green); color:#fff;
-					&[disabled] { 
-						background-color: var(--theme-color-orange);
-						&:hover { cursor: not-allowed;}
-					}
-				}
+				
 			}
 		}
 	}
@@ -625,9 +617,11 @@
 		{ "type": "product", "id": "product", "label": "Fallback product (niet op PDP)" }
 	],
 	"blocks": [
-		{ "type": "heading", "name": "Heading", "settings": [
+		{ "type": "reviews", "name": "Reviews", "settings": []},
+		{ "type": "heading", "name": "Titel", "settings": [
 			{ "type":"text","id":"text","label":"Tekst","default":"Koop dit product"}
 		]},
+		{ "type": "price", "name": "Prijs", "settings": []},
 		{ "type": "description", "name": "Description", "settings": []},
 		{ "type": "variant_picker", "name": "Variant picker", "settings": [
 			{ 
@@ -640,14 +634,14 @@
 				"default":10 
 			}
 		]},
+		{ "type": "notify", "name": "Notify", "settings": []},
 		{ "type": "upsell", "name": "Upsell", "settings": []},
-		{ "type": "price", "name": "Prijs", "settings": []},
 		{ "type": "stock", "name": "Voorraad", "settings": []},
 		{ "type": "delivery", "name": "Levertijd", "settings": []},
 		{ "type": "sku", "name": "SKU", "settings": [{ "type":"checkbox","id":"show_label","label":"Toon label","default":true }]},
 		{ "type": "quantity", "name": "Aantal", "settings": []},
 		{ "type": "selling_plans", "name": "Abonnementen", "settings": []},
-		{ "type": "atc", "name": "Add to cart knop", "settings": [{ "type":"checkbox","id":"full_width","label":"Volledige breedte","default":true }]},
+		{ "type": "atc", "name": "Add To Cart knop", "settings": [{ "type":"checkbox","id":"full_width","label":"Volledige breedte","default":true }]},
 		{ "type": "dynamic_checkout", "name": "Dynamische checkout", "settings": []},
 		{ "type": "trust", "name": "Trust icons", "settings": []},
 		{ "type": "@app" }
@@ -655,12 +649,14 @@
 	"presets": [
 		{
 			"name":"Product order",
-			"category": "Products",
+			"category": "Theme Product",
 			"blocks":[
+				{"type":"reviews"},
 				{"type":"heading"},
 				{"type":"price"},
 				{"type":"description"},
 				{"type":"variant_picker"},
+				{"type":"notify"},
 				{"type":"upsell"},
 				{"type":"stock"},
 				{"type":"quantity"},

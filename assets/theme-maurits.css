@@ -1,5 +1,5 @@
-* Custom CSS /// totalli */
-/* v20251118 */
+/* totalli */
+/* v2025-11-20 */
 /*
 --theme-color-black: #111111;
 --theme-color-brown: #2e130d;
@@ -10,7 +10,13 @@
 --theme-font-size-max: 21;
 --theme-font-view-min: 576;
 --theme-font-view-max: 1640;
+
+--theme-color-alert: #FF0000;
 */
+:root{
+    --theme-color-success: rgba(208, 255, 194, 0.3);
+    --theme-bgcolor-success: #d0ffc2;
+}
 
 /* = APP: WC Wishlist Club */
 .wishlistClubPage {
@@ -59,13 +65,63 @@
     font-size: initial !important;
 }
 
-.wishlistClubPage select.wcPcSelector {
+.wishlistClubPage select.wcPcSelector, .wcWishlistModal .wcWishlistModal_body .wcBisInfo select  {
     background-color: var(--theme-color-grey) !important;
-    min-height: 40px;
+    min-height: 32px;
+}
+
+.pform__form .wc_wishlistBox {
+    width: 100%;
+    position: fixed;
+    left: 0;
+    right:0;
+    bottom: 0;
+    top: auto;
+    background-color: var(--theme-bgcolor-success);
+}
+
+.wc_wishlistBox .wc_wishlistContent, .wc_wishlistBox .wc_wishlistRemonve {
+    align-items: flex-start;
+}
+.wc_wishlistBox .wc_wishlistContent input.wc_wishlistCheckbox, .wc_wishlistBox .wc_wishlistRemonve {
+    top: 5px;
+}
+.wc_wishlistBox .wc_wishlistContent input.wc_wishlistCheckbox {
+    top: 3px;
+    position: relative;
 }
 
 #app a.s2kwpi1{
     text-decoration: none !important;
+}
+
+/* Modals */
+.Polaris-Box {
+    padding: 1em;
+}
+.wcWishlistModal .wcWishlistModal_content {
+    padding: 1em;
+    border-radius: 0px;
+    border: 1px solid #e6e6e6;
+}
+.wcWishlistModal .wcWishlistModal_header p {
+    font-size: initial;
+}
+.wcWishlistModal .wcWishlistModal_body .wcBisInfo h4 {
+    font-size: .9em;
+    line-height: 1.2;
+}
+.wcWishlistModal .wcWishlistCreate label {
+    font-size: initial;
+}
+
+/* notify button */
+.wcBisContain button.wcBisBtn, button.bis_product {
+    background-color: #0f1f38 !important;
+}
+.bis_product .wcBsiNotifyText {
+    font-size: initial;
+    /*line-height: 20px;*/
 }
 
 /* = APP: Shop the look */
@@ -77,4 +133,16 @@
     background-color: var(--theme-color-green) !important;
     border-radius: 0;
     padding: .85em 1em;
+}
+
+/* = APP: 00 TAX EXEMPTION */
+.auto-tax-exemption #oo-tax-exemption {
+    padding: 0;
+}
+.auto-tax-exemption #oo-tax-exemption p {
+    line-height: 1.2;
+}
+.oo-tax-succes {
+    padding: 0 1em;
+    background-color: rgba(208, 255, 194, 0.5);
 }

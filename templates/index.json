@@ -9,52 +9,62 @@
  */
 {
   "sections": {
-    "main_hero": {
-      "type": "block-hero",
+    "block_marketing_grid_BMwcw9": {
+      "type": "block-marketing-grid",
       "blocks": {
-        "banner_4e8ahr": {
+        "product_76PEAf": {
+          "type": "product",
+          "settings": {
+            "product": "vroeg-middeleeuwse-jurk-clotilde-rood-blauw",
+            "second_image": false,
+            "design": "green"
+          }
+        },
+        "banner_pL4tVY": {
           "type": "banner",
           "settings": {
-            "image": "shopify://shop_images/pre-black-friday-sale.jpg",
-            "label": "Shop nu met korting",
-            "heading": "Pre-Black Friday Sale",
+            "image": "shopify://shop_images/Wishlist_reminder.jpg",
+            "label": "New Collection",
+            "heading": "Summer Collection",
             "text": "",
-            "collection": "age-of-conan",
+            "link_url": "",
             "design": "red"
           }
         },
-        "collection_d8mMLm": {
+        "collection_RnqdA6": {
           "type": "collection",
           "settings": {
-            "collection": "fantasy-zwaard",
+            "collection": "1-april",
+            "show_description": true,
             "design": "blue"
           }
         },
-        "collection_j78UNT": {
-          "type": "collection",
+        "video_tjp8NU": {
+          "type": "video",
           "settings": {
-            "collection": "armet",
-            "design": "red"
-          }
-        },
-        "collection_NdXT97": {
-          "type": "collection",
-          "settings": {
-            "collection": "age-of-conan",
-            "design": "green"
+            "video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+            "cover_image": "shopify://shop_images/5.webp",
+            "description": "Video",
+            "design": "blue"
           }
         }
       },
       "block_order": [
-        "banner_4e8ahr",
-        "collection_d8mMLm",
-        "collection_j78UNT",
-        "collection_NdXT97"
+        "product_76PEAf",
+        "banner_pL4tVY",
+        "collection_RnqdA6",
+        "video_tjp8NU"
       ],
+      "custom_css": [
+        ".marketing-grid-section {padding-top: 0;}"
+      ],
+      "name": "Marketing Grid",
       "settings": {
-        "heading": "Hero added manually",
-        "subtext": "Here you can highlight promotions, features, or anything else.",
-        "view": "flex"
+        "heading": "",
+        "subtext": "",
+        "view": "grid",
+        "background_color": "transparent",
+        "enable_gaps": true
       }
     },
     "latest-products": {
@@ -65,10 +75,65 @@
         "products_in_view": 4
       }
     },
+    "block_marketing_grid_93tkDC": {
+      "type": "block-marketing-grid",
+      "blocks": {
+        "banner_VqjtKq": {
+          "type": "banner",
+          "settings": {
+            "image": "shopify://shop_images/Price_drop-alert.jpg",
+            "label": "New Collection",
+            "heading": "Summer Collection",
+            "text": "",
+            "link_url": "",
+            "design": "green"
+          }
+        },
+        "product_DHnyzP": {
+          "type": "product",
+          "settings": {
+            "product": "vroeg-middeleeuwse-jurk-gesine-blauwgroen",
+            "second_image": false,
+            "design": "blue"
+          }
+        },
+        "collection_NHXkG8": {
+          "type": "collection",
+          "settings": {
+            "collection": "samurai-zwaard-kopen",
+            "show_description": true,
+            "design": "red"
+          }
+        },
+        "video_MXK66V": {
+          "type": "video",
+          "settings": {
+            "video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+            "cover_image": "shopify://shop_images/DSC00885.jpg",
+            "description": "Video",
+            "design": "red"
+          }
+        }
+      },
+      "block_order": [
+        "banner_VqjtKq",
+        "product_DHnyzP",
+        "collection_NHXkG8",
+        "video_MXK66V"
+      ],
+      "name": "Marketing Grid",
+      "settings": {
+        "heading": "Featured Content",
+        "subtext": "Discover our curated collection",
+        "view": "slider",
+        "background_color": "white",
+        "enable_gaps": false
+      }
+    },
     "best-products": {
       "type": "block-product-selection",
       "settings": {
-        "collection": "",
+        "collection": "fantasy-larp-hoed",
         "products_show": 12,
         "products_rows": 1,
         "readmore_label": "",
@@ -78,18 +143,74 @@
     "popular-products": {
       "type": "block-product-selection",
       "settings": {
-        "collection": "",
+        "collection": "alvast-reserveren",
         "products_show": 12,
         "products_rows": 1,
         "readmore_label": "",
         "readless_label": ""
       }
+    },
+    "block_marketing_brands_small_gekrHy": {
+      "type": "block-marketing-brands-small",
+      "blocks": {
+        "collection_BLdmVY": {
+          "type": "collection",
+          "settings": {
+            "collection": ""
+          }
+        },
+        "collection_zeTMmm": {
+          "type": "collection",
+          "settings": {
+            "collection": ""
+          }
+        },
+        "collection_Dd3Yjf": {
+          "type": "collection",
+          "settings": {
+            "collection": ""
+          }
+        },
+        "collection_97BU4F": {
+          "type": "collection",
+          "settings": {
+            "collection": ""
+          }
+        }
+      },
+      "block_order": [
+        "collection_BLdmVY",
+        "collection_zeTMmm",
+        "collection_Dd3Yjf",
+        "collection_97BU4F"
+      ],
+      "name": "Marketing Brands Small",
+      "settings": {
+        "heading": "Populaire Merken",
+        "button_text": "Bekijk alle merken",
+        "button_url": "shopify://pages/onze-merken",
+        "button_background": "#000000",
+        "button_color": "#ffffff",
+        "button_border_radius": 0,
+        "columns_mobile": 2,
+        "columns_tablet": 3,
+        "columns_desktop": 4,
+        "gap": 20,
+        "image_ratio": "1 / 1",
+        "image_fit": "contain",
+        "border_radius": 8,
+        "container_width": 1400,
+        "padding_top": 60,
+        "padding_bottom": 60
+      }
     }
   },
   "order": [
-    "main_hero",
+    "block_marketing_grid_BMwcw9",
     "latest-products",
+    "block_marketing_grid_93tkDC",
     "best-products",
-    "popular-products"
+    "popular-products",
+    "block_marketing_brands_small_gekrHy"
   ]
 }

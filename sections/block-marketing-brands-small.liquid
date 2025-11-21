@@ -1,0 +1,387 @@
+{%- liquid
+  assign heading = section.settings.heading
+  assign button_text = section.settings.button_text
+  assign button_url = section.settings.button_url
+-%}
+
+<section class="block-marketing-brands-small-content">
+  {%- if heading != blank -%}
+    <div class="block-marketing-brands-small__heading">
+      <h2>{{ heading }}</h2>
+    </div>
+  {%- endif -%}
+
+  <div class="block-marketing-brands-small__content">
+    {%- if section.blocks.size > 0 -%}
+      <div class="block-marketing-brands-small__grid">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign collection = collections[block.settings.collection]
+          -%}
+          
+          {%- if collection -%}
+            <a href="{{ collection.url }}" class="block-marketing-brands-small__item" {{ block.shopify_attributes }}>
+              {%- if collection.image or collection.featured_image -%}
+                {%- liquid
+                  assign brand_image = collection.image
+                  if brand_image == blank
+                    assign brand_image = collection.featured_image
+                  endif
+                -%}
+                <div class="block-marketing-brands-small__image">
+                  {{ brand_image | image_url: width: 400 | image_tag: loading: 'lazy', alt: collection.title }}
+                </div>
+              {%- endif -%}
+              
+              <div class="block-marketing-brands-small__title">
+                <h3>{{ collection.title }}</h3>
+              </div>
+            </a>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <p class="block-marketing-brands-small__empty">
+        Voeg collections toe via de theme editor om merken te tonen.
+      </p>
+    {%- endif -%}
+  </div>
+
+  {%- if button_text != blank and button_url != blank -%}
+    <div class="block-marketing-brands-small__button">
+      <a href="{{ button_url }}" class="block-marketing-brands-small__btn">
+        {{ button_text }}
+      </a>
+    </div>
+  {%- endif -%}
+</section>
+
+{%- style -%}
+  .block-marketing-brands-small {
+    padding: {{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px;
+  }
+
+  .block-marketing-brands-small-content {
+    max-width: {{ section.settings.container_width }}px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .block-marketing-brands-small__heading {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .block-marketing-brands-small__heading h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .block-marketing-brands-small__grid {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_mobile }}, 1fr);
+    gap: {{ section.settings.gap }}px;
+    margin-bottom: 40px;
+  }
+
+  @media (min-width: 768px) {
+    .block-marketing-brands-small__grid {
+      grid-template-columns: repeat({{ section.settings.columns_tablet }}, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .block-marketing-brands-small__grid {
+      grid-template-columns: repeat({{ section.settings.columns_desktop }}, 1fr);
+    }
+  }
+
+  .block-marketing-brands-small__item {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e5e5e5;
+    border-radius: {{ section.settings.border_radius }}px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .block-marketing-brands-small__item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .block-marketing-brands-small__image {
+    width: 100%;
+    aspect-ratio: {{ section.settings.image_ratio }};
+    overflow: hidden;
+    background: #f5f5f5;
+  }
+
+  .block-marketing-brands-small__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: {{ section.settings.image_fit }};
+  }
+
+  .block-marketing-brands-small__title {
+    padding: 20px;
+    text-align: center;
+  }
+
+  .block-marketing-brands-small__title h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .block-marketing-brands-small__button {
+    text-align: center;
+  }
+
+  .block-marketing-brands-small__btn {
+    display: inline-block;
+    padding: 14px 32px;
+    background: {{ section.settings.button_background }};
+    color: {{ section.settings.button_color }};
+    text-decoration: none;
+    border-radius: {{ section.settings.button_border_radius }}px;
+    font-weight: 600;
+    transition: opacity 0.3s ease, transform 0.2s ease;
+  }
+
+  .block-marketing-brands-small__btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  .block-marketing-brands-small__empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+  }
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Marketing Brands Small",
+  "tag": "section",
+  "class": "block-marketing-brands-small",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Populaire Merken"
+    },
+    {
+      "type": "header",
+      "content": "Button Settings"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Bekijk alle merken"
+    },
+    {
+      "type": "url",
+      "id": "button_url",
+      "label": "Button URL"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button Background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Button Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "label": "Button Border Radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "label": "Columns (Mobile)",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "label": "Columns (Tablet)",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns (Desktop)",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Grid Gap",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Image Settings"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image Aspect Ratio",
+      "options": [
+        {
+          "value": "1 / 1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4 / 3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "16 / 9",
+          "label": "Wide (16:9)"
+        },
+        {
+          "value": "3 / 4",
+          "label": "Portrait (3:4)"
+        }
+      ],
+      "default": "1 / 1"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image Fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "contain"
+    },
+    {
+      "type": "header",
+      "content": "Styling"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border Radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "label": "Container Width",
+      "min": 1000,
+      "max": 1600,
+      "step": 100,
+      "unit": "px",
+      "default": 1400
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding Top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Brand Collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Marketing Brands Small",
+      "category": "Theme Marketing",
+      "blocks": [
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

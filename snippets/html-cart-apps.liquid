@@ -1,0 +1,42 @@
+{% comment %}
+  Renders cart app blocks
+  
+  Accepts:
+  - blocks: {Array} Section blocks array (required)
+  - location: {String} Location identifier for filtering apps - optional
+  
+  Usage:
+  {% render 'html-cart-apps', blocks: section.blocks, location: 'cart-items' %}
+{% endcomment %}
+
+{%- liquid
+  assign location = location | default: 'default'
+-%}
+
+<style>
+  .cart-apps {
+    margin: 1.5rem 0;
+  }
+
+  .cart-apps__block {
+    margin: 1rem 0;
+  }
+
+  .cart-apps__block:first-child {
+    margin-top: 0;
+  }
+
+  .cart-apps__block:last-child {
+    margin-bottom: 0;
+  }
+</style>
+
+<div class="cart-apps" data-cart-apps data-location="{{ location }}">
+  {%- for block in blocks -%}
+    {%- if block.type == '@app' -%}
+      <div class="cart-apps__block" {{ block.shopify_attributes }}>
+        {% render block %}
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+</div>

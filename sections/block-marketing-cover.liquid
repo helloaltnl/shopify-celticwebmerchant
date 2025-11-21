@@ -2,6 +2,7 @@
   <div class="block-marketing-cover__inner">
     {%- render 'html-marketing-cover',
       image: section.settings.image,
+      video_url: section.settings.video_url,
       heading: section.settings.heading,
       subheading: section.settings.subheading,
       text: section.settings.text,
@@ -28,7 +29,20 @@
     {
       "type": "image_picker",
       "id": "image",
-      "label": "Background Image"
+      "label": "Background Image",
+      "info": "Used as background or as poster image for video"
+    },
+    {
+      "type": "text",
+      "id": "video_url",
+      "label": "Background Video URL (optional)",
+      "info": "YouTube or Vimeo URL. If provided, video will be used instead of static image. Image will be shown as poster during loading.",
+      "placeholder": "https://www.youtube.com/watch?v=...",
+      "default": "https://www.youtube.com/watch?v=Z1BCujX3pw8"
+    },
+    {
+      "type": "header",
+      "content": "Content"
     },
     {
       "type": "text",
@@ -47,6 +61,10 @@
       "id": "text",
       "label": "Text",
       "default": "<p>Discover our collection</p>"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
     },
     {
       "type": "select",
@@ -123,7 +141,7 @@
   "presets": [
     {
       "name": "Marketing Cover",
-      "category": "Homework"
+      "category": "Theme Marketing"
     }
   ]
 }

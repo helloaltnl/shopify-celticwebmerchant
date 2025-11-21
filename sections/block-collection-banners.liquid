@@ -1,82 +1,57 @@
 <section class="block-collection-banners-content align">
-	{% assign breadcrumb_menu 	= linklists['product-menu'].links %}
-	{% assign current_url 		= request.path | prepend: '' %}
-	{% assign clean_url 		= current_url | split: '?' | first %}
-	{% assign has_slider		= false %}
+	{% assign menu_handle = section.settings.menu | default: 'product-menu' %}
+	{% assign breadcrumb_menu = linklists[menu_handle].links %}
+	{% assign current_url = request.path | prepend: '' %}
+	{% assign clean_url = current_url | split: '?' | first %}
+	{% assign has_slider = false %}
 	
+	{% comment %} First, find which items to display {% endcomment %}
+	{% assign slider_items = null %}
+	{% for link in breadcrumb_menu %}
+		{% if clean_url == link.url %}
+			{% if link.links.size > 0 %}
+				{% assign slider_items = link.links %}
+				{% assign has_slider = true %}
+			{% endif %}
+		{% endif %}
+		
+		{% if link.links.size > 0 %}
+			{% for child in link.links %}
+				{% if clean_url == child.url %}
+					{% if child.links.size > 0 %}
+						{% assign slider_items = child.links %}
+						{% assign has_slider = true %}
+					{% endif %}
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	{% endfor %}
+	
+	{% comment %} Then build the slider once with the found items {% endcomment %}
 	{% capture build_trail %}
 		<ul class="swiper-wrapper">
-		{% for link in breadcrumb_menu %}
-			{% if clean_url == link.url %}
-				{% if link.links.size > 0 %}
-					{% assign has_slider		= true %}
-					{% for child in link.links %}
-						{% assign url_parts = child.url | split: '/' %}
-						{% assign handle = url_parts.last %}
-						{% assign link_collection = collections[handle] %}
-						<li class="swiper-slide">
-						<a href="{{ child.url }}">
-							{% if link_collection %}
-								{% if link_collection.metafields.custom.collection_menu_thumb  %}
-								<img
-									class="lazy"
-									data-src="{{ link_collection.metafields.custom.collection_menu_thumb | image_url: width: 96 }}"
-									alt="{{ link_collection.metafields.custom.collection_menu_thumb_alt | default: link_collection.title | escape }}"
-								>
-								{% elsif link_collection.metafields.custom.collection_featured_image %}
-								<img
-									class="lazy"
-									data-src="{{ link_collection.metafields.custom.collection_featured_image | image_url: width: 96 }}"
-									alt="{{ link_collection.metafields.custom.collection_featured_image_alt | default: link_collection.title | escape }}"
-								>
-								{% elsif link_collection.image  %}
-								<img class="lazy" data-src="{{ link_collection.image | image_url: width: 96 }}" alt="{{ link_collection.image.alt | default: link_collection.title | escape }}">
-								{% endif %} 
-							{% endif %}	
-							<span>{{ child.title }}</span>
-						</a>
-						</li>
-					{% endfor %}
-				{% endif %}		
-			{% endif %}
-			
-			{% if link.links.size > 0 %}
-				{% for child in link.links %}
-					{% if clean_url == child.url %}
-						{% if child.links.size > 0 %}
-							{% assign has_slider		= true %}
-							{% for subchild in child.links %}
-								{% assign url_parts = subchild.url | split: '/' %}
-								{% assign handle = url_parts.last %}
-								{% assign link_collection = collections[handle] %}
-								<li class="swiper-slide">
-								<a href="{{ subchild.url }}">
-									{% if link_collection %}
-										{% if link_collection.metafields.custom.collection_menu_thumb  %}
-										<img
-											class="lazy"
-											data-src="{{ link_collection.metafields.custom.collection_menu_thumb | image_url: width: 96 }}"
-											alt="{{ link_collection.metafields.custom.collection_menu_thumb_alt | default: link_collection.title | escape }}"
-										>
-										{% elsif link_collection.metafields.custom.collection_featured_image %}
-										<img
-											class="lazy"
-											data-src="{{ link_collection.metafields.custom.collection_featured_image | image_url: width: 96 }}"
-											alt="{{ link_collection.metafields.custom.collection_featured_image_alt | default: link_collection.title | escape }}"
-										>
-										{% elsif link_collection.image  %}
-										<img class="lazy" data-src="{{ link_collection.image | image_url: width: 96 }}" alt="{{ link_collection.image.alt | default: link_collection.title | escape }}">
-										{% endif %} 
-									{% endif %}	
-									<span>{{ subchild.title }}</span>
-								</a>
-								</li>
-							{% endfor %}
-						{% endif %}	
+		{% for item in slider_items %}
+			<li class="swiper-slide">
+			<a href="{{ item.url }}">
+				{% comment %} Try to get collection from URL {% endcomment %}
+				{% assign url_parts = item.url | split: '/' %}
+				{% assign handle = url_parts.last %}
+				{% assign link_collection = collections[handle] %}
+				
+				{% if link_collection %}
+					{% comment %} It's a collection link {% endcomment %}
+					{% if link_collection.image %}
+					<img class="lazy" data-src="{{ link_collection.image | image_url: width: 96 }}" alt="{{ link_collection.image.alt | default: link_collection.title | escape }}">
 					{% endif %}
-				{% endfor %}
-			{% endif %}
-		
+				{% else %}
+					{% comment %} It's a page or other link type {% endcomment %}
+					{% if item.object.image %}
+					<img class="lazy" data-src="{{ item.object.image | image_url: width: 96 }}" alt="{{ item.object.image.alt | default: item.title | escape }}">
+					{% endif %}
+				{% endif %}
+				<span>{{ item.title }}</span>
+			</a>
+			</li>
 		{% endfor %}
 		</ul>
 	{% endcapture %}
@@ -245,11 +220,18 @@
   "disabled_on": {
 	"groups": ["header", "footer"]
   },
-  "settings": [],
+  "settings": [
+	{
+	  "type": "link_list",
+	  "id": "menu",
+	  "label": "Menu",
+	  "info": "Select which menu to use for navigation breadcrumbs (defaults to 'product-menu' if not set)"
+	}
+  ],
   "presets": [
 	{
 	  "name": "Collection banners",
-	  "category": "Homework",
+	  "category": "Theme Collection",
 	  "blocks": []
 	}
   ]

@@ -1,0 +1,276 @@
+{% comment %}
+  HTML Marketing Grid Component: Banner Item
+  Banner with image and text overlay for use in grid layouts
+  
+  Parameters:
+  - image: {Object} Banner background image (required)
+  - label: {String} Small label/badge text (optional)
+  - heading: {String} Banner heading (required)
+  - text: {String} Banner description text (optional)
+  - link_url: {String} Link URL (optional)
+  - design: {String} blue | red | green - default: blue
+  - block_id: {String} Unique block ID for styling
+  
+  Usage:
+  {% render 'html-marketing-grid-banner',
+    image: block.settings.image,
+    label: block.settings.label,
+    heading: block.settings.heading,
+    text: block.settings.text,
+    link_url: block.settings.link_url,
+    design: block.settings.design,
+    block_id: block.id
+  %}
+{% endcomment %}
+
+{%- liquid
+  assign heading = heading | default: 'Banner title'
+  assign text = text | default: ''
+  assign label = label | default: ''
+  assign design = design | default: 'blue'
+  assign link_url = link_url | default: ''
+-%}
+
+<div class="marketing-grid-banner is-design-{{ design }}">
+  {%- if link_url != blank -%}
+    <a href="{{ link_url }}" class="marketing-grid-banner__link" aria-label="{{ heading | escape }}"></a>
+  {%- endif -%}
+  
+  {%- if image -%}
+    <div class="marketing-grid-banner__image">
+      <img 
+        src="{{ image | image_url: width: 720 }}" 
+        srcset="{{ image | image_url: width: 360 }} 360w,
+                {{ image | image_url: width: 720 }} 720w,
+                {{ image | image_url: width: 1080 }} 1080w"
+        sizes="(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw"
+        alt="{{ heading | escape }}"
+        width="{{ image.width }}"
+        height="{{ image.height }}"
+        loading="lazy"
+      >
+    </div>
+  {%- endif -%}
+  
+  <div class="marketing-grid-banner__content">
+    {%- if label != blank -%}
+      <span class="marketing-grid-banner__label">{{ label }}</span>
+    {%- endif -%}
+    <h3 class="marketing-grid-banner__heading">{{ heading }}</h3>
+    {%- if text != blank -%}
+      <p class="marketing-grid-banner__text">{{ text }}</p>
+    {%- endif -%}
+  </div>
+</div>
+
+<style>
+  .marketing-grid-banner {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    height:100%;
+  }
+  
+  .marketing-grid-banner__link {
+    position: absolute;
+    display:block!important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    text-decoration: none;
+  }
+  
+  .marketing-grid-banner__image {
+    position: absolute;
+    left: 0;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-color: #000;
+  }
+  
+  .marketing-grid-banner__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.9;
+  }
+  
+  .marketing-grid-banner__content {
+    position: relative;
+    z-index: 2;
+    color: #fff;
+    width: 100%;
+    padding: 1.5em;
+    text-align: center;
+  }
+  
+  .marketing-grid-banner__label {
+    display: inline-block;
+    font-size: 0.75em;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+  }
+  
+  .marketing-grid-banner__heading {
+    color: inherit;
+    font-size: 1.5em;
+    font-weight: 500;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+  }
+  
+  .marketing-grid-banner__text {
+    color: inherit;
+    font-size: 1em;
+    margin: 0;
+    opacity: 0.95;
+    line-height: 1.5;
+  }
+  
+  /* Design variants */
+  .marketing-grid-banner.is-design-blue .marketing-grid-banner__content {
+    position: relative;
+    isolation: isolate;
+    padding-bottom: 2.5em;
+    background: linear-gradient(180deg, rgba(15,31,56,0) 0%, rgba(15,31,56,1) calc(100% - 1em));
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) calc(100% - 1em));
+  }
+  
+  .marketing-grid-banner.is-design-blue .marketing-grid-banner__content::before {
+    content: '';
+    display: block;
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    height: 1em;
+    background: var(--theme-color-blue, #1e40af);
+  }
+  
+  .marketing-grid-banner.is-design-blue .marketing-grid-banner__content::after {
+    content: '';
+    display: block;
+    position: absolute;
+    z-index: -2;
+    left: 0;
+    top: 1em;
+    right: 0;
+    bottom: 0;
+    background: var(--theme-color-blue, #1e40af);
+    transform: scaleX(-1);
+    mask-image: url('data:image/svg+xml;utf8,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 4 4" style="enable-background:new 0 0 4 4;" xml:space="preserve" opacity="1" stroke-width="0.5"> <line stroke="black" class="st0" x1="0" y1="0" x2="4" y2="4"/> <line stroke="black" x1="-0.4" y1="3.6" x2="0.4" y2="4.4"/> <line stroke="black" x1="3.6" y1="-0.4" x2="4.4" y2="0.4"/> </svg>');
+    mask-repeat: repeat;
+    mask-size: 16px;
+    mask-position: center center;
+  }
+  
+  .marketing-grid-banner.is-design-red .marketing-grid-banner__content {
+    position: relative;
+    isolation: isolate;
+    padding-bottom: 2.5em;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) calc(100% - 1em));
+  }
+  
+  .marketing-grid-banner.is-design-red .marketing-grid-banner__content::before {
+    content: '';
+    display: block;
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    height: 1em;
+    background: var(--theme-color-red, #dc2626);
+  }
+  
+  .marketing-grid-banner.is-design-red .marketing-grid-banner__content::after {
+    content: '';
+    display: block;
+    position: absolute;
+    z-index: -2;
+    left: 0;
+    top: auto;
+    right: 0;
+    bottom: 1em;
+    height: 1em;
+    background: var(--theme-color-red, #dc2626);
+    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 41 8"><polygon points="8.5 0 0 8 17 8 8.5 0"/></svg>');
+    mask-repeat: repeat-x;
+    mask-size: 41px;
+    mask-position: calc(50% - 30px) bottom;
+  }
+  
+  .marketing-grid-banner.is-design-green .marketing-grid-banner__content {
+    position: relative;
+    padding-bottom: 2.5em;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) calc(100% - 1em));
+  }
+  
+  .marketing-grid-banner.is-design-green .marketing-grid-banner__content::before {
+    content: '';
+    display: block;
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    height: 1em;
+    background: var(--theme-color-green, #16a34a);
+  }
+  
+  .marketing-grid-banner.is-design-green .marketing-grid-banner__content::after {
+    content: '';
+    display: block;
+    position: absolute;
+    z-index: 0;
+    left: 0;
+    top: auto;
+    right: 0;
+    bottom: 1em;
+    height: 8px;
+    background: var(--theme-color-green, #16a34a);
+    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 11 8"><line stroke="black" stroke-width="4" x1="-.98" y1="11.78" x2="9.17" y2="2.22"/></svg>');
+    mask-repeat: repeat-x;
+    mask-size: 11px;
+    mask-position: left center;
+  }
+  
+  /* Hover effects */
+  .marketing-grid-banner__link:hover ~ .marketing-grid-banner__image img {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  
+  .marketing-grid-banner__image img {
+    transition: transform 0.6s ease, opacity 0.3s ease;
+  }
+  
+  /* Responsive */
+  @media (max-width: 749px) {
+    .marketing-grid-banner__heading {
+      font-size: 1.25em;
+    }
+    
+    .marketing-grid-banner__text {
+      font-size: 0.875em;
+    }
+  }
+</style>

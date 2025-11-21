@@ -1,0 +1,145 @@
+{%- comment -%}
+	Collect recommended products based on template context
+	- Product page: show recommendations for current product
+	- Cart page: show recommendations for all cart items
+{%- endcomment -%}
+
+{%- liquid
+	assign recommended_product_ids = ''
+-%}
+
+{%- capture recommended_products_html -%}
+	{%- if template.name == 'product' -%}
+		{%- comment -%} Product page: get recommendations from current product {%- endcomment -%}
+		{%- if product.metafields.custom.recommended-products.value -%}
+			{%- for rec_product in product.metafields.custom.recommended-products.value -%}
+				{%- unless recommended_product_ids contains rec_product.id -%}
+					{%- assign recommended_product_ids = recommended_product_ids | append: rec_product.id | append: ',' -%}
+					<li class="block-product-recommended__item">
+						{%- render 'html-product-card', 
+							product: rec_product, 
+							show_secondary_image: true,
+							show_vendor: false, 
+							show_price: true,
+							show_stock: true,
+							show_delivery: true,
+							show_rating: true,
+							show_badges: true, 
+							quick_add: true, 
+							context: 'recommendations' 
+						-%}
+					</li>
+				{%- endunless -%}
+			{%- endfor -%}
+		{%- endif -%}
+
+	{%- elsif template.name == 'cart' -%}
+		{%- comment -%} Cart page: get recommendations from all cart items {%- endcomment -%}
+		{%- for item in cart.items -%}
+			{%- if item.product.metafields.custom.recommended-products.value -%}
+				{%- for rec_product in item.product.metafields.custom.recommended-products.value -%}
+					{%- unless recommended_product_ids contains rec_product.id -%}
+						{%- assign recommended_product_ids = recommended_product_ids | append: rec_product.id | append: ',' -%}
+						<li class="block-product-recommended__item">
+							{%- render 'html-product-card', 
+								product: rec_product, 
+								show_secondary_image: true,
+								show_vendor: false, 
+								show_price: true,
+								show_stock: true,
+								show_delivery: true,
+								show_rating: true,
+								show_badges: true, 
+								quick_add: true, 
+								context: 'recommendations' 
+							-%}
+						</li>
+					{%- endunless -%}
+				{%- endfor -%}
+			{%- endif -%}
+		{%- endfor -%}
+	{%- endif -%}
+{%- endcapture -%}
+
+{%- if recommended_products_html != blank -%}
+	<section class="block-product-recommended-content">
+		<div class="block-product-recommended__header">
+			<h2>{{ section.settings.heading | default: 'Aanbevolen producten' }}</h2>
+		</div>
+		
+		<ul class="block-product-recommended__list">
+			{{ recommended_products_html }}
+		</ul>
+	</section>
+{%- endif -%}
+
+{%- style -%}
+	.block-product-recommended {
+		padding: var(--spacing-section, 4em) 0; background-color: var(--theme-color-grey);
+	}
+	
+	.block-product-recommended-content {
+		max-width: var(--page-width, 1200px);
+		margin: 0 auto;
+		padding: 0 var(--spacing-gutter, 1.5rem);
+	}
+	
+	.block-product-recommended__header {
+		margin-bottom: 2em;
+	}
+	
+	.block-product-recommended__header h2 {
+		font-size: 1.75em;
+		font-weight: 500;
+		margin: 0;
+	}
+	
+	.block-product-recommended__list {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+		gap: 1.5rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	
+	.block-product-recommended__item {
+		margin: 0;
+	}
+	
+	@media (max-width: 749px) {
+		.block-product-recommended__list {
+			grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+			gap: 1rem;
+		}
+		
+		.block-product-recommended__header h2 {
+			font-size: 1.5rem;
+		}
+	}
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Recommended Products",
+  "tag": "section",
+  "class": "block-product-recommended",
+  "disabled_on": {
+	"groups": ["header", "footer"]
+  },
+  "settings": [
+	{
+		"type": "text",
+		"id": "heading",
+		"label": "Heading",
+		"default": "Aanbevolen producten"
+	}
+  ],
+  "presets": [
+	{
+	  "name": "Recommended products",
+	  "category": "Theme Product"
+	}
+  ]
+}
+{% endschema %}

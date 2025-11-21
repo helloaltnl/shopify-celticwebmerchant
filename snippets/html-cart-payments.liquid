@@ -1,0 +1,168 @@
+{% comment %}
+  Renders cart payment buttons (checkout + additional checkout buttons)
+  
+  Accepts:
+  - cart: {Object} Cart object (required)
+  - show_terms: {Boolean} Show terms and conditions checkbox - default: false
+  - terms_text: {String} Terms checkbox text
+  - terms_link: {String} Terms link URL
+  - terms_link_text: {String} Terms link text
+  - show_additional_buttons: {Boolean} Show Apple Pay, Google Pay, etc. - default: true
+  - button_text: {String} Custom checkout button text - default: translation
+  - context: {String} Context ('page' | 'drawer' | 'preview') - default: 'page'
+  
+  Usage:
+  {% render 'html-cart-payments', 
+    cart: cart,
+    show_terms: true,
+    terms_text: 'I agree to the',
+    terms_link: '/policies/terms-of-service',
+    terms_link_text: 'terms and conditions'
+  %}
+{% endcomment %}
+
+{%- liquid
+  assign show_terms = show_terms | default: false
+  assign show_additional_buttons = show_additional_buttons | default: true
+  assign context = context | default: 'page'
+  assign button_text = button_text | default: 'sections.cart.checkout'
+-%}
+
+<style>
+  .cart-payments {
+    padding: 1.5rem 0;
+  }
+
+  .cart-payments__terms {
+    margin-bottom: 1.5rem;
+  }
+
+  .cart-payments__terms-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .cart-payments__terms-checkbox {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    cursor: pointer;
+    border: 1px solid rgba(var(--color-foreground), 0.3);
+    border-radius: 0.25rem;
+  }
+
+  .cart-payments__terms-text {
+    color: rgba(var(--color-foreground), 0.75);
+  }
+
+  .cart-payments__terms-text a {
+    color: rgb(var(--color-link));
+    text-decoration: underline;
+  }
+
+  .cart-payments__checkout-button {
+    width: 100%;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    background: rgb(var(--color-button));
+    color: rgb(var(--color-button-text));
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .cart-payments__checkout-button:hover {
+    background: rgb(var(--color-button-hover));
+  }
+
+  .cart-payments__checkout-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .cart-payments__additional-buttons {
+    margin-top: 1rem;
+  }
+
+  /* Compact mode for drawer */
+  {% if context == 'drawer' or context == 'preview' %}
+  .cart-payments {
+    padding: 1rem 0;
+  }
+
+  .cart-payments__checkout-button {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.9375rem;
+  }
+  {% endif %}
+</style>
+
+<div class="cart-payments">
+  {%- comment -%} Terms and Conditions Checkbox {%- endcomment -%}
+  {%- if show_terms -%}
+    <div class="cart-payments__terms">
+      <label class="cart-payments__terms-label">
+        <input 
+          type="checkbox" 
+          id="cart-terms-checkbox-{{ context }}"
+          class="cart-payments__terms-checkbox"
+          data-cart-terms-checkbox
+        >
+        <span class="cart-payments__terms-text">
+          {{ terms_text }}
+          {%- if terms_link != blank -%}
+            <a href="{{ terms_link }}" target="_blank" rel="noopener noreferrer">
+              {{ terms_link_text }}
+            </a>
+          {%- endif -%}
+        </span>
+      </label>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} Primary Checkout Button {%- endcomment -%}
+  <button
+    type="submit"
+    name="checkout"
+    class="cart-payments__checkout-button"
+    data-cart-checkout-button
+    {%- if cart.item_count == 0 %}disabled{% endif -%}
+    {%- if show_terms %}disabled{% endif -%}
+  >
+    {{ button_text | t }}
+  </button>
+
+  {%- comment -%} Additional Checkout Buttons (Apple Pay, Google Pay, etc.) {%- endcomment -%}
+  {%- if show_additional_buttons and additional_checkout_buttons -%}
+    <div class="cart-payments__additional-buttons additional-checkout-buttons">
+      {{ content_for_additional_checkout_buttons }}
+    </div>
+  {%- endif -%}
+</div>
+
+{%- if show_terms -%}
+  <script>
+    (function() {
+      const checkbox = document.getElementById('cart-terms-checkbox-{{ context }}');
+      const checkoutButton = checkbox?.closest('.cart-payments')?.querySelector('[data-cart-checkout-button]');
+      
+      if (checkbox && checkoutButton) {
+        // Initial state
+        checkoutButton.disabled = !checkbox.checked;
+        
+        // Toggle on change
+        checkbox.addEventListener('change', function() {
+          checkoutButton.disabled = !this.checked;
+        });
+      }
+    })();
+  </script>
+{%- endif -%}

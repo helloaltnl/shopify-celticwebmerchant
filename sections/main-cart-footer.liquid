@@ -104,6 +104,26 @@
                 </small>
               </div>
             {%- else -%}
+            
+              <div class="cart-checkout-terms">
+                <label class="cart-checkout-terms__label">
+                  <input 
+                    type="checkbox" 
+                    id="cart-terms-checkbox"
+                    class="cart-checkout-terms__checkbox"
+                    required
+                  >
+                  <span class="cart-checkout-terms__text">
+                    {{ section.settings.terms_text }}
+                    {% if section.settings.terms_link != blank %}
+                      <a href="{{ section.settings.terms_link }}" target="_blank" rel="noopener noreferrer">
+                        {{ section.settings.terms_link_text }}
+                      </a>
+                    {% endif %}
+                  </span>
+                </label>
+              </div>
+            
               <div class="cart__ctas" {{ block.shopify_attributes }}>
                 <button
                   type="submit"
@@ -118,7 +138,24 @@
                   {{ 'sections.cart.checkout' | t }}
                 </button>
               </div>
-
+              <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                  const checkbox = document.getElementById('cart-terms-checkbox');
+                  const checkoutButton = document.querySelector('[name="checkout"]'); // Pas selector aan indien nodig
+                  
+                  if (checkbox && checkoutButton) {
+                    // Disable button bij page load
+                    checkoutButton.disabled = true;
+                    checkoutButton.classList.add('disabled');
+                    
+                    // Toggle button state on checkbox change
+                    checkbox.addEventListener('change', function() {
+                      checkoutButton.disabled = !this.checked;
+                      checkoutButton.classList.toggle('disabled', !this.checked);
+                    });
+                  }
+                });
+              </script>
               {%- if additional_checkout_buttons -%}
                 <div class="cart__dynamic-checkout-buttons additional-checkout-buttons">
                   {{ content_for_additional_checkout_buttons }}
@@ -167,6 +204,23 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 40
+    },
+    {
+      "type": "text",
+      "id": "terms_text",
+      "label": "Terms checkbox text",
+      "default": "Ik ga akkoord met de"
+    },
+    {
+      "type": "url",
+      "id": "terms_link",
+      "label": "Terms link URL"
+    },
+    {
+      "type": "text",
+      "id": "terms_link_text",
+      "label": "Terms link text",
+      "default": "algemene voorwaarden"
     }
   ],
   "blocks": [

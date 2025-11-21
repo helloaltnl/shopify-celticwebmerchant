@@ -122,46 +122,83 @@
 	{%- endif -%}
 	{% endcomment %}
 	</figure>
-	{% if linklists.short-menu %}
-	  <nav id="short-menu">
-		<ul class="depth-first">
-		{% for link in linklists.short-menu.links %}
-		  <li {% if link.links != blank %}class="has-sub"{% endif %} >
-			<a href="{{ link.url }}">{{ link.title }}</a>
-			{% if link.links != blank %}
-			  <ul class="depth-second">
-				<li><a href="{{ link.url }}">{{ link.title }}</a></li>
-				{% for child in link.links %}
-				  <li>
-					<a href="{{ child.url }}">{{ child.title }}</a>
-					{% if child.links != blank %}
-					  <ul class="depth-third">
-						{% for child in child.links %}
-						  <li><a href="{{ child.url }}">{{ child.title }}</a></li>
-						{% endfor %}
-					  </ul>
-					{% endif %}  
-				  </li>
-				{% endfor %}
-				
-			  </ul>
-			{% endif %}
-		  </li>
-		{% endfor %}
-		</ul>
+	{% if linklists.sale-menu or linklist.tribe-menu %}
+	  <nav id="short-menus">
+		{% if linklists.tribe-menu %}
+			<ul class="depth-first">
+			{% for link in linklists.tribe-menu.links %}
+			<li {% if link.links != blank %}class="has-sub"{% endif %} >
+				<a href="{{ link.url }}">{{ link.title }}</a>
+				{% if link.links != blank %}
+				<ul class="depth-second">
+					<li><a href="{{ link.url }}">{{ link.title }}</a></li>
+					{% for child in link.links %}
+					<li>
+						<a href="{{ child.url }}">{{ child.title }}</a>
+						{% if child.links != blank %}
+						<ul class="depth-third">
+							{% for child in child.links %}
+							<li><a href="{{ child.url }}">{{ child.title }}</a></li>
+							{% endfor %}
+						</ul>
+						{% endif %}  
+					</li>
+					{% endfor %}
+					
+				</ul>
+				{% endif %}
+			</li>
+			{% endfor %}
+			</ul>
+		{% endif %}
+		{% if linklists.sale-menu %}
+			<ul class="depth-first">
+			{% for link in linklists.sale-menu.links %}
+			<li {% if link.links != blank %}class="has-sub"{% endif %} >
+				<a href="{{ link.url }}" class="is-sale">{{ link.title }}</a>
+				{% comment %} {% if link.links != blank %}
+				<ul class="depth-second">
+					<li><a href="{{ link.url }}">{{ link.title }}</a></li>
+					{% for child in link.links %}
+					<li>
+						<a href="{{ child.url }}">{{ child.title }}</a>
+						{% if child.links != blank %}
+						<ul class="depth-third">
+							{% for child in child.links %}
+							<li><a href="{{ child.url }}">{{ child.title }}</a></li>
+							{% endfor %}
+						</ul>
+						{% endif %}  
+					</li>
+					{% endfor %}
+				</ul>
+				{% endif %} {% endcomment %}
+			</li>
+			{% endfor %}
+			</ul>
+		{% endif %}
 	  </nav>
 	  {%- style -%}
-		nav#short-menu {
+		nav#short-menus {
+			display:flex; flex-direction: row; flex-wrap: nowrap; gap: 1em;
 		  & ul {
 			list-style: none; margin:0; padding:0;
 			& li {
 			  position: relative; display: block;
+			  & a {
+				  &.is-sale { border-bottom:var(--theme-color-orange) 3px solid;}
+			  }
 			  & ul { 
 				  z-index: 5;
 				  & > li {
 					  & > a {
 						  white-space: nowrap; color: var(--theme-color-brown);
 					  }
+				  }
+			  }
+			  &.has-sub {
+				  & > a {
+					  
 				  }
 			  }
 			  &:hover {
@@ -268,7 +305,7 @@
 				  display:block; position: absolute; left:0; top:0; right:0; bottom:0; width:100%; height:100%; z-index: 3;
 				}
 			  }
-			  & > nav#short-menu {
+			  & > nav#short-menus {
 				margin-right: auto;
 				& ul {
 				  list-style: none; padding:0; margin: 0;
@@ -344,7 +381,7 @@
   "presets": [
 	{
 	  "name": "Default header middle for theme",
-	  "category": "Homework",
+	  "category": "Theme Header",
 	  "blocks": []
 	}
   ]

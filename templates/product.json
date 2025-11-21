@@ -12,6 +12,10 @@
     "product-form": {
       "type": "block-product-form",
       "blocks": {
+        "reviews_VDGF8N": {
+          "type": "reviews",
+          "settings": {}
+        },
         "heading_RX6EDQ": {
           "type": "heading",
           "settings": {
@@ -32,12 +36,16 @@
             "threshold_dropdown": 10
           }
         },
-        "upsell_zQ93DX": {
-          "type": "upsell",
-          "settings": {}
-        },
         "stock_P8dwNk": {
           "type": "stock",
+          "settings": {}
+        },
+        "delivery_iLH8jX": {
+          "type": "delivery",
+          "settings": {}
+        },
+        "notify_aprMUM": {
+          "type": "notify",
           "settings": {}
         },
         "atc_LyVFKC": {
@@ -48,12 +56,14 @@
         }
       },
       "block_order": [
+        "reviews_VDGF8N",
         "heading_RX6EDQ",
         "price_z8KqXx",
         "description_P6MUtq",
         "variant_picker_FRRdBk",
-        "upsell_zQ93DX",
         "stock_P8dwNk",
+        "delivery_iLH8jX",
+        "notify_aprMUM",
         "atc_LyVFKC"
       ],
       "settings": {
@@ -63,6 +73,13 @@
     "product-information": {
       "type": "block-product-information",
       "settings": {}
+    },
+    "block_product_recommended_afRGwD": {
+      "type": "block-product-recommended",
+      "name": "Recommended products",
+      "settings": {
+        "heading": "Aanbevolen producten"
+      }
     },
     "product-recommendations": {
       "type": "block-product-recommendations",
@@ -129,6 +146,7 @@
   "order": [
     "product-form",
     "product-information",
+    "block_product_recommended_afRGwD",
     "product-recommendations",
     "product-blog",
     "17622440393afaba32",

@@ -1,0 +1,342 @@
+
+<script src="{{ 'theme-cart.js' | asset_url }}" defer="defer"></script>
+
+{%- style -%}
+  .block-cart-order {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    background-color: var(--theme-color-grey);
+  }
+
+  @media screen and (min-width: 750px) {
+    .block-cart-order {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  .block-cart-order__container {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 0 var(--page-gutter);
+  }
+
+  .block-cart-order__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .block-cart-order__title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  .block-cart-order__continue {
+    color: rgb(var(--color-link));
+    text-decoration: underline;
+  }
+
+  .block-cart-order__empty {
+    padding: 3rem 0;
+    text-align: center;
+  }
+
+  .block-cart-order__empty-text {
+    margin: 0 0 1.5rem;
+    font-size: 1.25rem;
+  }
+
+  .block-cart-order__grid {
+    display: grid;
+    gap: 2rem;
+  }
+
+  @media screen and (min-width: 990px) {
+    .block-cart-order__grid {
+      grid-template-columns: 1fr 400px;
+    }
+  }
+
+  .block-cart-order__main {
+    min-width: 0;
+  }
+
+  .block-cart-order__sidebar {
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+  }
+
+  .block-cart-order__block {
+    margin-bottom: 1.5rem;
+  }
+
+  .block-cart-order__block:last-child {
+    margin-bottom: 0;
+  }
+{%- endstyle -%}
+
+<div 
+  class="block-cart-order gradient color-{{ section.settings.color_scheme }}"
+  data-cart-context="page"
+  data-cart-main-section="{{ section.id }}"
+>
+  <div class="block-cart-order__container">
+    {%- if cart.item_count > 0 -%}
+      <div class="block-cart-order__header">
+        <h1 class="block-cart-order__title">{{ section.settings.heading | default: 'sections.cart.title' | t }}</h1>
+        {%- if section.settings.show_continue_shopping -%}
+          <a href="{{ routes.all_products_collection_url }}" class="block-cart-order__continue">
+            {{- 'general.continue_shopping' | t -}}
+          </a>
+        {%- endif -%}
+      </div>
+
+      <form action="{{ routes.cart_url }}" method="post" id="cart-form">
+        <div class="block-cart-order__grid">
+          {%- comment -%} Main Cart Items {%- endcomment -%}
+          <div class="block-cart-order__main">
+            {%- for block in section.blocks -%}
+              {%- case block.type -%}
+                {%- when 'cart_items' -%}
+                  <div 
+                    class="block-cart-order__block" 
+                    {{ block.shopify_attributes }}
+                    data-cart-items-section="{{ section.id }}"
+                  >
+                    {% render 'html-cart-order-items', 
+                      cart: cart,
+                      context: 'page',
+                      show_vendor: block.settings.show_vendor
+                    %}
+                  </div>
+
+                {%- when 'app_block_before_items' -%}
+                  <div class="block-cart-order__block" {{ block.shopify_attributes }}>
+                    {% render 'html-cart-apps', blocks: section.blocks, location: 'before-items' %}
+                  </div>
+
+                {%- when 'app_block_after_items' -%}
+                  <div class="block-cart-order__block" {{ block.shopify_attributes }}>
+                    {% render 'html-cart-apps', blocks: section.blocks, location: 'after-items' %}
+                  </div>
+              {%- endcase -%}
+            {%- endfor -%}
+          </div>
+
+          {%- comment -%} Sidebar with Subtotal & Payments {%- endcomment -%}
+          <div class="block-cart-order__sidebar">
+            {%- for block in section.blocks -%}
+              {%- case block.type -%}
+                {%- when 'cart_subtotal' -%}
+                  <div 
+                    class="block-cart-order__block" 
+                    {{ block.shopify_attributes }}
+                    data-cart-subtotal-section="{{ section.id }}"
+                  >
+                    {% render 'html-cart-subtotal', 
+                      cart: cart,
+                      show_cart_note: block.settings.show_cart_note,
+                      context: 'page'
+                    %}
+                  </div>
+
+                {%- when 'cart_payments' -%}
+                  <div 
+                    class="block-cart-order__block" 
+                    {{ block.shopify_attributes }}
+                    data-cart-payments-section="{{ section.id }}"
+                  >
+                    {% render 'html-cart-payments', 
+                      cart: cart,
+                      show_terms: block.settings.show_terms,
+                      terms_text: block.settings.terms_text,
+                      terms_link: block.settings.terms_link,
+                      terms_link_text: block.settings.terms_link_text,
+                      show_additional_buttons: block.settings.show_additional_buttons,
+                      context: 'page'
+                    %}
+                  </div>
+
+                {%- when 'app_block_sidebar' -%}
+                  <div class="block-cart-order__block" {{ block.shopify_attributes }}>
+                    {% render 'html-cart-apps', blocks: section.blocks, location: 'sidebar' %}
+                  </div>
+              {%- endcase -%}
+            {%- endfor -%}
+          </div>
+        </div>
+      </form>
+    {%- else -%}
+      {%- comment -%} Empty Cart State {%- endcomment -%}
+      <div class="block-cart-order__empty">
+        <h1 class="block-cart-order__empty-text">{{ 'sections.cart.empty' | t }}</h1>
+        <a href="{{ routes.all_products_collection_url }}" class="button">
+          {{ 'general.continue_shopping' | t }}
+        </a>
+
+        {%- if shop.customer_accounts_enabled and customer == null -%}
+          <h2 class="block-cart-order__login-title">{{ 'sections.cart.login.title' | t }}</h2>
+          <p class="block-cart-order__login-paragraph">
+            {{ 'sections.cart.login.paragraph_html' | t: link: routes.account_login_url }}
+          </p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Cart Order",
+  "tag": "section",
+  "class": "section-cart-order",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shopping Cart"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_continue_shopping",
+      "label": "Show continue shopping link",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "cart_items",
+      "name": "Cart Items",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_vendor",
+          "label": "Show vendor",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "cart_subtotal",
+      "name": "Cart Subtotal",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_cart_note",
+          "label": "Show cart note",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "cart_payments",
+      "name": "Cart Payments",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_terms",
+          "label": "Show terms checkbox",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "terms_text",
+          "label": "Terms text",
+          "default": "I agree to the"
+        },
+        {
+          "type": "url",
+          "id": "terms_link",
+          "label": "Terms link"
+        },
+        {
+          "type": "text",
+          "id": "terms_link_text",
+          "label": "Terms link text",
+          "default": "terms and conditions"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_additional_buttons",
+          "label": "Show additional checkout buttons",
+          "default": true,
+          "info": "Apple Pay, Google Pay, etc."
+        }
+      ]
+    },
+    {
+      "type": "app_block_before_items",
+      "name": "App Block (Before Items)",
+      "limit": 1
+    },
+    {
+      "type": "app_block_after_items",
+      "name": "App Block (After Items)",
+      "limit": 1
+    },
+    {
+      "type": "app_block_sidebar",
+      "name": "App Block (Sidebar)",
+      "limit": 1
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cart Order",
+      "category": "Theme Cart",
+      "blocks": [
+        {
+          "type": "cart_items"
+        },
+        {
+          "type": "cart_subtotal"
+        },
+        {
+          "type": "cart_payments"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

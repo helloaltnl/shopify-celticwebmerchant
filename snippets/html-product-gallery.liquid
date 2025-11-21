@@ -254,10 +254,17 @@ body.is-swiper-fullscreen .swiper-slide img {
 .product-media__thumbs > .btn--prev[disabled] { transform: translate(calc(-100% - 2em), -50%); }
 .product-media__media > .btn--next[disabled],
 .product-media__thumbs > .btn--next[disabled] { transform: translate(calc(100% + 2em), -50%); }
-.product-media__media.swiper-vertical > button.btn--prev,
-.product-media__media.swiper-vertical > button.btn--next { display: none;}
+
 .product-media__thumbs.swiper-vertical > button.btn--prev,
 .product-media__thumbs.swiper-vertical > button.btn--next { display: none;}
+.product-media__media.swiper-vertical > button.btn--prev,
+.product-media__media.swiper-vertical > button.btn--next {  top:50%; left:1em; right:auto; bottom:auto; transform: translate(0%, 0%);}
+.product-media__media.swiper-vertical > button.btn--prev { top:1em; bottom:auto; }
+.product-media__media.swiper-vertical > button.btn--prev > i > svg { transform: rotate(90deg);}
+.product-media__media.swiper-vertical > button.btn--next { top:auto; bottom:1em; }
+.product-media__media.swiper-vertical > button.btn--next > i > svg { transform: rotate(90deg);}
+.product-media__media.swiper-vertical > button.btn--prev[disabled] { transform: translate(0%, -4em);}
+.product-media__media.swiper-vertical > button.btn--next[disabled] { transform: translate(0%, 4em);}
 
 /* Fullscreen knoppen */
 .product-media__media > .btn--fullscreen { top:auto; bottom: 1em; right: 1em; left: auto; transform: none; }
@@ -312,7 +319,7 @@ body.is-swiper-fullscreen .swiper [data-swiper-fullscreen="close"] { display: in
 	.product-media > .product-media__media {order:1; flex-basis: 128px; height:75vh; aspect-ratio: 2 / 3; flex-grow: 1;}
 	.product-media > .product-media__media .product-media__list {  }
 	.product-media > .product-media__media .product-media__item {  }
-	.product-media > .product-media__media .product-media__figure { max-height:74vh; width:auto;}
+	.product-media > .product-media__media .product-media__figure { max-height:75vh; width:auto;}
 	.product-media > .product-media__thumbs {order:0; height:75vh; flex-basis: 128px; flex-grow: 0;}
 }
 </style>

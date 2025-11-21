@@ -1,365 +1,151 @@
-<section class="block-collection-products-content alignwide">
-	
-	{%- if collection.products.size == 0 -%}
-		No products
+{%- comment -%}
+  Section: block-product-overview.liquid
+  - Filters (preview + aside) + grid + paginering.
+  - Grid-only AJAX verversing (Section Rendering API).
+  - Facet counts/disabled sync uit server HTML, zonder filter-DOM te vervangen.
+  - Werkt op collection én search.
+{%- endcomment -%}
+
+{%- liquid
+  assign resource = collection
+  if resource == blank and search
+	assign resource = search
+  endif
+-%}
+
+<section class="block-product-overview-content alignwide">
+	{%- render 'html-facets', 
+		section_id: section.id,
+		section_object: resource,
+		section_settings: section.settings
+	-%}
+  
+
+  {%- comment -%} ---------- GRID + PAGINATION (met data-grid) ---------- {%- endcomment -%}
+  <div class="collection-products__grid" data-grid>
+	{%- if resource == blank -%}
+	  <p>No results.</p>
 	{%- else -%}
-		
-		{%- paginate collection.products by 24-%}		
-			<ul id="product-grid" data-id="{{ section.id }}" class="product-grid">
-				{% assign skip_card_product_styles = false %}
-				{%- for product in collection.products -%}
-					{% assign lazy_load = false %}
-					{%- if forloop.index > 2 -%}
-					{%- assign lazy_load = true -%}
-					{%- endif -%}
-					<li
-					class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-					{% if settings.animations_reveal_on_scroll %}
-						data-cascade
-						style="--animation-order: {{ forloop.index }};"
-					{% endif %}
-					>
-					{% render 'card-product',
-						card_product: product,
-						media_aspect_ratio: section.settings.image_ratio,
-						image_shape: section.settings.image_shape,
-						show_secondary_image: section.settings.show_secondary_image,
-						show_vendor: section.settings.show_vendor,
-						show_rating: section.settings.show_rating,
-						lazy_load: lazy_load,
-						skip_styles: skip_card_product_styles,
-						quick_add: section.settings.quick_add,
-						section_id: section.id
-					%}
-					</li>
-					{%- assign skip_card_product_styles = true -%}
-				{%- endfor -%}
-			</ul>
-			
-			{%- if paginate.parts.size > 0 -%}
-				<nav class="product-pagination" role="navigation" aria-label="{{ 'general.pagination.label' | t }}" data-page="{{ paginate.current_page }}">
-				  <ul class="pagination__list list-unstyled" role="list">
-					{%- if paginate.previous -%}
-					  <li>
-						<a
-						  href="{{ paginate.previous.url }}{{ anchor }}"
-						  class="pagination__item pagination__item--next pagination__item-arrow link motion-reduce"
-						  aria-label="{{ 'general.pagination.previous' | t }}"
-						>
-						  <span class="svg-wrapper">
-							{{- 'icon-caret.svg' | inline_asset_content -}}
-						  </span>
-						</a>
-					  </li>
-					{%- endif -%}
-			
-					{%- for part in paginate.parts -%}
-					  <li>
-						{%- if part.is_link -%}
-						  <a
-							href="{{ part.url }}{{ anchor }}"
-							class="pagination__item link"
-							aria-label="{{ 'general.pagination.page' | t: number: part.title }}"
-						  >
-							{{- part.title -}}
-						  </a>
-						{%- else -%}
-						  {%- if part.title == paginate.current_page -%}
-							<a
-							  role="link"
-							  aria-disabled="true"
-							  class="pagination__item pagination__item--current light"
-							  aria-current="page"
-							  aria-label="{{ 'general.pagination.page' | t: number: part.title }}"
-							>
-							  {{- part.title -}}
-							</a>
-						  {%- else -%}
-							<span class="pagination__item">{{ part.title }}</span>
-						  {%- endif -%}
-						{%- endif -%}
-					  </li>
-					{%- endfor -%}
-			
-					{%- if paginate.next -%}
-					  <li>
-						<a
-						  href="{{ paginate.next.url }}{{ anchor }}"
-						  class="pagination__item pagination__item--prev pagination__item-arrow link motion-reduce"
-						  aria-label="{{ 'general.pagination.next' | t }}"
-						>
-						  <span class="svg-wrapper">
-							{{- 'icon-caret.svg' | inline_asset_content -}}
-						  </span>
-						</a>
-					  </li>
-					{%- endif -%}
-				  </ul>
-				</nav>
-			{%- endif -%}
-			
+	  {%- if collection -%}
+		{%- paginate collection.products by 24 -%}
+		  <div id="results-meta" data-count="{{ paginate.items }}"></div>
+		  <ul id="product-grid" class="product-grid">
+			{%- assign skip_card_product_styles = false -%}
+			{%- for product in collection.products -%}
+			  {%- assign lazy_load = false -%}
+			  {%- if forloop.index > 2 -%}{%- assign lazy_load = true -%}{%- endif -%}
+			  <li class="grid__item">
+				{% render 'html-product-card', 
+					product: product, 
+					show_secondary_image: true,
+					show_vendor: false, 
+					show_price: true,
+					show_stock: true,
+					show_stock_from: 'auto',
+					show_delivery: true,
+					show_rating: true,
+					show_badges: true, 
+					quick_add: false 
+				%}
+			  </li>
+			  {%- assign skip_card_product_styles = true -%}
+			{%- endfor -%}
+		  </ul>
+		  {%- render 'pagination', paginate: paginate -%}
 		{%- endpaginate -%}
+	  {%- elsif search -%}
+		{%- paginate search.results by 24 -%}
+		  {%- assign products = search.results | where: 'object_type', 'product' -%}
+		  <div id="results-meta" data-count="{{ paginate.items }}"></div>
+		  {%- if products.size == 0 -%}
+			<p>No products.</p>
+		  {%- else -%}
+			<ul id="product-grid" class="product-grid">
+			  {%- assign skip_card_product_styles = false -%}
+			  {%- for item in products -%}
+				{%- assign product = item -%}
+				{%- assign lazy_load = false -%}
+				{%- if forloop.index > 2 -%}{%- assign lazy_load = true -%}{%- endif -%}
+				<li class="grid__item">
+					{% render 'html-product-card', 
+						product: product, 
+						show_secondary_image: true,
+						show_vendor: false, 
+						show_price:true,
+						show_stock: true,
+						show_delivery: true,
+						show_rating: true,
+						show_badges: true, 
+						quick_add: false 
+					%}
+				  </li>
+				{%- assign skip_card_product_styles = true -%}
+			  {%- endfor -%}
+			</ul>
+			{%- render 'pagination', paginate: paginate -%}
+		  {%- endif -%}
+		{%- endpaginate -%}
+	  {%- endif -%}
 	{%- endif -%}
+  </div>
 </section>
 
-{%- style -%}
-	.block-collection-products {
-		background-color: var(--theme-color-grey);
-		& .block-collection-products-content {
-			& .product-filter {
-				& form {
-					display: flex; flex-direction: row; flex-wrap: nowrap; 
-					align-items: center; justify-content: space-between;
-					row-gap: 0.5em; column-gap: 0.5em;
-					padding: 1em 0.5em;
-					& nav.filters {
-						display: flex; flex-direction: row; flex-wrap: nowrap; 
-						align-items: center; justify-content: flex-start;
-						row-gap: 0.5em; column-gap: 0em; flex-grow: 1;
-						& > details {
-							& > summary {
-								position: relative;
-								display:block; padding-right:2em; letter-spacing: -0.02em;
-								font-size: 1em; border-bottom:var(--theme-color-brown) 1px solid;
-								& > span.label {
-									
-									display:flex; flex-direction: row; flex-wrap: no-wrap;
-									align-content: flex-start; justify-content: space-between;
-									column-gap: 0.6em; row-gap: 0; padding-top: 0.5em; padding-bottom: 0.5em; padding-right: 1em;
-									& > span.label-name {
-										display: block;
-									}
-									& > span.label-count {
-										display: block; 
-										font-size: 0.75em; line-height: 1.6em; padding-left: 1em; padding-right: 1em;
-										background-color: var(--theme-color-white); color:var(--theme-color-blue);
-										border:var(--theme-color-blue) 1px solid;
-										 border-radius:2em;
-									}
-								}
-							}
-							& > fieldset {
-								display: block; margin: 0; padding: 1em; border:0;
-								& > legend { display: none;}
-								& > ul { 
-									list-style: none; margin:0; padding: 0;
-									& > li {
-										& label {
-											display:flex; flex-direction: row; flex-wrap: nowrap;
-											align-content: flex-start; justify-content: flex-start;
-											column-gap: 1em; row-gap: 0;
-											padding-top: 0.5em; padding-bottom: 0.5em;
-											& input[type="checkbox"] {
-												-webkit-appearance: none!important; -moz-appearance: none!important; appearance: none!important;
-												flex-basis: 1.6em; min-width:1.6em;
-												width: 1.6em; height:1.6em; padding:0; margin:0; overflow:hidden; vertical-align: middle;
-												border: currentcolor 1px solid; border-radius:0px;
-												background:#FFF url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>') no-repeat center 48px / 16px!important; transition: all 175ms linear!important;
-												&:checked {
-													background-color: currentcolor!important;
-													background-position: center center!important;
-												}
-											}
-											& span.label {
-												flex-grow:1;
-												display:flex; flex-direction: row; flex-wrap: no-wrap;
-												align-content: flex-start; justify-content: space-between;
-												column-gap: 0.6em; row-gap: 0;
-												& span.label-name { font-size: 0.75em; white-space: nowrap; line-height: 1.4em; }
-												& span.label-count {
-													display: block;
-													font-size: 0.5em; line-height: 1.6em;
-													background-color: var(--theme-color-grey);
-													padding: 0.25em 1em; border-radius:2em;
-												}
-												& span.label-details { display: none;}
-											}
-											&:hover { cursor: pointer; }
-										}
-									}
-								}
-							}
-						}
-					}
-					& nav.sorting {
-						display: flex; flex-direction: row; flex-wrap: nowrap; 
-						align-items: center; justify-content: space-between;
-						column-gap: 1em; padding:0 1em;
-						& > .select {}
-						& > .count { white-space: nowrap;}
-					}
-					& nav.actions {
-						& button {
-							& > * { pointer-events: none;}
-							& > i {}
-							& > span {}
-						}
-					}
-				}
-				& > .drawer-preview {
-					background-color: #fff; margin-bottom: 1em;
-					& form {
-						padding: 0;
-						& > nav {
-							flex-direction: row; justify-content: flex-start; align-items: center;
-							& > details {
-								position: relative; padding:1em;
-								& > summary {
-									white-space: nowrap; font-size: 0.8em;
-									
-								}
-								& > fieldset {
-									position: absolute; z-index: 10; left:0; top:100%;
-									background-color: #fff; width: 10em;
-									max-height: min(30em, 50vh); overflow: hidden; overflow-y: auto;
-								}
-								&.hide-filter {
-									display:none;
-								}
-							}
-							& > button {
-								white-space: nowrap;
-							}
-							&.filters {
-								flex-grow: 1;
-							}
-						}
-					}
-				}
-				& > .drawer-filter {
-					position: fixed; right:0; top:0; bottom:0; left:0; z-index: 100; isolation: isolate; pointer-events: none;
-					& > .drawer-content {
-						position: absolute; right:0; top:0;
-						width: min(100dvw, 20em); height:100dvh; transform: translate3d(20em,0,0);
-						background: #fff; pointer-events: none; opacity: 0; transition: transform 175ms ease-in-out;
-						display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch;
-						 row-gap: 0; column-gap: 0; padding: 0;
-						& > .drawer-head { padding:1em; background-color: var(--theme-color-grey);}
-						& > .drawer-main { padding:0em; flex-grow: 1; overflow: hidden; overflow-y: auto;}
-						& > .drawer-foot { padding:1em; background-color: var(--theme-color-grey); }
-						& nav.filters {
-							display: flex; flex-direction: column; flex-wrap: nowrap; 
-							align-items: stretch; justify-content: flex-start;
-							padding-top: 1em; padding-bottom: 1em; row-gap: 0;
-							& details {
-								width:100%;
-								& > summary {
-									font-size: 1em; border-bottom:var(--theme-color-brown) 1px solid;
-									padding:0.5em 1em;
-								}
-								
-							}
-						}
-						& nav.sorting {
-							display: flex; flex-direction: column; flex-wrap: nowrap; 
-							align-items: stretch; justify-content: flex-start;
-							padding-top: 1em; padding-bottom: 1em;
-						}
-					}
-					&[open] {
-						pointer-events: all; 
-						& > .drawer-content {
-							opacity:1; pointer-events: all; transform: translate3d(0,0,0); 
-						}
-						&::after {
-							content:''; display: block; position: absolute; z-index: -1;
-							top:0; left:0; right:0; width: 100%; height:100vh;
-							background-color: rgba(0,0,0,0.8);
-							pointer-events: none;
-						}
-					}
-				}
-			}
-			& .product-grid {
-				display: grid;
-				/* grid-template-columns: repeat(auto-fit, minmax(16em, 1fr)); */
-				grid-template-columns: repeat(4, 1fr);
-				grid-gap: 0.5em;
-				list-style: none; margin: 0; padding:0;
-				& > li { display: block; min-width:100%;}
-			}
-			& .product-card-wrapper {
-				& > .card {
-					& > .card__inner {
-						display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; 
-						&::before { display: none;}
-						& > .card__media {
-							
-							& > .media {
-								display: flex; flex-direction: column; align-items: center; justify-content: center;
-								width: 100%; aspect-ratio: 2/3; 
-								background-color: #fff;
-								& img {
-									position: relative; width:100%; aspect-ratio: 2/3; object-fit: cover;
-								}
-							}
-						}
-						& > .card__content {}
-					}
-				}
-			}
-			& .product-pagination {
-				& > ul {
-					display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center;
-					row-gap: 0.5em; column-gap: 0.5em; list-style: none; margin: 0; padding:2em 0;
-					& > li { 
-						min-width: unset; margin:0;
-						& a {
-							display: block; font-size: inherit; line-height: 1em; text-decoration: none;
-							padding:1em; background-color: #fff; 
-							&.pagination__item--current {
-								background-color: var(--theme-color-blue); color:var(--theme-color-white); opacity: 1;
-							}
-							&.pagination__item--prev {
-								background-color: transparent;
-								& svg { height:1em; transform: rotate(-90deg);}
-							}
-							&.pagination__item--next {
-								background-color: transparent;
-								& svg { height:1em; transform: rotate(90deg);}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	@media only screen and (max-width: 920px) {
-		.block-collection-products {
-			& .block-collection-products-content {
-				& .product-grid {
-					grid-template-columns: repeat(3, 1fr);
-				}
-			}
-		}
-	}
-	@media only screen and (max-width: 640px) {
-		.block-collection-products {
-			& .block-collection-products-content {
-				& .product-grid {
-					grid-template-columns: repeat(2, 1fr);
-				}
-			}
-		}
-	}
+
+
+{% style %}
+.block-product-overview {
+	background-color: var(--theme-color-grey);
+	padding-top: 4em; padding-bottom: 4em;
+}
+.block-product-overview-content {
 	
-{%- endstyle -%}
+}
+.product-grid { 
+	display:grid; grid-template-columns:repeat(4,1fr); gap:.5em; list-style:none; padding:0; margin:0; 
+	& > li { 
+		display: inline-block; width:100%; max-width: 100%;
+		& > .product-card { height:100%;}
+	}
+}
+@media (max-width: 920px){ .product-grid { grid-template-columns:repeat(3,1fr); } }
+@media (max-width: 640px){ .product-grid { grid-template-columns:repeat(2,1fr); } }
+html.is-loading { cursor:progress; }
+html.is-loading * { pointer-events:none; }
+{% endstyle %}
 
 {% schema %}
 {
-  "name": "Collection Products",
+  "name": "Collection products",
   "tag": "section",
-  "class": "block-collection-products",
-  "disabled_on": {
-	"groups": ["header", "footer"]
-  },
-  "settings": [],
+  "class": "block-product-overview",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "settings": [
+	{ "type": "checkbox", "id": "show_filter", "label": "Show filter", "default": true },
+	{ "type": "checkbox", "id": "show_sort", "label": "Show sorting", "default": true },
+		
+	{ "type": "range", "id": "max_preview_filters", "label": "Max filters in preview", "min": 1, "max": 10, "step": 1, "default": 8 },
+	{ "type": "checkbox", "id": "auto_fill_preview", "label": "Auto-fill preview (hide overflow)", "default": true },
+	{ "type": "checkbox", "id": "auto_submit", "label": "Auto-submit on change", "default": true },
+	
+	{ "type": "text", "id": "drawer_title", "label": "Drawer title", "default": "Filters" },
+	{ "type": "text", "id": "open_button_label", "label": "Open button label", "default": "Alle filters" },
+	{ "type": "text", "id": "apply_button_label", "label": "Apply button label", "default": "Toepassen" },
+	
+	{ "type": "checkbox", "id": "ajax_pagination", "label": "AJAX pagination", "default": false },
+	
+	{ "type": "select", "id": "image_ratio", "label": "Image ratio", "default": "adapt", "options": [
+	  { "value": "adapt", "label": "Adapt" }, { "value": "square", "label": "Square" }, { "value": "portrait", "label": "Portrait" }
+	]},
+	{ "type": "select", "id": "image_shape", "label": "Image shape", "default": "default", "options": [
+	  { "value": "default", "label": "Default" }, { "value": "round", "label": "Round" }
+	]},
+	{ "type": "checkbox", "id": "show_secondary_image", "label": "Show secondary image", "default": true },
+	{ "type": "checkbox", "id": "show_vendor", "label": "Show vendor", "default": false },
+	{ "type": "checkbox", "id": "show_rating", "label": "Show rating", "default": false },
+	{ "type": "checkbox", "id": "quick_add", "label": "Enable quick add", "default": false }
+  ],
   "presets": [
-	{
-	  "name": "Collection Products",
-	  "category": "Homework",
-	  "blocks": []
-	}
+	{ "name": "Collection products", "category": "Theme Collection" }
   ]
 }
 {% endschema %}

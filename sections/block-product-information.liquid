@@ -12,6 +12,7 @@
 				data-readmore="collapsed" 
 				data-readmore-paragraphs="1" 
 				aria-live="polite"> 
+				<h2>Product omschrijving</h2>
 				{{ product.description 
 					| replace: '<br><br>', '</p><p>' 
 					| replace: '<p hidden></p>', ''
@@ -323,7 +324,7 @@
 {% style %}
 .block-product-information {
 	background-color: var(--theme-color-grey);
-	padding-top: 4em; padding-bottom: 4em;
+	padding-top: 4em; padding-bottom: 0em;
 }
 .product-information-content {
 	scroll-margin-top: 100px;
@@ -432,7 +433,7 @@
   "presets": [
 	{
 	  "name": "Product information",
-	  "category": "Homework",
+	  "category": "Theme Product",
 	}
   ]
 }

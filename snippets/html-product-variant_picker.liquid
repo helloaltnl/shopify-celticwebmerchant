@@ -9,6 +9,14 @@
 {%- endfor -%}
 
 {%- if show_picker -%}
+{%- comment %} Is dit een enkelzijdige variant? {% endcomment -%}
+{%- assign is_single_option = false -%}
+{%- if product.options_with_values.size == 1 -%}
+  {%- unless product.has_only_default_variant -%}
+    {%- assign is_single_option = true -%}
+  {%- endunless -%}
+{%- endif -%}
+
 <fieldset class="pform-variants" data-variant-picker>
   {%- for option in product.options_with_values -%}
 	{%- if option.values.size > 1 -%}
@@ -24,7 +32,22 @@
 		{%- else -%}
 		  <div class="pform__swatchgroup">
 			{%- for v in option.values -%}
-			  <span class="pform__swatchgroup-item">
+			  {%- assign variant_available = true -%}
+			  
+			  {%- if is_single_option -%}
+				{%- for variant in product.variants -%}
+				  {%- if variant.option1 == v or variant.option2 == v or variant.option3 == v -%}
+					{%- unless variant.available -%}
+					  {%- if variant.inventory_policy != 'continue' -%}
+					    {%- assign variant_available = false -%}
+					  {%- endif -%}
+					{%- endunless -%}
+					{%- break -%}
+				  {%- endif -%}
+				{%- endfor -%}
+			  {%- endif -%}
+
+			  <span class="pform__swatchgroup-item{% unless variant_available %} is-sold-out{% endunless %}">
 			  {%- assign id = 'opt-' | append: product.id | append: '-' | append: forloop.parentloop.index0 | append: '-' | append: forloop.index0 -%}
 			  <input class="sr-only"
 					 type="radio"

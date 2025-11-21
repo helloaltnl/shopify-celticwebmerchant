@@ -11,7 +11,7 @@
 {%- endif -%}
 
 <div class="product-atc">
-	<div>
+	<div class="product-atc-qty">
 		<label class="pform__label" for="Quantity-{{ product.id }}">
 		  {{ 'products.product.quantity.label' | t | default: 'Aantal' }}
 		</label>
@@ -25,7 +25,7 @@
 			   inputmode="numeric"
 			   pattern="[0-9]*">
 	</div>
-	<div>
+	<div class="product-atc-submit">
 		<button type="submit"
 				class="is-button pform__btn{% if full_width %} pform__btn--full{% endif %}"
 				data-atc
@@ -38,7 +38,43 @@
 			</span>
 		</button>
 	</div>
-	<div data-fragment-skip="favorites" data-no-track>
+	<div class="product-atc-favorite" data-fragment-skip="favorites" data-no-track>
 		<div class="th_prd_wl_btn" data-product_id="{{product.id}}" data-variant_id="{{product.selected_or_first_available_variant.id}}"></div>
 	</div>
 </div>
+<style>
+	.product-atc {
+		padding:1em 0;
+		display: flex; flex-direction: row; flex-wrap:nowrap;
+		align-items: center; justify-content: flex-start;
+		column-gap: 1em;
+		& .product-atc-qty {
+			& .pform__label { display: none;}
+			& input[type="number"] {
+				-webkit-appearance: none; appearance: none;
+				width: auto; height:2.5em; width:2.5em; text-align: center;
+				padding:1em 0; border:var(--theme-color-blue) 2px solid; 
+				font-family: inherit; font-weight: 500;
+				font-size: inherit; line-height: 1em;
+				&::-webkit-inner-spin-button,
+				&::-webkit-outer-spin-button {
+				  -webkit-appearance: none;
+				  margin: 0;
+				}
+			}
+		}
+		& .product-atc-submit {
+			flex-grow: 1;
+			& button.pform__btn {
+				padding: 0.5em 1em; background-color: var(--theme-color-green); color:#fff;
+				width:100%;
+				&[disabled] { 
+					background-color: var(--theme-color-orange);
+					&:hover { cursor: not-allowed;}
+				}
+			}
+		}
+		
+	}
+	
+</style>
