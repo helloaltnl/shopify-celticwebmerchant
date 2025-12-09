@@ -1,0 +1,543 @@
+{% comment %}
+  ============================================================================
+  BLOCK-PAGE-MENU
+  ============================================================================
+  Mobile navigation menu - placed in footer group to avoid header stacking 
+  context issues with sticky headers and transforms.
+
+  FEATURES:
+  - Full mobile menu with collapsible submenus
+  - Combines product menu + header menus
+  - Independent z-index control
+  - Swipe to close support via theme-drawer.js
+
+  DEPENDENCIES:
+  - html-theme-icons snippet
+  - theme-drawer.js
+  ============================================================================
+{% endcomment %}
+
+{%- assign product_menu = linklists[section.settings.product_menu] -%}
+{%- assign primary_menu = linklists[section.settings.primary_menu] -%}
+{%- assign secondary_menu = linklists[section.settings.secondary_menu] -%}
+{%- assign tertiary_menu = linklists[section.settings.tertiary_menu] -%}
+
+<div 
+	class="block-page-menu"
+	id="mobile-nav-drawer"
+	data-drawer="mobile-nav"
+	data-drawer-position="left"
+	role="dialog"
+	aria-modal="true"
+	aria-label="{{ 'accessibility.menu' | t }}"
+>
+	<div class="block-page-menu__overlay" data-drawer-overlay></div>
+	<div class="block-page-menu__content">
+		<div class="block-page-menu__header">
+			<span class="block-page-menu__title">Menu</span>
+			<button type="button" class="block-page-menu__close" data-drawer-close aria-label="{{ 'accessibility.close' | t }}">
+				{% render 'html-theme-icons', icon: 'close', size: 24 %}
+			</button>
+		</div>
+		<div class="block-page-menu__body">
+			{%- comment -%} Primary Menu (highlighted items like Sale) - Always first {%- endcomment -%}
+			{%- if primary_menu.links.size > 0 -%}
+				<ul class="block-page-menu__list block-page-menu__list--primary">
+					{%- for link in primary_menu.links -%}
+						<li class="block-page-menu__item block-page-menu__item--highlight">
+							<a href="{{ link.url }}">{{ link.title }}</a>
+						</li>
+					{%- endfor -%}
+				</ul>
+			{%- endif -%}
+
+			{%- comment -%} Product Menu (main navigation) {%- endcomment -%}
+			{%- if product_menu.links.size > 0 -%}
+				<div class="block-page-menu__divider"></div>
+				<ul class="block-page-menu__list block-page-menu__list--products{% if section.settings.show_product_thumbs %} has-thumbs{% endif %}">
+					{%- for link in product_menu.links -%}
+						{%- liquid
+							assign thumb_image = nil
+							if section.settings.show_product_thumbs
+								if link.object.image
+									assign thumb_image = link.object.image
+								elsif link.object.featured_image
+									assign thumb_image = link.object.featured_image
+								endif
+							endif
+						-%}
+						<li class="block-page-menu__item{% if link.links.size > 0 %} has-children{% endif %}">
+							<a href="{{ link.url }}">
+								{%- if thumb_image -%}
+									<span class="block-page-menu__thumb">
+										<img src="{{ thumb_image | image_url: width: 100 }}" alt="" loading="lazy" width="50" height="50">
+									</span>
+								{%- endif -%}
+								<span class="block-page-menu__text">{{ link.title }}</span>
+							</a>
+							{%- if link.links.size > 0 -%}
+								<button type="button" class="block-page-menu__toggle" aria-expanded="false">
+									{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+								</button>
+								<ul class="block-page-menu__submenu">
+									{%- for child in link.links -%}
+										{%- liquid
+											assign child_thumb = nil
+											if section.settings.show_product_thumbs
+												if child.object.image
+													assign child_thumb = child.object.image
+												elsif child.object.featured_image
+													assign child_thumb = child.object.featured_image
+												endif
+											endif
+										-%}
+										<li class="{% if child.links.size > 0 %}has-children{% endif %}">
+											<a href="{{ child.url }}">
+												{%- if child_thumb -%}
+													<span class="block-page-menu__thumb">
+														<img src="{{ child_thumb | image_url: width: 100 }}" alt="" loading="lazy" width="50" height="50">
+													</span>
+												{%- endif -%}
+												<span class="block-page-menu__text">{{ child.title }}</span>
+											</a>
+											{%- if child.links.size > 0 -%}
+												<button type="button" class="block-page-menu__toggle" aria-expanded="false">
+													{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+												</button>
+												<ul class="block-page-menu__submenu">
+													{%- for subchild in child.links -%}
+														<li><a href="{{ subchild.url }}">{{ subchild.title }}</a></li>
+													{%- endfor -%}
+												</ul>
+											{%- endif -%}
+										</li>
+									{%- endfor -%}
+								</ul>
+							{%- endif -%}
+						</li>
+					{%- endfor -%}
+				</ul>
+			{%- endif -%}
+
+			{%- comment -%} Secondary Menu (Tribe, Service, Contact, etc.) {%- endcomment -%}
+			{%- if secondary_menu.links.size > 0 -%}
+				<div class="block-page-menu__divider"></div>
+				<ul class="block-page-menu__list block-page-menu__list--secondary">
+					{%- for link in secondary_menu.links -%}
+						<li class="block-page-menu__item{% if link.links.size > 0 %} has-children{% endif %}">
+							<a href="{{ link.url }}">{{ link.title }}</a>
+							{%- if link.links.size > 0 -%}
+								<button type="button" class="block-page-menu__toggle" aria-expanded="false">
+									{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+								</button>
+								<ul class="block-page-menu__submenu">
+									{%- for child in link.links -%}
+										<li><a href="{{ child.url }}">{{ child.title }}</a></li>
+									{%- endfor -%}
+								</ul>
+							{%- endif -%}
+						</li>
+					{%- endfor -%}
+				</ul>
+			{%- endif -%}
+
+			{%- comment -%} Tertiary Menu {%- endcomment -%}
+			{%- if tertiary_menu.links.size > 0 -%}
+				<div class="block-page-menu__divider"></div>
+				<ul class="block-page-menu__list block-page-menu__list--tertiary">
+					{%- for link in tertiary_menu.links -%}
+						<li class="block-page-menu__item{% if link.links.size > 0 %} has-children{% endif %}">
+							<a href="{{ link.url }}">{{ link.title }}</a>
+							{%- if link.links.size > 0 -%}
+								<button type="button" class="block-page-menu__toggle" aria-expanded="false">
+									{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+								</button>
+								<ul class="block-page-menu__submenu">
+									{%- for child in link.links -%}
+										<li><a href="{{ child.url }}">{{ child.title }}</a></li>
+									{%- endfor -%}
+								</ul>
+							{%- endif -%}
+						</li>
+					{%- endfor -%}
+				</ul>
+			{%- endif -%}
+		</div>
+	</div>
+</div>
+
+<script>
+(function() {
+	const drawer = document.getElementById('mobile-nav-drawer');
+	if (!drawer) return;
+
+	// Toggle buttons for submenus
+	drawer.addEventListener('click', (e) => {
+		const toggle = e.target.closest('.block-page-menu__toggle');
+		if (toggle) {
+			const expanded = toggle.getAttribute('aria-expanded') === 'true';
+			toggle.setAttribute('aria-expanded', !expanded);
+		}
+	});
+
+	// Listen for legacy events (backward compatibility with header-middle trigger)
+	document.addEventListener('mobile-nav:open', () => {
+		if (window.themeDrawer) window.themeDrawer.open('mobile-nav');
+	});
+	document.addEventListener('mobile-nav:close', () => {
+		if (window.themeDrawer) window.themeDrawer.close('mobile-nav');
+	});
+	document.addEventListener('mobile-nav:toggle', () => {
+		if (window.themeDrawer) {
+			if (window.themeDrawer.isOpen('mobile-nav')) {
+				window.themeDrawer.close('mobile-nav');
+			} else {
+				window.themeDrawer.open('mobile-nav');
+			}
+		}
+	});
+})();
+</script>
+
+<style>
+	.block-page-menu {
+		position: fixed;
+		inset: 0;
+		z-index: 9999999999;
+		visibility: hidden;
+		transition: visibility 300ms ease;
+	}
+
+	.block-page-menu.is-open {
+		visibility: visible;
+	}
+
+	/* Overlay */
+	.block-page-menu__overlay {
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.6);
+		opacity: 0;
+		cursor: pointer;
+		transition: opacity 300ms ease;
+	}
+
+	.block-page-menu.is-open .block-page-menu__overlay {
+		opacity: 1;
+	}
+
+	/* Content panel */
+	.block-page-menu__content {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		width: min(320px, 85vw);
+		background: var(--theme-color-white, #fff);
+		color: var(--theme-color-brown, #2e130d);
+		display: flex;
+		flex-direction: column;
+		box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+		transform: translateX(-100%);
+		transition: transform 300ms ease;
+	}
+
+	.block-page-menu.is-open .block-page-menu__content {
+		transform: translateX(0);
+	}
+
+	/* Header */
+	.block-page-menu__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1.25em 1.5em;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+		flex-shrink: 0;
+	}
+
+	.block-page-menu__title {
+		font-size: 1.125em;
+		font-weight: 600;
+		line-height: 1.3;
+	}
+
+	.block-page-menu__close {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5em;
+		height: 2.5em;
+		margin: -0.5em -0.5em -0.5em 0;
+		padding: 0;
+		background: transparent;
+		border: none;
+		color: inherit;
+		cursor: pointer;
+		opacity: 0.6;
+		transition: opacity 150ms ease;
+	}
+
+	.block-page-menu__close:hover {
+		opacity: 1;
+	}
+
+	/* Body */
+	.block-page-menu__body {
+		flex: 1 1 auto;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	/* Divider */
+	.block-page-menu__divider {
+		height: 1px;
+		background: rgba(0, 0, 0, 0.1);
+		margin: 0.5em 0;
+	}
+
+	/* Menu list */
+	.block-page-menu__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.block-page-menu__list:first-child {
+		padding-top: 0.5em;
+	}
+
+	/* Menu item */
+	.block-page-menu__item {
+		border-bottom: 1px solid var(--theme-color-grey, #f5f5f5);
+	}
+
+	.block-page-menu__item:last-child {
+		border-bottom: none;
+	}
+
+	.block-page-menu__item > a {
+		display: block;
+		padding: 1em 1.5em;
+		color: inherit;
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.block-page-menu__item.has-children {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		grid-template-rows: auto auto;
+	}
+
+	.block-page-menu__item.has-children > a {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	/* Highlight items (Sale etc) */
+	.block-page-menu__item--highlight > a {
+		color: var(--theme-color-orange, #c45a28);
+		font-weight: 600;
+	}
+
+	/* Toggle button */
+	.block-page-menu__toggle {
+		grid-column: 2;
+		grid-row: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 3.5em;
+		padding: 0;
+		border: none;
+		border-left: 1px solid var(--theme-color-grey, #f5f5f5);
+		background: none;
+		color: inherit;
+		cursor: pointer;
+	}
+
+	.block-page-menu__toggle[aria-expanded="true"] {
+		border-left-color: transparent;
+	}
+
+	.block-page-menu__toggle[aria-expanded="true"] svg {
+		transform: rotate(180deg);
+	}
+
+	.block-page-menu__toggle svg {
+		transition: transform 200ms ease;
+	}
+
+	/* Submenu */
+	.block-page-menu__submenu {
+		grid-column: 1 / -1;
+		grid-row: 2;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		background-color: var(--theme-color-grey, #f5f5f5);
+		display: none;
+	}
+
+	.block-page-menu__toggle[aria-expanded="true"] + .block-page-menu__submenu {
+		display: block;
+	}
+
+	.block-page-menu__submenu li {
+		border-top: 1px solid rgba(0, 0, 0, 0.05);
+	}
+
+	.block-page-menu__submenu li:first-child {
+		border-top: none;
+	}
+
+	.block-page-menu__submenu > li > a {
+		display: block;
+		padding: 0.75em 1.5em 0.75em 2em;
+		color: inherit;
+		text-decoration: none;
+		font-size: 0.95em;
+	}
+
+	/* Nested submenu (level 3) */
+	.block-page-menu__submenu .has-children {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		grid-template-rows: auto auto;
+	}
+
+	.block-page-menu__submenu .has-children > a {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.block-page-menu__submenu .block-page-menu__toggle {
+		border-left-color: rgba(0, 0, 0, 0.1);
+	}
+
+	.block-page-menu__submenu .block-page-menu__toggle[aria-expanded="true"] {
+		border-left-color: transparent;
+	}
+
+	.block-page-menu__submenu .block-page-menu__submenu > li > a {
+		padding-left: 3em;
+	}
+
+	/* Hide on desktop */
+	@media (min-width: 1025px) {
+		.block-page-menu {
+			display: none !important;
+		}
+	}
+
+	/* Product menu with thumbnails */
+	.block-page-menu__list--products.has-thumbs .block-page-menu__item > a,
+	.block-page-menu__list--products.has-thumbs .block-page-menu__submenu > li > a {
+		display: flex;
+		align-items: center;
+		gap: 0.75em;
+	}
+
+	.block-page-menu__thumb {
+		flex: 0 0 auto;
+		width: 50px;
+		height: 50px;
+		border-radius: 4px;
+		overflow: hidden;
+		background: var(--theme-color-grey, #f5f5f5);
+	}
+
+	.block-page-menu__thumb img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.block-page-menu__text {
+		flex: 1;
+		min-width: 0;
+	}
+
+	/* Adjust padding when thumbs are shown */
+	.block-page-menu__list--products.has-thumbs .block-page-menu__item > a {
+		padding: 0.5em 1em;
+	}
+
+	.block-page-menu__list--products.has-thumbs .block-page-menu__submenu > li > a {
+		padding: 0.4em 1em;
+	}
+
+	/* Smaller thumbs in submenu */
+	.block-page-menu__list--products.has-thumbs .block-page-menu__submenu .block-page-menu__thumb {
+		width: 40px;
+		height: 40px;
+	}
+
+	.block-page-menu__list--products.has-thumbs .block-page-menu__submenu .block-page-menu__submenu > li > a {
+		padding-left: 1.5em;
+	}
+</style>
+
+{% schema %}
+{
+	"name": "Mobile menu",
+	"tag": "section",
+	"class": "block-page-menu-section",
+	"limit": 1,
+	"enabled_on": {
+		"groups": ["footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Menus"
+		},
+		{
+			"type": "link_list",
+			"id": "primary_menu",
+			"label": "Primary menu",
+			"info": "Highlighted items (e.g. Sale)"
+		},
+		{
+			"type": "link_list",
+			"id": "product_menu",
+			"label": "Product menu",
+			"info": "Main product categories"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_product_thumbs",
+			"label": "Show thumbnails",
+			"info": "Display collection images next to menu items",
+			"default": false
+		},
+		{
+			"type": "link_list",
+			"id": "secondary_menu",
+			"label": "Secondary menu",
+			"info": "Additional links (e.g. Tribe, Service, Contact)"
+		},
+		{
+			"type": "link_list",
+			"id": "tertiary_menu",
+			"label": "Tertiary menu",
+			"info": "Extra links below secondary menu"
+		},
+		{
+			"type": "header",
+			"content": "How to use"
+		},
+		{
+			"type": "paragraph",
+			"content": "This section provides the mobile navigation menu. Place it in the footer group to avoid z-index conflicts with sticky headers."
+		}
+	],
+	"presets": [
+		{
+			"name": "Mobile menu",
+			"category": "Page"
+		}
+	]
+}
+{% endschema %}

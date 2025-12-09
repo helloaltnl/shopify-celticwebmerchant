@@ -1,4 +1,50 @@
 {%- comment -%}
-Dynamic checkout kan alleen binnen een {% form 'product' %}.
-Met custom <form> werkt dit niet. Overweeg dit block tijdelijk te verbergen.
+  ============================================================================
+  HTML-PRODUCT-DYNAMIC_CHECKOUT
+  ============================================================================
+  Shopify dynamic checkout buttons (Shop Pay, Apple Pay, etc.)
+
+  PARAMETERS:
+  - product: {Object} Product object (required)
+
+  NOTE:
+  Dynamic checkout buttons only work within a Shopify product form.
+  This snippet uses the payment_button object which is automatically
+  populated when inside {% form 'product' %}.
+  
+  If using a custom <form>, this block should be hidden or the form
+  should be converted to use Shopify's form tag.
+  ============================================================================
 {%- endcomment -%}
+
+{%- liquid
+  assign v = product.selected_or_first_available_variant
+-%}
+
+{%- if v.available -%}
+  <div class="product-dynamic-checkout" data-product-dynamic-checkout>
+    {{ form | payment_button }}
+  </div>
+{%- endif -%}
+
+<style>
+  .product-dynamic-checkout {
+    /* margins controlled by parent */
+  }
+
+  .product-dynamic-checkout .shopify-payment-button {
+    margin-top: 0;
+  }
+
+  .product-dynamic-checkout .shopify-payment-button__button--unbranded {
+    background-color: var(--theme-color-blue);
+    border-radius: 4px;
+    padding: 0.75em 1.5em;
+    min-height: 3em;
+  }
+
+  .product-dynamic-checkout .shopify-payment-button__more-options {
+    margin-top: 0.75em;
+    font-size: 0.875em;
+  }
+</style>

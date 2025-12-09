@@ -1,294 +1,501 @@
-<section class="block-marketing-media-text">
-  <div class="block-marketing-media-text__inner alignwide is-constrained">
-    {%- if section.settings.heading != blank -%}
-      {%- render 'html-marketing-headline',
-        heading: section.settings.heading,
-        subheading: section.settings.subheading,
-        alignment: 'center'
-      -%}
-    {%- endif -%}
-    
-    {%- for block in section.blocks -%}
-      <div class="block-marketing-media-text__item" {{ block.shopify_attributes }}>
-        {%- case block.type -%}
-          {%- when 'image_text' -%}
-            {%- render 'html-marketing-split',
-              image: block.settings.image,
-              heading: block.settings.heading,
-              text: block.settings.text,
-              cta_text: block.settings.cta_text,
-              cta_url: block.settings.cta_url,
-              cta_style: block.settings.cta_style,
-              image_position: block.settings.image_position,
-              vertical_alignment: block.settings.vertical_alignment,
-              image_width: block.settings.image_width,
-              background_color: block.settings.background_color
-            -%}
-            
-          {%- when 'video_text' -%}
-            <div class="media-text-video">
-              <div class="media-text-video__media media-text-video__media--{{ block.settings.video_position }}">
-                {%- render 'html-marketing-video',
-                  video_url: block.settings.video_url,
-                  cover_image: block.settings.cover_image,
-                  width: 'full',
-                  aspect_ratio: '16-9'
-                -%}
-              </div>
-              
-              <div class="media-text-video__content">
-                {%- if block.settings.heading != blank -%}
-                  <h3 class="media-text-video__heading">{{ block.settings.heading | escape }}</h3>
-                {%- endif -%}
-                
-                {%- if block.settings.text != blank -%}
-                  <div class="media-text-video__text">{{ block.settings.text }}</div>
-                {%- endif -%}
-                
-                {%- if block.settings.cta_text != blank and block.settings.cta_url != blank -%}
-                  {%- render 'html-marketing-cta',
-                    text: block.settings.cta_text,
-                    url: block.settings.cta_url,
-                    style: block.settings.cta_style,
-                    alignment: 'left'
-                  -%}
-                {%- endif -%}
-              </div>
-            </div>
-        {%- endcase -%}
-      </div>
-      
-      {%- unless forloop.last -%}
-        <div class="block-marketing-media-text__spacer"></div>
-      {%- endunless -%}
-    {%- endfor -%}
-  </div>
-</section>
+{%- liquid
+	assign has_heading = false
+	if section.settings.heading != blank or section.settings.subheading != blank
+		assign has_heading = true
+	endif
+-%}
 
-{%- style -%}
-  .block-marketing-media-text__spacer {
-    height: 4rem;
-  }
-  
-  .media-text-video {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    align-items: center;
-  }
-  
-  .media-text-video__media--right {
-    order: 2;
-  }
-  
-  .media-text-video__content {
-    max-width: 600px;
-  }
-  
-  .media-text-video__heading {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 1rem;
-  }
-  
-  .media-text-video__text {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-  }
-  
-  @media (max-width: 989px) {
-    .media-text-video {
-      grid-template-columns: 1fr;
-    }
-    
-    .media-text-video__media--right {
-      order: initial;
-    }
-    
-    .block-marketing-media-text__spacer {
-      height: 2rem;
-    }
-  }
-{%- endstyle -%}
+<div class="block-marketing-media-text__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	{%- if section.settings.heading != blank -%}
+		{%- render 'html-marketing-headline',
+			heading: section.settings.heading,
+			subheading: section.settings.subheading,
+			alignment: 'center'
+		-%}
+	{%- endif -%}
+	
+	<div class="block-marketing-media-text__items{% if has_heading %} block-marketing-media-text__items--has-heading{% endif %}">
+		{%- for block in section.blocks -%}
+			<div class="block-marketing-media-text__item" {{ block.shopify_attributes }}>
+				{%- case block.type -%}
+					{%- when 'image_text' -%}
+						{%- render 'html-marketing-split',
+							image: block.settings.image,
+							heading: block.settings.heading,
+							text: block.settings.text,
+							cta_text: block.settings.cta_text,
+							cta_url: block.settings.cta_url,
+							cta_style: block.settings.cta_style,
+							image_position: block.settings.image_position,
+							vertical_alignment: block.settings.vertical_alignment,
+							image_width: block.settings.image_width,
+							image_height: block.settings.image_height,
+							focus_x: block.settings.focus_x,
+							focus_y: block.settings.focus_y,
+							background_color: block.settings.background_color,
+							text_color: block.settings.text_color,
+							button_color: block.settings.button_color,
+							button_text_color: block.settings.button_text_color
+						-%}
+					{%- when 'video_text' -%}
+						{%- liquid
+							case block.settings.video_height
+								when 'square'
+									assign video_aspect = '1-1'
+								when 'portrait'
+									assign video_aspect = '2-3'
+								when 'landscape'
+									assign video_aspect = '3-2'
+								else
+									assign video_aspect = '16-9'
+							endcase
+						-%}
+						<div class="block-marketing-media-text__split block-marketing-media-text__split--{{ block.settings.video_position }}{% if block.settings.video_height == 'fill' %} block-marketing-media-text__split--fill{% endif %}">
+							<div class="block-marketing-media-text__media block-marketing-media-text__media--{{ block.settings.video_height | default: 'landscape' }}">
+								{%- render 'html-marketing-video',
+									video_url: block.settings.video_url,
+									cover_image: block.settings.cover_image,
+									width: 'full',
+									aspect_ratio: video_aspect,
+									focus_x: block.settings.focus_x,
+									focus_y: block.settings.focus_y
+								-%}
+							</div>
+							<div class="block-marketing-media-text__text"{% if block.settings.background_color != blank or block.settings.text_color != blank %} style="{% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}{% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}"{% endif %}>
+								{%- if block.settings.heading != blank -%}
+									<h3 class="block-marketing-media-text__heading">{{ block.settings.heading | escape }}</h3>
+								{%- endif -%}
+								{%- if block.settings.text != blank -%}
+									<div class="block-marketing-media-text__description">{{ block.settings.text }}</div>
+								{%- endif -%}
+								{%- if block.settings.cta_url != blank -%}
+								{%- render 'html-marketing-cta',
+								 text: block.settings.cta_text,
+								 url: block.settings.cta_url,
+								 style: block.settings.cta_style,
+								 alignment: 'left',
+								 button_color: block.settings.button_color,
+								  button_text_color: block.settings.button_text_color
+								-%}
+							{%- endif -%}
+							</div>
+						</div>
+				{%- endcase -%}
+			</div>
+		{%- endfor -%}
+	</div>
+</div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-media-text {
+		background-color: {{ section.settings.background_color | default: '#ffffff' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: 3em;
+	}
+
+	.block-marketing-media-text__items--has-heading {
+		margin-block-start: 2em;
+	}
+
+	.block-marketing-media-text__item + .block-marketing-media-text__item {
+		margin-block-start: 3em;
+	}
+
+	.block-marketing-media-text__split {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2em;
+		align-items: center;
+	}
+
+	.block-marketing-media-text__split--right .block-marketing-media-text__media {
+		order: 2;
+	}
+
+	.block-marketing-media-text__split--fill {
+		align-items: stretch;
+	}
+
+	.block-marketing-media-text__media--fill {
+		height: 100%;
+		min-height: 20em;
+		position: relative;
+	}
+
+	.block-marketing-media-text__media--fill .marketing-video {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.block-marketing-media-text__media--fill .marketing-video__wrapper {
+		height: 100%;
+		padding-bottom: 0 !important;
+	}
+
+	.block-marketing-media-text__text {
+		max-width: 600px;
+		padding: 2em;
+	}
+
+	.block-marketing-media-text__heading {
+		font-family: var(--theme-font-family-serif);
+		font-size: 2em;
+		font-weight: 400;
+		margin: 0 0 0.5em;
+	}
+
+	.block-marketing-media-text__description {
+		font-size: 1em;
+		line-height: 1.6;
+		margin-block-end: 1.5em;
+	}
+
+	@media (max-width: 989px) {
+		.block-marketing-media-text__split {
+			grid-template-columns: 1fr;
+		}
+
+		.block-marketing-media-text__split--right .block-marketing-media-text__media {
+			order: unset;
+		}
+	}
+{% endstyle %}
 
 {% schema %}
 {
-  "name": "Marketing Media & Text",
-  "tag": "section",
-  "class": "block-marketing-media-text",
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  },
-  "settings": [
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Section Heading"
-    },
-    {
-      "type": "text",
-      "id": "subheading",
-      "label": "Section Subheading"
-    }
-  ],
-  "blocks": [
-    {
-      "type": "image_text",
-      "name": "Image + Text",
-      "settings": [
-        {
-          "type": "image_picker",
-          "id": "image",
-          "label": "Image"
-        },
-        {
-          "type": "select",
-          "id": "image_position",
-          "label": "Image Position",
-          "options": [
-            { "value": "left", "label": "Left" },
-            { "value": "right", "label": "Right" }
-          ],
-          "default": "left"
-        },
-        {
-          "type": "select",
-          "id": "image_width",
-          "label": "Image Width",
-          "options": [
-            { "value": "40", "label": "40%" },
-            { "value": "50", "label": "50%" },
-            { "value": "60", "label": "60%" }
-          ],
-          "default": "50"
-        },
-        {
-          "type": "select",
-          "id": "vertical_alignment",
-          "label": "Vertical Alignment",
-          "options": [
-            { "value": "top", "label": "Top" },
-            { "value": "center", "label": "Center" },
-            { "value": "bottom", "label": "Bottom" }
-          ],
-          "default": "center"
-        },
-        {
-          "type": "text",
-          "id": "heading",
-          "label": "Heading",
-          "default": "Feature Title"
-        },
-        {
-          "type": "richtext",
-          "id": "text",
-          "label": "Text",
-          "default": "<p>Add your description here...</p>"
-        },
-        {
-          "type": "text",
-          "id": "cta_text",
-          "label": "Button Text"
-        },
-        {
-          "type": "url",
-          "id": "cta_url",
-          "label": "Button URL"
-        },
-        {
-          "type": "select",
-          "id": "cta_style",
-          "label": "Button Style",
-          "options": [
-            { "value": "primary", "label": "Primary" },
-            { "value": "secondary", "label": "Secondary" },
-            { "value": "outline", "label": "Outline" }
-          ],
-          "default": "primary"
-        },
-        {
-          "type": "color",
-          "id": "background_color",
-          "label": "Background Color (Text Side)"
-        }
-      ]
-    },
-    {
-      "type": "video_text",
-      "name": "Video + Text",
-      "settings": [
-        {
-          "type": "text",
-          "id": "video_url",
-          "label": "Video URL",
-          "info": "YouTube or Vimeo URL"
-        },
-        {
-          "type": "image_picker",
-          "id": "cover_image",
-          "label": "Cover Image"
-        },
-        {
-          "type": "select",
-          "id": "video_position",
-          "label": "Video Position",
-          "options": [
-            { "value": "left", "label": "Left" },
-            { "value": "right", "label": "Right" }
-          ],
-          "default": "left"
-        },
-        {
-          "type": "text",
-          "id": "heading",
-          "label": "Heading",
-          "default": "Watch Our Story"
-        },
-        {
-          "type": "richtext",
-          "id": "text",
-          "label": "Text",
-          "default": "<p>Learn more about what we do...</p>"
-        },
-        {
-          "type": "text",
-          "id": "cta_text",
-          "label": "Button Text"
-        },
-        {
-          "type": "url",
-          "id": "cta_url",
-          "label": "Button URL"
-        },
-        {
-          "type": "select",
-          "id": "cta_style",
-          "label": "Button Style",
-          "options": [
-            { "value": "primary", "label": "Primary" },
-            { "value": "secondary", "label": "Secondary" },
-            { "value": "outline", "label": "Outline" }
-          ],
-          "default": "outline"
-        }
-      ]
-    }
-  ],
-  "max_blocks": 8,
-  "presets": [
-    {
-      "name": "Marketing Media & Text",
-      "category": "Theme Marketing",
-      "blocks": [
-        {
-          "type": "image_text",
-          "settings": {
-            "heading": "Our Approach"
-          }
-        }
-      ]
-    }
-  ]
+	"name": "Marketing media & text",
+	"tag": "section",
+	"class": "block-marketing-media-text",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading"
+		},
+		{
+			"type": "text",
+			"id": "subheading",
+			"label": "Subheading"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"blocks": [
+		{
+			"type": "image_text",
+			"name": "Image + text",
+			"settings": [
+				{
+					"type": "image_picker",
+					"id": "image",
+					"label": "Image"
+				},
+				{
+					"type": "select",
+					"id": "image_height",
+					"label": "Image height",
+					"options": [
+						{ "value": "adapt", "label": "Adapt to media" },
+						{ "value": "fill", "label": "Adapt to content" },
+						{ "value": "square", "label": "Square (1:1)" },
+						{ "value": "portrait", "label": "Portrait (2:3)" },
+						{ "value": "landscape", "label": "Landscape (3:2)" }
+					],
+					"default": "adapt"
+				},
+				{
+					"type": "range",
+					"id": "focus_x",
+					"label": "Horizontal focus",
+					"min": 0,
+					"max": 100,
+					"step": 5,
+					"default": 50,
+					"unit": "%"
+				},
+				{
+					"type": "range",
+					"id": "focus_y",
+					"label": "Vertical focus",
+					"min": 0,
+					"max": 100,
+					"step": 5,
+					"default": 50,
+					"unit": "%"
+				},
+				{
+					"type": "text",
+					"id": "heading",
+					"label": "Heading"
+				},
+				{
+					"type": "richtext",
+					"id": "text",
+					"label": "Text"
+				},
+				{
+					"type": "text",
+					"id": "cta_text",
+					"label": "Button text",
+					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "url",
+					"id": "cta_url",
+					"label": "Button link"
+				},
+				{
+					"type": "select",
+					"id": "cta_style",
+					"label": "Button style",
+					"options": [
+						{ "value": "primary", "label": "Primary" },
+						{ "value": "secondary", "label": "Secondary" },
+						{ "value": "outline", "label": "Outline" }
+					],
+					"default": "primary"
+				},
+				{
+					"type": "header",
+					"content": "Layout"
+				},
+				{
+					"type": "select",
+					"id": "image_position",
+					"label": "Image position (desktop)",
+					"options": [
+						{ "value": "left", "label": "Left" },
+						{ "value": "right", "label": "Right" }
+					],
+					"default": "left"
+				},
+				{
+					"type": "select",
+					"id": "image_width",
+					"label": "Image width",
+					"options": [
+						{ "value": "40", "label": "40%" },
+						{ "value": "50", "label": "50%" },
+						{ "value": "60", "label": "60%" }
+					],
+					"default": "50"
+				},
+				{
+					"type": "select",
+					"id": "vertical_alignment",
+					"label": "Vertical alignment",
+					"options": [
+						{ "value": "top", "label": "Top" },
+						{ "value": "center", "label": "Center" },
+						{ "value": "bottom", "label": "Bottom" }
+					],
+					"default": "center"
+				},
+				{
+					"type": "header",
+					"content": "Colors"
+				},
+				{
+					"type": "color",
+					"id": "background_color",
+					"label": "Text background"
+				},
+				{
+					"type": "color",
+					"id": "text_color",
+					"label": "Text color"
+				},
+				{
+					"type": "color",
+					"id": "button_color",
+					"label": "Button color"
+				},
+				{
+					"type": "color",
+					"id": "button_text_color",
+					"label": "Button text color"
+				}
+			]
+		},
+		{
+			"type": "video_text",
+			"name": "Video + text",
+			"settings": [
+				{
+					"type": "text",
+					"id": "video_url",
+					"label": "Video URL",
+					"info": "YouTube or Vimeo URL"
+				},
+				{
+					"type": "image_picker",
+					"id": "cover_image",
+					"label": "Cover image"
+				},
+				{
+					"type": "select",
+					"id": "video_height",
+					"label": "Video height",
+					"options": [
+						{ "value": "adapt", "label": "Adapt to media" },
+						{ "value": "fill", "label": "Adapt to content" },
+						{ "value": "square", "label": "Square (1:1)" },
+						{ "value": "portrait", "label": "Portrait (2:3)" },
+						{ "value": "landscape", "label": "Landscape (3:2)" }
+					],
+					"default": "landscape"
+				},
+				{
+					"type": "range",
+					"id": "focus_x",
+					"label": "Horizontal focus",
+					"min": 0,
+					"max": 100,
+					"step": 5,
+					"default": 50,
+					"unit": "%"
+				},
+				{
+					"type": "range",
+					"id": "focus_y",
+					"label": "Vertical focus",
+					"min": 0,
+					"max": 100,
+					"step": 5,
+					"default": 50,
+					"unit": "%"
+				},
+				{
+					"type": "text",
+					"id": "heading",
+					"label": "Heading"
+				},
+				{
+					"type": "richtext",
+					"id": "text",
+					"label": "Text"
+				},
+				{
+					"type": "text",
+					"id": "cta_text",
+					"label": "Button text",
+					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "url",
+					"id": "cta_url",
+					"label": "Button link"
+				},
+				{
+					"type": "select",
+					"id": "cta_style",
+					"label": "Button style",
+					"options": [
+						{ "value": "primary", "label": "Primary" },
+						{ "value": "secondary", "label": "Secondary" },
+						{ "value": "outline", "label": "Outline" }
+					],
+					"default": "outline"
+				},
+				{
+					"type": "header",
+					"content": "Layout"
+				},
+				{
+					"type": "select",
+					"id": "video_position",
+					"label": "Video position (desktop)",
+					"options": [
+						{ "value": "left", "label": "Left" },
+						{ "value": "right", "label": "Right" }
+					],
+					"default": "left"
+				},
+				{
+					"type": "header",
+					"content": "Colors"
+				},
+				{
+					"type": "color",
+					"id": "background_color",
+					"label": "Text background"
+				},
+				{
+					"type": "color",
+					"id": "text_color",
+					"label": "Text color"
+				},
+				{
+					"type": "color",
+					"id": "button_color",
+					"label": "Button color"
+				},
+				{
+					"type": "color",
+					"id": "button_text_color",
+					"label": "Button text color"
+				}
+			]
+		}
+	],
+	"max_blocks": 8,
+	"presets": [
+		{
+			"name": "Media & text",
+			"category": "Marketing",
+			"blocks": [
+				{ "type": "image_text" }
+			]
+		}
+	]
 }
 {% endschema %}

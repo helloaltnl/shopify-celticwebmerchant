@@ -1,0 +1,623 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-SEARCH-OVERLAY
+  ============================================================================
+
+  Purpose:
+  Full-width search overlay with predictive search functionality.
+  Top-aligned, input-focused design for quick search access.
+  
+  Usage:
+  Add to header-group.json or footer-group.json.
+  Trigger with html-button-search snippet or data-search-trigger attribute.
+
+  Block Types:
+  - product_results: Product search results (with grid layout option)
+  - collection_results: Collection search results
+  - article_results: Article/blog search results
+  - page_results: Page search results
+  - popular_searches: Predefined popular search terms
+  - recent_searches: User's recent searches (localStorage)
+
+  Dependencies:
+  - theme-search.js
+  - html-theme-icons snippet
+  - html-form-search snippet
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign overlay_id = section.settings.overlay_id | default: 'search-overlay'
+-%}
+
+<div 
+  class="block-search-overlay"
+  id="{{ overlay_id }}"
+  data-search-overlay
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="{{ overlay_id }}-title"
+  hidden
+>
+  <div class="block-search-overlay__backdrop" data-search-close></div>
+  
+  <div class="block-search-overlay__panel">
+    <div class="block-search-overlay__header align">
+      <h2 id="{{ overlay_id }}-title" class="visually-hidden">
+        {{ 'search.placeholder' | t }}
+      </h2>
+      
+      <div class="block-search-overlay__form">
+        {%- render 'html-form-search', 
+          input_id: overlay_id | append: '-input',
+          enable_predictive: section.settings.enable_predictive,
+          autofocus: true,
+          show_submit: true
+        -%}
+      </div>
+      
+      <button 
+        type="button" 
+        class="block-search-overlay__close"
+        data-search-close
+        aria-label="{{ 'accessibility.close' | t }}"
+      >
+        {%- render 'html-theme-icons', icon: 'close', size: 24 -%}
+      </button>
+    </div>
+    
+    <div class="block-search-overlay__results">
+      <div class="align" data-search-results>
+        {%- comment -%} Results rendered by JS {%- endcomment -%}
+      </div>
+    </div>
+  </div>
+  
+  {%- comment -%} Block configuration for JS {%- endcomment -%}
+  <script type="application/json" data-search-config>
+    {
+      "overlayId": {{ overlay_id | json }},
+      "routes": {
+        "root": {{ routes.root_url | json }},
+        "search": {{ routes.search_url | json }}
+      },
+      "moneyFormat": {{ shop.money_format | json }},
+      "strings": {
+        "noResults": {{ 'search.no_results' | t | json }},
+        "viewAll": {{ 'search.view_all' | t | json }},
+        "products": {{ 'search.products' | t | json }},
+        "collections": {{ 'search.collections' | t | json }},
+        "articles": {{ 'search.articles' | t | json }},
+        "pages": {{ 'search.pages' | t | json }},
+        "popularSearches": {{ 'search.popular' | t | json }},
+        "recentSearches": {{ 'search.recent' | t | json }}
+      },
+      "blocks": [
+        {%- for block in section.blocks -%}
+          {
+            "id": {{ block.id | json }},
+            "type": {{ block.type | json }},
+            "settings": {
+              {%- case block.type -%}
+                {%- when 'product_results' -%}
+                  "heading": {{ block.settings.heading | json }},
+                  "limit": {{ block.settings.limit | json }},
+                  "columns": {{ block.settings.columns | json }},
+                  "show_price": {{ block.settings.show_price | json }},
+                  "show_vendor": {{ block.settings.show_vendor | json }}
+                {%- when 'collection_results' -%}
+                  "heading": {{ block.settings.heading | json }},
+                  "limit": {{ block.settings.limit | json }}
+                {%- when 'article_results' -%}
+                  "heading": {{ block.settings.heading | json }},
+                  "limit": {{ block.settings.limit | json }}
+                {%- when 'page_results' -%}
+                  "heading": {{ block.settings.heading | json }},
+                  "limit": {{ block.settings.limit | json }}
+                {%- when 'popular_searches' -%}
+                  "heading": {{ block.settings.heading | json }},
+                  "terms": {{ block.settings.search_terms | json }}
+                {%- when 'recent_searches' -%}
+                  "heading": {{ block.settings.heading | json }},
+                  "limit": {{ block.settings.limit | json }}
+              {%- endcase -%}
+            }
+          }
+          {%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      ]
+    }
+  </script>
+</div>
+
+{% style %}
+  /* Overlay container */
+  .block-search-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: var(--theme-z-modal, 1000);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 200ms ease, visibility 200ms ease;
+  }
+
+  .block-search-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .block-search-overlay__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+
+  .block-search-overlay__panel {
+    position: relative;
+    width: 100%;
+    background-color: var(--theme-color-white, #fff);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 1.25rem 0;
+  }
+
+  .block-search-overlay__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .block-search-overlay__form {
+    flex: 1 1 auto;
+  }
+
+  .block-search-overlay__close {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: inherit;
+    transition: opacity 150ms ease;
+  }
+
+  .block-search-overlay__close:hover {
+    opacity: 0.7;
+  }
+
+  /* Results container */
+  .block-search-overlay__results {
+    margin-top: 1rem;
+    max-height: calc(80vh - 6rem);
+    overflow-y: auto;
+  }
+
+  /* Sections stack vertically */
+  .block-search-overlay__results .search-results__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    background: none;
+  }
+
+  .block-search-overlay__results .search-results__section {
+    width: 100%;
+  }
+
+  .block-search-overlay__results .search-results__heading {
+    font-family: var(--theme-font-family-serif);
+    font-size: 1rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.5em;
+    padding-bottom: 0.35em;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  /* Items list - default vertical */
+  .block-search-overlay__results .search-results__items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  /* Product items - grid layout based on columns setting */
+  .block-search-overlay__results .search-results__section--products .search-results__items {
+    display: grid;
+    gap: 0.75rem 1.5rem;
+  }
+
+  .block-search-overlay__results .search-results__section--products[data-columns="1"] .search-results__items {
+    grid-template-columns: 1fr;
+  }
+
+  .block-search-overlay__results .search-results__section--products[data-columns="2"] .search-results__items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .block-search-overlay__results .search-results__section--products[data-columns="3"] .search-results__items {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Item styling */
+  .block-search-overlay__results .search-results__item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 4px;
+    transition: background-color 150ms ease;
+  }
+
+  .block-search-overlay__results .search-results__item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  .block-search-overlay__results .search-results__item--compact {
+    padding: 0.25rem 0;
+  }
+
+  .block-search-overlay__results .search-results__item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .block-search-overlay__results .search-results__placeholder {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .block-search-overlay__results .search-results__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .block-search-overlay__results .search-results__vendor {
+    font-size: 0.75em;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .block-search-overlay__results .search-results__title {
+    font-size: 0.875em;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .block-search-overlay__results .search-results__price {
+    font-size: 0.8em;
+    font-weight: 500;
+  }
+
+  /* Tags (popular/recent searches) */
+  .block-search-overlay__results .search-results__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .block-search-overlay__results .search-results__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3em 0.7em;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 2em;
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.875em;
+    transition: background-color 150ms ease;
+  }
+
+  .block-search-overlay__results .search-results__tag:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .block-search-overlay__results .search-results__tag svg {
+    opacity: 0.5;
+  }
+
+  /* Footer */
+  .block-search-overlay__results .search-results__footer {
+    margin-top: 1.25rem;
+    padding-top: 0.75rem;
+    text-align: center;
+  }
+
+  .block-search-overlay__results .search-results__view-all {
+    display: inline-block;
+    padding: 0.5em 1.25em;
+    background-color: #111;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 2px;
+    font-size: 0.875em;
+    transition: opacity 150ms ease;
+  }
+
+  .block-search-overlay__results .search-results__view-all:hover {
+    opacity: 0.8;
+  }
+
+  /* States */
+  .block-search-overlay__results .search-results__empty {
+    text-align: center;
+    padding: 1.5rem;
+    opacity: 0.6;
+  }
+
+  .block-search-overlay__results .search-results__loading {
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  .block-search-overlay__results .search-results__loading::after {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-top-color: #111;
+    border-radius: 50%;
+    animation: search-spin 0.8s linear infinite;
+  }
+
+  @keyframes search-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Mobile */
+  @media (max-width: 47.5em) {
+    .block-search-overlay__panel {
+      padding: 1rem 0;
+    }
+
+    .block-search-overlay__results {
+      max-height: calc(80vh - 5rem);
+    }
+
+    .block-search-overlay__results .search-results__grid {
+      gap: 1rem;
+    }
+
+    /* Force single column on mobile */
+    .block-search-overlay__results .search-results__section--products .search-results__items {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* Body lock when search is open */
+  .has-search-open {
+    overflow: hidden;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Search overlay",
+  "tag": "section",
+  "class": "block-search-overlay-section",
+  "limit": 1,
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Settings"
+    },
+    {
+      "type": "text",
+      "id": "overlay_id",
+      "label": "Overlay ID",
+      "default": "search-overlay"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_predictive",
+      "label": "Enable predictive search",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "How to use"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add to footer group. Trigger with html-button-search snippet or any element with data-search-trigger attribute."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product_results",
+      "name": "Product results",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "info": "Leave empty to use locale default"
+        },
+        {
+          "type": "range",
+          "id": "limit",
+          "min": 2,
+          "max": 10,
+          "step": 1,
+          "default": 6,
+          "label": "Maximum results"
+        },
+        {
+          "type": "select",
+          "id": "columns",
+          "label": "Columns",
+          "options": [
+            { "value": "1", "label": "1" },
+            { "value": "2", "label": "2" },
+            { "value": "3", "label": "3" }
+          ],
+          "default": "2",
+          "info": "Mobile always shows 1 column"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_price",
+          "label": "Show price",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_vendor",
+          "label": "Show vendor",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "collection_results",
+      "name": "Collection results",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "info": "Leave empty to use locale default"
+        },
+        {
+          "type": "range",
+          "id": "limit",
+          "min": 2,
+          "max": 10,
+          "step": 1,
+          "default": 4,
+          "label": "Maximum results"
+        }
+      ]
+    },
+    {
+      "type": "article_results",
+      "name": "Article results",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "info": "Leave empty to use locale default"
+        },
+        {
+          "type": "range",
+          "id": "limit",
+          "min": 2,
+          "max": 10,
+          "step": 1,
+          "default": 4,
+          "label": "Maximum results"
+        }
+      ]
+    },
+    {
+      "type": "page_results",
+      "name": "Page results",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "info": "Leave empty to use locale default"
+        },
+        {
+          "type": "range",
+          "id": "limit",
+          "min": 2,
+          "max": 10,
+          "step": 1,
+          "default": 4,
+          "label": "Maximum results"
+        }
+      ]
+    },
+    {
+      "type": "popular_searches",
+      "name": "Popular searches",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "info": "Leave empty to use locale default"
+        },
+        {
+          "type": "textarea",
+          "id": "search_terms",
+          "label": "Search terms",
+          "placeholder": "Whisky, Gin, Rum, Vodka"
+        }
+      ]
+    },
+    {
+      "type": "recent_searches",
+      "name": "Recent searches",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "info": "Leave empty to use locale default"
+        },
+        {
+          "type": "range",
+          "id": "limit",
+          "min": 3,
+          "max": 10,
+          "step": 1,
+          "default": 5,
+          "label": "Maximum items"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Overlay",
+      "category": "Search",
+      "blocks": [
+        { "type": "popular_searches" },
+        { "type": "recent_searches" },
+        { "type": "product_results" },
+        { "type": "collection_results" }
+      ]
+    }
+  ]
+}
+{% endschema %}

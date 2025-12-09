@@ -1,229 +1,253 @@
-<section class="block-collection-bottom-content">
-	<section class="references">
-		{% assign blogpost_references = collection.metafields.custom.collection-blogpost-references %}
-		{% assign knowledge_references = collection.metafields.custom.collection-knowledgebase-references %}
-		{% if blogpost_references or knowledge_references %}
-		<section class="blog-articles__inner align">
-			<section class="blog-articles__title">
-				<h3>Gerelateerde artikelen</h3>	
-			</section>
-			<section class="blog-articles__content is-flex">
-				{% if blogpost_references %}
-					<ul class="is-list-articles is-flex-columns is-list-unstyled">
-						{% for article_reference in blogpost_references.value %}
-							<li>
-							<article class="article-card article-reference">
-								<a href="{{ article_reference.link.value.url }}" class="article-card__link"></a>
-								<figure class="article-card__image">
-									{% if article_reference.thumb %}
-									<img
-									src="{{ article_reference.thumb | image_url: width: 296 }}"
-									alt="{{ article_reference.title | escape }}"
-									>
-									{% endif %}
-								</figure>
-								<section class="article-card__content">
-									<h3>{{ article_reference.title }}</h3>
-									{% if article_reference.excerpt %}
-										<p>{{ article_reference.excerpt }}</p>
-									{% endif %}
-									{% if article_reference.link %}
-										<a href="{{ article_reference.link.value.url }}" class="is-button" target="_blank">
-											<span>{{ article_reference.link.value.text }}</span>
-											<i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i>
-										</a>
-									{% endif %}	
-								</section>
-							</article>
-							</li>
-						{% endfor %}
-					</ul>
-				{% endif %}
-				{% if knowledge_references %}
-					<ul class="is-list-knowledgebase is-list-unstyled is-flex-rows">
-						{% for article_reference in knowledge_references.value %}
-							<li>
-							<article class="article-card article-reference">
-								<a href="{{ article_reference.link.value.url }}" class="article-card__link"></a>
-								<!-- <figure class="article-card__image">
-									{% if article_reference.thumb %}
-									<img
-									src="{{ article_reference.thumb | image_url: width: 296 }}"
-									alt="{{ article_reference.title | escape }}"
-									>
-									{% endif %}
-								</figure> -->
-								<section class="article-card__content">
-									<h4>{{ article_reference.title }}</h4>
-									{% if article_reference.excerpt %}
-										<p>{{ article_reference.excerpt }}</p>
-									{% endif %}
-									{% if article_reference.link %}
-										<a href="{{ article_reference.link.value.url }}" class="is-button" target="_blank">
-											<span>{{ article_reference.link.value.text }}</span>
-											<i><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"></path></svg></i>
-										</a>
-									{% endif %}	
-								</section>
-							</article>
-							</li>
-						{% endfor %}
-					</ul>
-				{% endif %}
-			</section>
-		</section>
-		{%- style -%}
-			.references {
-				background-color:var(--theme-color-grey);
-				padding-top: 3em; padding-bottom: 3em;
-				& section.blog-sizecharts__title {
-					& > h3 {
-						font-size: 2em; font-weight: 400;
-						text-align: center;
-						& > i { 
-							display:inline-block; height:1em; width:1em; 
-							& > svg {
-								height:1em; width:1em; 
-							}
-						}
-					}
-				}
-				& section.blog-sizecharts__content {
-					& > ul {
-						&.is-grid {
-							& > li {
-								overflow: hidden;
-								& > article {
-									display:flex; flex-direction: row; flex-wrap: nowrap; 
-									& > figure { flex-basis: 6em; }
-									& > section { flex-basis: 10em; flex-grow: 1;}
-								}
-								
-							}
-						}
-					}
-				}
-				& section.blog-articles__title {
-					& > h3 {
-						font-size: 2em; font-weight: 400;
-						text-align: center;
-					}
-				}
-				& section.blog-articles__content {
-					& > ul {
-						align-self: flex-start;
-						&.is-grid {}
-						&.is-flex-columns {
-							justify-content: center; align-items: stretch;
-							& > li {
-								flex-basis: 16em; flex-shrink: 0; overflow: hidden;
-								& > article {
-									display:flex; flex-direction: row; flex-wrap: nowrap; 
-									& > figure { flex-basis: 6em; }
-									& > section { flex-basis: 10em; flex-grow: 1;}
-								}
-								
-							}
-						}
-						&.is-list-articles {
-							flex-basis: 20em; flex-grow: 1; 
-							& > li {
-								& > article {
-									background-color: var(--theme-color-white); color:var(--theme-color-blue);
-								}
-							}
-						}
-						&.is-list-knowledgebase {
-							flex-basis: 20em; flex-shrink: 0;
-							& > li {
-								& > article {
-									background-color: var(--theme-color-blue); color:var(--theme-color-white);
-								}
-							}
-						}
-					}
-				}
-				& article {
-					display:block; position: relative; background-color: #fff; width:100%; height:100%;
-					& figure.article-card__image {
-						margin:0; padding: 0; width: 100%; aspect-ratio:2/3; overflow: hidden; 
-						align-self:stretch; align-content: center;
-						& img { width:100%; height:100%; object-fit: cover; vertical-align: bottom; transition: transform 175ms ease;}
-					}
-					& section.article-card__content {
-						padding:1em; 
-						& h3 { font-size: 1.4em; line-height:1.1em; font-weight: 400; margin-bottom: 0.2em; margin-top: 0; color: inherit; }
-						& h4 { font-size: 1.1em; line-height:1.1em; font-weight: 400; margin-bottom: 0.2em; margin-top: 0; color: inherit; }
-						& p { font-size: 0.9em; line-height: 1.4em;}
-						& a { 
-							color: inherit; 
-							& > i { transition:transform 125ms ease;}
-						}
-					}
-					& a.article-card__link {
-						display:block; position: absolute; left:0; top:0; right:0; bottom:0; width:100%; height:100%; z-index: 5;
-						&:hover {
-							& ~ figure {
-								& img {
-									transform: scale(1.1);
-								}
-							}
-							& ~ section {
-								& a {
-									& > i {
-										transform: translate3d(0.2em, 0, 0 );
-									}
-								}
-							}
-						} 
-					}
-				}
-			}
-		{%- endstyle -%}
-		{% endif %}
-	</section>
-	<article class="description alignsmall">
-		<h1>{{- collection.title | escape -}}</h1>
-		{{ collection.description }}
-	</article>
-</section>
+{% comment %}
+  ============================================================================
+  BLOCK-COLLECTION-BOTTOM
+  ============================================================================
+  SEO text section for collections with title and description.
 
-{%- style -%}
+  FEATURES:
+  - Collection title (configurable heading level)
+  - Collection description (rich text)
+  - Width alignment options
+  - Color customization
+
+  DEPENDENCIES:
+  - None
+  ============================================================================
+{% endcomment %}
+
+{%- if collection.description != blank or section.settings.show_title -%}
+<div class="block-collection-bottom__content {{ section.settings.width }}">
+	{%- if section.settings.show_title -%}
+		<{{ section.settings.heading_tag }} class="block-collection-bottom__title">
+			{{ collection.title | escape }}
+		</{{ section.settings.heading_tag }}>
+	{%- endif -%}
+
+	{%- if collection.description != blank -%}
+		<div class="block-collection-bottom__description rte">
+			{{ collection.description 
+				| replace: '<br>', ''
+				| replace: '<br/>', ''
+				| replace: '<br />', ''
+				| replace: '<p></p>', ''
+				| replace: '<p> </p>', ''
+				| replace: '<p>  </p>', ''
+				| replace: '<p>&nbsp;</p>', ''
+			}}
+		</div>
+	{%- endif -%}
+</div>
+{%- endif -%}
+
+{% style %}
 	.block-collection-bottom {
-		& .block-collection-bottom-content {
-			text-align: center; padding-bottom: 2em;
-			& h1 {
-				font-family: 'Absara Pro'; font-weight: 400; margin-bottom: 0;
-			}
-			& p {
-				 margin-bottom: 0; letter-spacing: -0.02em;
-			}
-			& > .references {}
-			& > .description {
-				padding-top: 2em; padding-bottom: 2em;
-			}
-		}
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-top: 4em;
+		padding-bottom: 4em;
 	}
-{%- endstyle -%}
 
-{% javascript %}
-{% endjavascript %}
+	.block-collection-bottom__content {
+		text-align: {{ section.settings.text_align }};
+	}
+
+	.block-collection-bottom__title {
+		font-family: var(--theme-font-family-serif);
+		font-size: clamp(1.6em, 4vw, 2em);
+		font-weight: 400;
+		line-height: 1.2;
+		letter-spacing: var(--theme-letter-spacing);
+		margin: 0 0 0.75em 0;
+	}
+
+	.block-collection-bottom__description {
+		line-height: 1.6;
+		letter-spacing: var(--theme-letter-spacing);
+	}
+
+	/* Rich text styling */
+	.block-collection-bottom__description.rte h1,
+	.block-collection-bottom__description.rte h2,
+	.block-collection-bottom__description.rte h3,
+	.block-collection-bottom__description.rte h4,
+	.block-collection-bottom__description.rte h5,
+	.block-collection-bottom__description.rte h6 {
+		font-family: var(--theme-font-family-serif);
+		font-weight: 500;
+		margin-top: 1.5em;
+		margin-bottom: 0.5em;
+	}
+
+	/* Remove bold from headings (editors often wrap text in <strong>) */
+	.block-collection-bottom__description.rte h1 strong,
+	.block-collection-bottom__description.rte h2 strong,
+	.block-collection-bottom__description.rte h3 strong,
+	.block-collection-bottom__description.rte h4 strong,
+	.block-collection-bottom__description.rte h5 strong,
+	.block-collection-bottom__description.rte h6 strong {
+		font-weight: inherit;
+	}
+
+	.block-collection-bottom__description.rte h1:first-child,
+	.block-collection-bottom__description.rte h2:first-child,
+	.block-collection-bottom__description.rte h3:first-child {
+		margin-top: 0;
+	}
+
+	.block-collection-bottom__description.rte p {
+		margin-bottom: 1em;
+	}
+
+	.block-collection-bottom__description.rte p:last-child {
+		margin-bottom: 0;
+	}
+	
+	.block-collection-bottom__description.rte p:empty {
+		display: none;
+	}
+
+	.block-collection-bottom__description.rte ul,
+	.block-collection-bottom__description.rte ol {
+		margin: 1em 0;
+		padding-left: 1.5em;
+		list-style: revert;
+	}
+
+	.block-collection-bottom__description.rte li {
+		margin-bottom: 0.25em;
+	}
+
+	.block-collection-bottom__description.rte a {
+		color: var(--theme-color-blue);
+		text-decoration: underline;
+	}
+
+	.block-collection-bottom__description.rte a:hover {
+		text-decoration: none;
+	}
+
+	.block-collection-bottom__description.rte img {
+		max-width: 100%;
+		height: auto;
+		margin: 1em 0;
+	}
+
+	.block-collection-bottom__description.rte table {
+		width: 100%;
+		margin: 1em 0;
+		border-collapse: collapse;
+	}
+
+	.block-collection-bottom__description.rte th,
+	.block-collection-bottom__description.rte td {
+		padding: 0.5em;
+		border: 1px solid var(--theme-color-grey);
+		text-align: left;
+	}
+
+	.block-collection-bottom__description.rte th {
+		background-color: var(--theme-color-grey);
+		font-weight: 600;
+	}
+{% endstyle %}
+
+<script>
+(function() {
+	const rte = document.querySelector('.block-collection-bottom__description.rte');
+	if (!rte) return;
+	rte.querySelectorAll('p').forEach(p => {
+		if (!p.textContent.trim()) p.remove();
+	});
+})();
+</script>
 
 {% schema %}
 {
-  "name": "Collection bottom",
-  "tag": "section",
-  "class": "block-collection-bottom",
-  "disabled_on": {
-	"groups": ["header", "footer"]
-  },
-  "settings": [],
-  "presets": [
-	{
-	  "name": "Collection bottom",
-	  "category": "Theme Collection",
-	  "blocks": []
-	}
-  ]
+	"name": "Collection bottom",
+	"tag": "section",
+	"class": "block-collection-bottom",
+	"enabled_on": {
+		"templates": ["collection"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_title",
+			"label": "Show collection title",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "heading_tag",
+			"label": "Heading tag",
+			"options": [
+				{ "value": "h1", "label": "H1" },
+				{ "value": "h2", "label": "H2" },
+				{ "value": "h3", "label": "H3" }
+			],
+			"default": "h2"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignsmall"
+		},
+		{
+			"type": "select",
+			"id": "text_align",
+			"label": "Text alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" },
+				{ "value": "right", "label": "Right" }
+			],
+			"default": "center"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Displays the collection description for SEO purposes. The description is managed in the collection settings."
+		}
+	],
+	"presets": [
+		{
+			"name": "Bottom",
+			"category": "Collection"
+		}
+	]
 }
 {% endschema %}

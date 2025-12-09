@@ -1,148 +1,211 @@
-<section class="block-marketing-cover">
-  <div class="block-marketing-cover__inner">
-    {%- render 'html-marketing-cover',
-      image: section.settings.image,
-      video_url: section.settings.video_url,
-      heading: section.settings.heading,
-      subheading: section.settings.subheading,
-      text: section.settings.text,
-      cta_text: section.settings.cta_text,
-      cta_url: section.settings.cta_url,
-      cta_style: section.settings.cta_style,
-      overlay_opacity: section.settings.overlay_opacity,
-      text_alignment: section.settings.text_alignment,
-      text_position: section.settings.text_position,
-      height: section.settings.height
-    -%}
-  </div>
-</section>
+<div class="block-marketing-cover__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	{%- render 'html-marketing-cover',
+		image: section.settings.image,
+		video: section.settings.video,
+		focus_x: section.settings.focus_x,
+		focus_y: section.settings.focus_y,
+		heading: section.settings.heading,
+		subheading: section.settings.subheading,
+		text: section.settings.text,
+		buttons: section.blocks,
+		overlay_opacity: section.settings.overlay,
+		text_alignment: section.settings.text_alignment,
+		text_position: section.settings.text_position,
+		height: section.settings.height
+	-%}
+</div>
 
 {% schema %}
 {
-  "name": "Marketing Cover",
-  "tag": "section",
-  "class": "block-marketing-cover",
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  },
-  "settings": [
-    {
-      "type": "image_picker",
-      "id": "image",
-      "label": "Background Image",
-      "info": "Used as background or as poster image for video"
-    },
-    {
-      "type": "text",
-      "id": "video_url",
-      "label": "Background Video URL (optional)",
-      "info": "YouTube or Vimeo URL. If provided, video will be used instead of static image. Image will be shown as poster during loading.",
-      "placeholder": "https://www.youtube.com/watch?v=...",
-      "default": "https://www.youtube.com/watch?v=Z1BCujX3pw8"
-    },
-    {
-      "type": "header",
-      "content": "Content"
-    },
-    {
-      "type": "text",
-      "id": "subheading",
-      "label": "Subheading",
-      "default": "Welcome"
-    },
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Your Amazing Store"
-    },
-    {
-      "type": "richtext",
-      "id": "text",
-      "label": "Text",
-      "default": "<p>Discover our collection</p>"
-    },
-    {
-      "type": "header",
-      "content": "Layout"
-    },
-    {
-      "type": "select",
-      "id": "height",
-      "label": "Height",
-      "options": [
-        { "value": "small", "label": "Small" },
-        { "value": "medium", "label": "Medium" },
-        { "value": "large", "label": "Large" },
-        { "value": "full", "label": "Full Screen" }
-      ],
-      "default": "medium"
-    },
-    {
-      "type": "select",
-      "id": "overlay_opacity",
-      "label": "Overlay Opacity",
-      "options": [
-        { "value": "light", "label": "Light" },
-        { "value": "medium", "label": "Medium" },
-        { "value": "dark", "label": "Dark" }
-      ],
-      "default": "medium"
-    },
-    {
-      "type": "select",
-      "id": "text_position",
-      "label": "Text Position",
-      "options": [
-        { "value": "top", "label": "Top" },
-        { "value": "center", "label": "Center" },
-        { "value": "bottom", "label": "Bottom" }
-      ],
-      "default": "center"
-    },
-    {
-      "type": "select",
-      "id": "text_alignment",
-      "label": "Text Alignment",
-      "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
-      ],
-      "default": "center"
-    },
-    {
-      "type": "header",
-      "content": "Call to Action"
-    },
-    {
-      "type": "text",
-      "id": "cta_text",
-      "label": "Button Text",
-      "default": "Shop Now"
-    },
-    {
-      "type": "url",
-      "id": "cta_url",
-      "label": "Button URL"
-    },
-    {
-      "type": "select",
-      "id": "cta_style",
-      "label": "Button Style",
-      "options": [
-        { "value": "primary", "label": "Primary" },
-        { "value": "secondary", "label": "Secondary" },
-        { "value": "outline", "label": "Outline" }
-      ],
-      "default": "primary"
-    }
-  ],
-  "presets": [
-    {
-      "name": "Marketing Cover",
-      "category": "Theme Marketing"
-    }
-  ]
+	"name": "Marketing cover",
+	"tag": "section",
+	"class": "block-marketing-cover",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "subheading",
+			"label": "Subheading"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading"
+		},
+		{
+			"type": "richtext",
+			"id": "text",
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Media"
+		},
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Background image"
+		},
+		{
+			"type": "video",
+			"id": "video",
+			"label": "Background video",
+			"info": "Image is used as poster. Video autoplays muted."
+		},
+		{
+			"type": "range",
+			"id": "focus_x",
+			"label": "Horizontal focus",
+			"min": 0,
+			"max": 100,
+			"step": 5,
+			"default": 50,
+			"unit": "%"
+		},
+		{
+			"type": "range",
+			"id": "focus_y",
+			"label": "Vertical focus",
+			"min": 0,
+			"max": 100,
+			"step": 5,
+			"default": 50,
+			"unit": "%"
+		},
+		{
+			"type": "select",
+			"id": "overlay",
+			"label": "Overlay",
+			"options": [
+				{ "value": "none", "label": "None" },
+				{ "value": "light", "label": "Light" },
+				{ "value": "medium", "label": "Medium" },
+				{ "value": "dark", "label": "Dark" }
+			],
+			"default": "medium"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignfull"
+		},
+		{
+			"type": "select",
+			"id": "height",
+			"label": "Height",
+			"options": [
+				{ "value": "small", "label": "Small" },
+				{ "value": "medium", "label": "Medium" },
+				{ "value": "large", "label": "Large" },
+				{ "value": "full", "label": "Full screen" }
+			],
+			"default": "medium"
+		},
+		{
+			"type": "select",
+			"id": "text_position",
+			"label": "Text position",
+			"options": [
+				{ "value": "top", "label": "Top" },
+				{ "value": "center", "label": "Center" },
+				{ "value": "bottom", "label": "Bottom" }
+			],
+			"default": "center"
+		},
+		{
+			"type": "select",
+			"id": "text_alignment",
+			"label": "Text alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" },
+				{ "value": "right", "label": "Right" }
+			],
+			"default": "center"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"blocks": [
+		{
+			"type": "button",
+			"name": "Button",
+			"settings": [
+				{
+					"type": "text",
+					"id": "text",
+					"label": "Button text",
+					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "url",
+					"id": "url",
+					"label": "Button link"
+				},
+				{
+					"type": "select",
+					"id": "style",
+					"label": "Button style",
+					"options": [
+						{ "value": "primary", "label": "Primary" },
+						{ "value": "secondary", "label": "Secondary" },
+						{ "value": "outline", "label": "Outline" }
+					],
+					"default": "primary"
+				},
+				{
+					"type": "header",
+					"content": "Colors"
+				},
+				{
+					"type": "color",
+					"id": "button_color",
+					"label": "Button color"
+				},
+				{
+					"type": "color",
+					"id": "button_text_color",
+					"label": "Button text color"
+				}
+			]
+		}
+	],
+	"max_blocks": 4,
+	"presets": [
+		{
+			"name": "Cover",
+			"category": "Marketing",
+			"blocks": [
+				{
+					"type": "button"
+				}
+			]
+		}
+	]
 }
 {% endschema %}

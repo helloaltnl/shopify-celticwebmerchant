@@ -12,9 +12,34 @@
     "main": {
       "type": "main-404",
       "settings": {}
+    },
+    "block_marketing_products_F9HJfX": {
+      "type": "block-marketing-products",
+      "name": "Products",
+      "settings": {
+        "collection": "midnight-sale",
+        "heading": "Populaire producten!",
+        "max_products": 12,
+        "only_available": true,
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": true,
+        "quick_add": false,
+        "width": "alignwide",
+        "columns_desktop": 4,
+        "columns_tablet": "3",
+        "columns_mobile": "2",
+        "visible_rows": 1,
+        "show_more_text": "",
+        "show_less_text": "",
+        "background_color": "#f5f5f5",
+        "text_color": "#111111"
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "block_marketing_products_F9HJfX"
   ]
 }

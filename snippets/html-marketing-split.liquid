@@ -12,7 +12,13 @@
   - image_position: {String} left | right - default: left
   - vertical_alignment: {String} top | center | bottom - default: center
   - image_width: {String} 40 | 50 | 60 - default: 50 (percentage)
+  - image_height: {String} adapt | fill | square | portrait | landscape - default: adapt
+  - focus_x: {Number} 0-100 - horizontal focus point - default: 50
+  - focus_y: {Number} 0-100 - vertical focus point - default: 50
   - background_color: {String} Optional background color for text side
+  - text_color: {String} Optional text color for text side
+  - button_color: {String} Custom button background/border color
+  - button_text_color: {String} Custom button text color
 {% endcomment %}
 
 {%- liquid
@@ -24,11 +30,14 @@
   assign image_position = image_position | default: 'left'
   assign vertical_alignment = vertical_alignment | default: 'center'
   assign image_width = image_width | default: '50'
+  assign image_height = image_height | default: 'adapt'
+  assign focus_x = focus_x | default: 50
+  assign focus_y = focus_y | default: 50
   assign background_color = background_color | default: ''
 -%}
 
-<div class="marketing-split marketing-split--image-{{ image_position }} marketing-split--align-{{ vertical_alignment }} marketing-split--image-width-{{ image_width }}">
-  <div class="marketing-split__image">
+<div class="marketing-split marketing-split--image-{{ image_position }} marketing-split--align-{{ vertical_alignment }} marketing-split--image-width-{{ image_width }}{% if image_height == 'fill' %} marketing-split--fill{% endif %}">
+  <div class="marketing-split__image marketing-split__image--{{ image_height }}">
     {%- if image -%}
       <img
         src="{{ image | image_url: width: 1000 }}"
@@ -43,6 +52,7 @@
         width="{{ image.width }}"
         height="{{ image.height }}"
         loading="lazy"
+        style="object-position: {{ focus_x }}% {{ focus_y }}%;"
       />
     {%- else -%}
       <div class="marketing-split__placeholder">
@@ -51,7 +61,7 @@
     {%- endif -%}
   </div>
   
-  <div class="marketing-split__content"{% if background_color != blank %} style="background-color: {{ background_color }};"{% endif %}>
+  <div class="marketing-split__content"{% if background_color != blank or text_color != blank %} style="{% if background_color != blank %}background-color: {{ background_color }};{% endif %}{% if text_color != blank %}color: {{ text_color }};{% endif %}"{% endif %}>
     <div class="marketing-split__inner">
       {%- if heading != blank -%}
         <h2 class="marketing-split__heading">{{ heading | escape }}</h2>
@@ -61,13 +71,15 @@
         <div class="marketing-split__text">{{ text }}</div>
       {%- endif -%}
       
-      {%- if cta_text != blank and cta_url != blank -%}
+      {%- if cta_url != blank -%}
         <div class="marketing-split__cta">
           {%- render 'html-marketing-cta',
             text: cta_text,
             url: cta_url,
             style: cta_style,
-            alignment: 'left'
+            alignment: 'left',
+            button_color: button_color,
+            button_text_color: button_text_color
           -%}
         </div>
       {%- endif -%}
@@ -81,6 +93,10 @@
     grid-template-columns: 1fr 1fr;
     align-items: center;
     gap: 0;
+  }
+
+  .marketing-split > * {
+    min-width: 0;
   }
   
   /* Image width variations */
@@ -98,11 +114,20 @@
   
   /* Image position */
   .marketing-split--image-right .marketing-split__image {
-    order: 2;
+  order: 2;
   }
-  
+
   .marketing-split--image-right .marketing-split__content {
-    order: 1;
+  order: 1;
+  }
+
+  /* Flip grid columns when image is on right */
+  .marketing-split--image-right.marketing-split--image-width-40 {
+    grid-template-columns: 60% 40%;
+  }
+
+  .marketing-split--image-right.marketing-split--image-width-60 {
+    grid-template-columns: 40% 60%;
   }
   
   /* Vertical alignment */
@@ -124,13 +149,59 @@
     width: 100%;
     height: 100%;
     min-height: 400px;
+    overflow: hidden;
   }
   
   .marketing-split__image img {
     width: 100%;
+    max-width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+  }
+  
+  /* Image height variations */
+  .marketing-split__image--adapt {
+    aspect-ratio: auto;
+    min-height: 0;
+  }
+  
+  .marketing-split__image--adapt img {
+    height: auto;
+    object-fit: contain;
+  }
+  
+  .marketing-split--fill {
+    align-items: stretch;
+  }
+  
+  .marketing-split__image--fill {
+    aspect-ratio: unset;
+    height: 100%;
+    min-height: 20em;
+  }
+  
+  .marketing-split__image--fill img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .marketing-split__image--square {
+    aspect-ratio: 1 / 1;
+    min-height: 0;
+  }
+  
+  .marketing-split__image--portrait {
+    aspect-ratio: 2 / 3;
+    min-height: 0;
+  }
+  
+  .marketing-split__image--landscape {
+    aspect-ratio: 3 / 2;
+    min-height: 0;
   }
   
   /* Placeholder */
@@ -151,7 +222,7 @@
   
   /* Content */
   .marketing-split__content {
-    padding: 3rem;
+    padding: 3em;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -159,20 +230,20 @@
   }
   
   .marketing-split__inner {
-    max-width: 600px;
+    /* max-width: 600px; */
   }
   
   .marketing-split__heading {
-    font-size: 2.5rem;
-    margin: 0 0 1.5rem;
-    font-weight: 700;
+    font-size: 2em;
+    margin: 0 0 1rem;
+    font-weight: 500;
     line-height: 1.2;
   }
   
   .marketing-split__text {
-    font-size: 1rem;
+    font-size: 1em;
     line-height: 1.6;
-    margin-bottom: 2rem;
+    margin-bottom: 2em;
   }
   
   .marketing-split__text > * + * {
@@ -180,7 +251,7 @@
   }
   
   .marketing-split__cta {
-    margin-top: 2rem;
+    margin-top: 2em;
   }
   
   /* Responsive */
@@ -195,11 +266,11 @@
     }
     
     .marketing-split__content {
-      padding: 2rem 1.5rem;
+      padding: 2em 1.5em;
     }
     
     .marketing-split__heading {
-      font-size: 2rem;
+      font-size: 2em;
     }
   }
 </style>

@@ -1,0 +1,69 @@
+<section class="block-breadcrumbs-content">
+	{% assign breadcrumb_menu = linklists['product-menu'].links %}
+	{% assign current_url = request.path | prepend: '' %}
+	{% assign clean_url = current_url | split: '?' | first %}
+		
+	{% capture build_trail %}
+	  {% for link in breadcrumb_menu %}
+		{% if clean_url == link.url %}
+		  <a href="{{ link.url }}">{{ link.title }}</a>
+		{% endif %}
+	
+		{% if link.links.size > 0 %}
+		  {% for child in link.links %}
+			{% if clean_url == child.url %}
+			  <a href="{{ link.url }}">{{ link.title }}</a>  › 
+			  <a href="{{ child.url }}">{{ child.title }}</a>
+			{% endif %}
+	
+			{% if child.links.size > 0 %}
+			  {% for subchild in child.links %}
+				{% if clean_url == subchild.url %}
+				  <a href="{{ link.url }}">{{ link.title }}</a>  › 
+				  <a href="{{ child.url }}">{{ child.title }}</a>  › 
+				  <a href="{{ subchild.url }}">{{ subchild.title }}</a>
+				{% endif %}
+			  {% endfor %}
+			{% endif %}
+		  {% endfor %}
+		{% endif %}
+	  {% endfor %}
+	{% endcapture %}
+	  <nav class="breadcrumb">
+		<a href="/">Home</a> › {{ build_trail }}
+	  </nav>
+	
+</section>
+
+{%- style -%}
+	.block-breadcrumbs {
+		& > .block-breadcrumbs-content {
+			text-align: center; padding-top: 1em;
+			& a { 
+				font-size: 0.8em; letter-spacing: -0.02em;
+				color:inherit;
+				&:last-of-type { text-decoration: none; }
+			}
+		}
+	}
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Breadcrumbs",
+  "tag": "section",
+  "class": "block-breadcrumbs",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["collection", "product", "page", "blog", "article", "search", "cart", "list-collections"]
+  },
+  "settings": [],
+  "presets": [
+	{
+	  "name": "Breadcrumbs",
+	  "category": "Page",
+	  "blocks": []
+	}
+  ]
+}
+{% endschema %}

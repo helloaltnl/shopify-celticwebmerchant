@@ -12,17 +12,107 @@
     "main": {
       "type": "main-blog",
       "settings": {
-        "layout": "collage",
+        "heading": "",
+        "subheading": "",
+        "articles_per_page": 12,
+        "card_layout": "vertical",
         "show_image": true,
-        "image_height": "medium",
+        "image_ratio": "portrait",
+        "show_blog_title": false,
         "show_date": true,
-        "show_author": false,
-        "padding_top": 36,
-        "padding_bottom": 36
+        "show_excerpt": true,
+        "show_cta": true,
+        "width": "alignwide",
+        "columns_desktop": 4,
+        "columns_tablet": "2",
+        "columns_mobile": "2",
+        "background_color": "#f8f8f8",
+        "text_color": "#111111",
+        "card_background_color": "#ffffff",
+        "card_text_color": "#111111"
+      }
+    },
+    "block_marketing_cover_CMhjPL": {
+      "type": "block-marketing-cover",
+      "blocks": {
+        "button_YwtHwy": {
+          "type": "button",
+          "settings": {
+            "text": "Donatie",
+            "url": "shopify://products/donatie",
+            "style": "primary",
+            "button_color": "",
+            "button_text_color": ""
+          }
+        },
+        "button_MtzMmt": {
+          "type": "button",
+          "settings": {
+            "text": "",
+            "url": "",
+            "style": "primary",
+            "button_color": "",
+            "button_text_color": ""
+          }
+        }
+      },
+      "block_order": [
+        "button_YwtHwy",
+        "button_MtzMmt"
+      ],
+      "name": "Cover",
+      "settings": {
+        "subheading": "",
+        "heading": "Maak het verschil: doneer nu!",
+        "text": "",
+        "image": "shopify://shop_images/DSC03389_1.jpg",
+        "focus_x": 50,
+        "focus_y": 50,
+        "overlay": "medium",
+        "width": "alignfull",
+        "height": "medium",
+        "text_position": "center",
+        "text_alignment": "center",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_cover_6aAYDE": {
+      "type": "block-marketing-cover",
+      "blocks": {
+        "button_HYxxQN": {
+          "type": "button",
+          "settings": {
+            "text": "",
+            "url": "",
+            "style": "primary",
+            "button_color": "",
+            "button_text_color": ""
+          }
+        }
+      },
+      "block_order": [
+        "button_HYxxQN"
+      ],
+      "name": "Cover",
+      "settings": {
+        "subheading": "Lees al onze blogs",
+        "heading": "",
+        "text": "",
+        "image": "shopify://shop_images/DSC03349-Verbeterd-NR_2_83db5634-51b2-4e46-8162-50b740744b43.jpg",
+        "focus_x": 50,
+        "focus_y": 50,
+        "overlay": "medium",
+        "width": "alignfull",
+        "height": "medium",
+        "text_position": "center",
+        "text_alignment": "center",
+        "custom_class": ""
       }
     }
   },
   "order": [
-    "main"
+    "main",
+    "block_marketing_cover_CMhjPL",
+    "block_marketing_cover_6aAYDE"
   ]
 }

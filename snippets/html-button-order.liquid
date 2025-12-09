@@ -1,0 +1,274 @@
+{%- comment -%}
+  ============================================================================
+  HTML-BUTTON-ORDER
+  ============================================================================
+
+  Purpose:
+  Renders an add-to-cart button with smart behavior based on product availability
+  and variant complexity. Integrates with CartAPI for live cart updates.
+  
+  Usage:
+  {% render 'html-button-order', product: product %}
+  {% render 'html-button-order', product: product, variant_behavior: 'link' %}
+
+  Parameters:
+  - product: {Object} Product object (required)
+  - variant: {Object} Specific variant to add (optional, defaults to selected_or_first_available_variant)
+  - quantity: {Number} Quantity to add (default: 1)
+  - variant_behavior: {String} Behavior for products with variants:
+      - 'add': Always add selected variant directly (default)
+      - 'link': Link to product page if multiple variants exist
+  - show_icon: {Boolean} Show cart icon (default: true)
+  - class: {String} Additional CSS classes (optional)
+  - button_style: {String} 'primary' | 'secondary' | 'minimal' (default: 'primary')
+
+  Dependencies:
+  - html-theme-icons snippet
+  - CartAPI/CartEvents for cart integration
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign p = product
+  assign v = variant | default: p.selected_or_first_available_variant
+  assign qty = quantity | default: 1
+  assign variant_behavior = variant_behavior | default: 'add'
+  assign show_icon = show_icon | default: true
+  assign additional_class = class | default: ''
+  assign button_style = button_style | default: 'primary'
+  
+  assign has_variants = false
+  if p.variants.size > 1
+    assign has_variants = true
+  endif
+  
+  assign should_link = false
+  if has_variants and variant_behavior == 'link'
+    assign should_link = true
+  endif
+  
+  assign unique_id = p.id | append: '-' | append: 'now' | date: '%s%N'
+-%}
+
+{%- if p.available -%}
+  {%- if should_link -%}
+    <a 
+      href="{{ p.url }}"
+      class="button-order button-order--{{ button_style }} {{ additional_class }}"
+    >
+      {%- if show_icon -%}
+        <span class="button-order__icon" aria-hidden="true">
+          {%- render 'html-theme-icons', icon: 'plus', size: 20 -%}
+        </span>
+      {%- endif -%}
+      <span class="button-order__text">
+        {{ 'product.choose_options' | t }}
+      </span>
+    </a>
+  {%- else -%}
+    <form 
+      method="post" 
+      action="/cart/add" 
+      class="button-order__form"
+      data-button-order-form="{{ unique_id }}"
+    >
+      <input type="hidden" name="id" value="{{ v.id }}">
+      <input type="hidden" name="quantity" value="{{ qty }}">
+      
+      <button 
+        type="submit"
+        class="button-order button-order--{{ button_style }} {{ additional_class }}"
+        data-button-order-add
+      >
+        {%- if show_icon -%}
+          <span class="button-order__icon" aria-hidden="true">
+            {%- render 'html-theme-icons', icon: 'cart-add', size: 20 -%}
+          </span>
+        {%- endif -%}
+        <span class="button-order__text" data-button-text>
+          {{ 'product.add_to_cart' | t }}
+        </span>
+        <span class="button-order__text button-order__text--loading" data-button-loader>
+          {{ 'accessibility.loading' | t }}
+        </span>
+        <span class="button-order__text button-order__text--success" data-button-success>
+          ✓ {{ 'cart.item_added' | t }}
+        </span>
+        <span class="button-order__text button-order__text--error" data-button-error>
+          ✗ {{ 'error.general' | t }}
+        </span>
+      </button>
+    </form>
+    
+    <script>
+      (function() {
+        var form = document.querySelector('[data-button-order-form="{{ unique_id }}"]');
+        if (!form) return;
+        
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          var button = this.querySelector('[data-button-order-add]');
+          var variantId = this.querySelector('input[name="id"]').value;
+          var quantity = parseInt(this.querySelector('input[name="quantity"]').value) || 1;
+          
+          button.classList.add('is-loading');
+          button.disabled = true;
+          
+          try {
+            var cartData;
+            
+            if (window.CartAPI && typeof window.CartAPI.add === 'function') {
+              cartData = await window.CartAPI.add({
+                items: [{ id: parseInt(variantId), quantity: quantity }]
+              });
+            } else {
+              var response = await fetch('/cart/add.js', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: [{ id: variantId, quantity: quantity }] })
+              });
+              
+              if (!response.ok) throw new Error('Failed to add to cart');
+              
+              var cartResponse = await fetch('/cart.js');
+              cartData = await cartResponse.json();
+              
+              if (window.CartEvents) {
+                window.CartEvents.publish('cart:update', { cart: cartData, action: 'add' });
+              }
+            }
+            
+            button.classList.remove('is-loading');
+            button.classList.add('is-success');
+            
+            setTimeout(function() {
+              button.classList.remove('is-success');
+              button.disabled = false;
+            }, 2000);
+            
+          } catch (error) {
+            console.error('Error adding to cart:', error);
+            
+            button.classList.remove('is-loading');
+            button.classList.add('is-error');
+            
+            setTimeout(function() {
+              button.classList.remove('is-error');
+              button.disabled = false;
+            }, 2000);
+          }
+        });
+      })();
+    </script>
+  {%- endif -%}
+
+{%- else -%}
+  <span 
+    class="button-order button-order--soldout {{ additional_class }}"
+    aria-disabled="true"
+  >
+    <span class="button-order__text">
+      {{ 'product.sold_out' | t }}
+    </span>
+  </span>
+{%- endif -%}
+
+<style>
+  .button-order {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    padding: 0.75em 1.25em;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 200ms ease, opacity 200ms ease, transform 100ms ease;
+  }
+
+  .button-order:active {
+    transform: scale(0.98);
+  }
+
+  .button-order__form {
+    display: contents;
+  }
+
+  .button-order--primary {
+    background-color: var(--theme-color-green, #000);
+    color: var(--theme-color-white, #fff);
+  }
+
+  .button-order--primary:hover {
+    opacity: 0.9;
+  }
+
+  .button-order--secondary {
+    background-color: transparent;
+    color: inherit;
+    border: 1px solid currentColor;
+  }
+
+  .button-order--secondary:hover {
+    background-color: var(--theme-color-foreground, #000);
+    color: var(--theme-color-background, #fff);
+  }
+
+  .button-order--minimal {
+    background-color: transparent;
+    color: inherit;
+    padding: 0.5em;
+  }
+
+  .button-order--minimal:hover {
+    opacity: 0.7;
+  }
+
+  .button-order--soldout {
+    background-color: var(--theme-color-grey-light, #f5f5f5);
+    color: var(--theme-color-grey, #666);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  .button-order__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .button-order__text {
+    font-size: 0.8em;
+  }
+
+  .button-order__text--loading,
+  .button-order__text--success,
+  .button-order__text--error {
+    display: none;
+  }
+
+  .button-order.is-loading [data-button-text] { display: none; }
+  .button-order.is-loading [data-button-loader] { display: inline; }
+  .button-order.is-loading { pointer-events: none; }
+  .button-order.is-loading .button-order__icon { animation: button-spin 800ms linear infinite; }
+
+  .button-order.is-success [data-button-text] { display: none; }
+  .button-order.is-success [data-button-success] { display: inline; }
+  .button-order.is-success { background-color: var(--theme-color-green, #4caf50); color: #fff; }
+
+  .button-order.is-error [data-button-text] { display: none; }
+  .button-order.is-error [data-button-error] { display: inline; }
+  .button-order.is-error { background-color: var(--theme-color-red, #f44336); color: #fff; }
+
+  @keyframes button-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>

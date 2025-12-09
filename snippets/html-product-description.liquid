@@ -1,2 +1,64 @@
-<!-- <p>{{ product.description | strip_html | truncatewords: 30 }} <a href="#product-information">Lees verder</a></p> -->
-<br/>
+{%- comment -%}
+  ============================================================================
+  HTML-PRODUCT-DESCRIPTION
+  ============================================================================
+  Renders product description with optional truncation.
+
+  PARAMETERS:
+  - product: {Object} Product object (required)
+  - truncate: {Boolean} Truncate description (default: false)
+  - words: {Number} Number of words when truncated (default: 30)
+  - read_more_target: {String} CSS selector for "read more" link (default: '#product-information')
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign p = product
+  assign do_truncate = truncate | default: false
+  assign word_count = words | default: 30
+  assign target = read_more_target | default: '#product-information'
+-%}
+
+{%- if p.description != blank -%}
+  <div class="product-description">
+    {%- if do_truncate -%}
+      <p>
+        {{ p.description | strip_html | truncatewords: word_count }}
+        <a href="{{ target }}" class="product-description__more" data-scroll-to="{{ target }}">
+          {{ 'general.read_more' | t }}
+        </a>
+      </p>
+    {%- else -%}
+      <div class="product-description__content">
+        {{ p.description }}
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+<style>
+  .product-description {
+    /* margins controlled by parent */
+  }
+
+  .product-description__content {
+    line-height: 1.6;
+  }
+
+  .product-description__content p {
+    margin: 0 0 1em;
+  }
+
+  .product-description__content p:last-child {
+    margin-bottom: 0;
+  }
+
+  .product-description__content a {
+    color: inherit;
+  }
+
+  .product-description__more {
+    color: inherit;
+    font-weight: 500;
+  }
+</style>

@@ -1,198 +1,295 @@
-<section class="block-header-top-content alignwide">
-	<nav class="shop-usps">
-	  <ul>
-		  <li>
-			  <a href="https://www.celticwebmerchant.com/nl/service/shipping-costs/" title="Gratis boven € 75 (NL/BE)" class=""  aria-hidden="true"><i data-icon="shipping"></i><span>Gratis <u>boven € 75 (NL/BE)</u></span></a>
-		  </li>
-		  <li>
-			  <a href="https://www.celticwebmerchant.com/nl/" title="Voor 20:30 verzonden (PostNL, DPD, GLS)" class="" aria-hidden="true"><i data-icon="warrenty"></i><span>Voor 20:30 verzonden (PostNL, DPD, GLS)</span></a>
-		  </li>
-		  <li>
-			  <a href="https://www.celticwebmerchant.com/nl/collection/" title="17.000 items op voorraad" class="" aria-hidden="true"><i data-icon="shoppingbag"></i><span>17.000 items op voorraad</span></a>
-		  </li>
-		  <li>
-			  <a href="https://celticwebmerchant.zendesk.com/hc/en-us/articles/4422423278866-Lowest-price-guarantee-and-best-service-guarantee" title="Laagste prijs garantie" class="is-selected"><i data-icon="percentage"></i><span>Laagste prijs garantie</span></a>
-		  </li>
-	  </ul>
-	</nav>
-	<nav class="shop-menu">
-		
-		{%- comment -%}
-		<select name="locale_code" onchange="switchLanguage(this.value)">
-		  {%- for language in localization.available_languages -%}
-			<option value="{{ language.iso_code }}" {% if language.iso_code == current_language %}selected{% endif %}>
-			  {{ language.endonym_name }}
-			</option>
-		  {%- endfor -%}
-		</select>
-		
-		<script>
-			function switchLanguage(iso) {
-				// 1) Prefer Shopify's real translated URL via hreflang
-				var alt = document.querySelector('link[rel="alternate"][hreflang="'+ iso +'"]');
-				if (alt && alt.href) {
-					var u = new URL(alt.href);
-					// Rebuild with the current origin (works on dev 127.0.0.1 and on prod)
-					var target = window.location.origin + u.pathname + u.search + u.hash;
-					// Normalize double slashes except after protocol
-					target = target.replace(/([^:]\/)\/+/g, "$1");
-					window.location.href = target;
-					return;
-				}
-				// 2) Fallback: construct URL from current path + root_url map
-				var currentPrefix = "{{ localization.language.root_url }}";
-				if (currentPrefix === "/") currentPrefix = "";
-				var path = "{{ request.path }}";
-				if (path.indexOf(currentPrefix) === 0) path = path.slice(currentPrefix.length);
-				if (path.charAt(0) !== "/") path = "/" + path;
-				
-				var qs = "{{ request.query_string }}";
-				var roots = {
-				{% for l in localization.available_languages %}
-				"{{ l.iso_code }}": "{{ l.root_url }}"{% unless forloop.last %},{% endunless %}
-				{% endfor %}
-				};
-				var defaultIso = "{{ localization.default_language.iso_code }}";
-				var prefix = (iso === defaultIso) ? "" : (roots[iso] || "");
-				var fallback = window.location.origin + prefix + (path === "/" ? "" : path) + (qs ? ("?" + qs) : "");
-				fallback = fallback.replace(/([^:]\/)\/+/g, "$1");
-				window.location.href = fallback;
-			}
-		</script>
-		{%- endcomment -%}
-		
-		
-		{%- assign current_language = localization.language.iso_code -%}
-		{%- assign current_country = localization.country.iso_code -%}
-		{%- assign current_currency = localization.country.currency.iso_code -%}
-		
-		{% if localization.available_languages.size > 1 %}
-		  <localization-form>
-			{% form 'localization' %}
-			  <select name="locale_code" onchange="this.form.submit()">
-				{%- for language in localization.available_languages -%}
-				  <option value="{{ language.iso_code }}" {% if language.iso_code == current_language %}selected{% endif %}>
-					{{ language.iso_code | upcase }}
-					{%- comment -%}
-					{{ language.endonym_name }} {{ language.endonym_name | capitalize }}
-					{%- endcomment -%}
-				  </option>
-				{%- endfor -%}
-			  </select>
-			{% endform %}
-		  </localization-form>
-		{% endif %}
-		
-		<localization-form>
-		{% form 'localization' %}
-			<select name="country_code" onchange="this.form.submit()">
-			{%- assign seen = '' -%}
-			{%- for c in localization.available_countries -%}
-				{%- assign code = c.currency.iso_code -%}
-				{%- unless seen contains code -%}
-				{%- comment -%}
-					Pick a representative country for this currency:
-					- If it's the current currency, stick to the current country (avoids jumping markets)
-					- Otherwise use the first country we meet for that currency
-				{%- endcomment -%}
-				{%- assign rep_country = c.iso_code -%}
-				{%- if code == current_currency -%}
-					{%- assign rep_country = current_country -%}
-				{%- endif -%}
-			
-				<option
-					value="{{ rep_country }}"
-					{% if code == current_currency %}selected{% endif %}
-				>
-					{{ code }} - {{ c.currency.symbol }}
-				</option>
-			
-				{%- assign seen = seen | append: code | append: ',' -%}
-				{%- endunless -%}
-			{%- endfor -%}
-			</select>
-		{% endform %}
-		</localization-form>
+{% comment %}
+  ============================================================================
+  BLOCK-HEADER-TOP
+  ============================================================================
+  Top header bar with USPs slider and region selector.
 
-	</nav>
-</section>
+  FEATURES:
+  - Configurable USPs via blocks
+  - SwiperJS auto-sliding carousel on mobile
+  - Region/language selector
+  - Width alignment options
+
+  DEPENDENCIES:
+  - vendor-swiperjs.min.js (global)
+  - vendor-swiperjs.min.css (global)
+  - html-button-region snippet
+  ============================================================================
+{% endcomment %}
+
+<div class="block-header-top__content {{ section.settings.width }}">
+	
+	{%- if section.blocks.size > 0 -%}
+		<nav class="block-header-top__usps">
+			<div class="swiper block-header-top__slider" data-usps-slider>
+				<ul class="swiper-wrapper">
+					{%- for block in section.blocks -%}
+						{%- if block.type == 'usp' -%}
+							<li class="swiper-slide" {{ block.shopify_attributes }}>
+								{%- if block.settings.link != blank -%}
+									<a href="{{ block.settings.link }}" {% if block.settings.title != blank %}title="{{ block.settings.title }}"{% endif %}>
+										{%- if block.settings.icon != 'none' -%}
+											<i class="block-header-top__icon">
+												{% render 'html-theme-icons', icon: block.settings.icon, size: 16 %}
+											</i>
+										{%- endif -%}
+										<span>{{ block.settings.text }}</span>
+									</a>
+								{%- else -%}
+									<span class="block-header-top__usp">
+										{%- if block.settings.icon != 'none' -%}
+											<i class="block-header-top__icon">
+												{% render 'html-theme-icons', icon: block.settings.icon, size: 16 %}
+											</i>
+										{%- endif -%}
+										<span>{{ block.settings.text }}</span>
+									</span>
+								{%- endif -%}
+							</li>
+						{%- endif -%}
+					{%- endfor -%}
+				</ul>
+			</div>
+		</nav>
+	{%- endif -%}
+
+	{%- if section.settings.show_region_selector -%}
+		<nav class="block-header-top__menu">
+			{% render 'html-button-region' %}
+		</nav>
+	{%- endif -%}
+</div>
 
 {%- style -%}
 	.block-header-top {
-		background-color: var(--theme-color-brown); color:var(--theme-color-white);
-		& > .block-header-top-content {
-			display: flex; flex-direction: row; flex-wrap: nowrap;
-			height:2em;
-			& > nav {
-				&.shop-usps {
-					flex-grow: 1; overflow: hidden;
-					& ul {
-						list-style: none; padding:0; margin: 0;
-						display: flex; flex-direction: row; flex-wrap:nowrap; 
-						align-items: center; justify-content: flex-start; 
-						column-gap: 16px;
-						& li {
-							flex-basis: fit-content;
-							& a { 
-								color: inherit; text-decoration: none; opacity: 0.6;
-								& i {}
-								& span { font-size: 0.75em; letter-spacing: -0.02em;}
-							}
-						}
-					}
-				}
-				&.shop-menu {
-					flex-grow: 0;
-					display: flex; flex-direction: row; flex-wrap:nowrap; 
-					align-items: center; justify-content: space-between; 
-					column-gap: 1em;
-					& select {
-						-webkit-appearance: none; appearance: none; border:none!important; border-radius: 0; box-shadow: none!important; 
-						font-family: inherit!important; font-size: 0.8em!important;
-						background: transparent; color: #fff; border-bottom:#fff 1px solid!important;
-						display:inline-block; width:100%; max-width:100%; min-height:28px; line-height:28px; white-space:nowrap; overflow:hidden; font-size:1rem; color:var(--theme-color-white); background: var(--theme-color-brown) url('data:image/svg+xml;utf8,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve" fill="white"> <path d="M18.7,9.7l-6,6C12.5,15.9,12.3,16,12,16s-0.5-0.1-0.7-0.3l-6-6c-0.4-0.4-0.4-1,0-1.4s1-0.4,1.4,0l5.3,5.3l5.3-5.3 c0.4-0.4,1-0.4,1.4,0S19.1,9.3,18.7,9.7z"/> </svg>') no-repeat calc(100%) center / 16px!important;  padding-right:20px!important; padding-top:0px!important; padding-bottom:0px!important; vertical-align:top; margin:4px 4px 4px 0;
-						&:focus {
-							border-bottom:#fff 1px solid!important; outline: none!important;
-						}
-					}
-				}
-			}
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+	}
+
+	.block-header-top__content {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		height: var(--header-top-height, 2.5em);
+		gap: 1em;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.block-header-top__usps {
+		flex: 1 1 auto;
+		overflow: hidden;
+		min-width: 0;
+	}
+
+	.block-header-top__slider {
+		overflow: hidden;
+	}
+
+	.block-header-top__slider .swiper-wrapper {
+		display: flex;
+		align-items: center;
+	}
+
+	.block-header-top__slider .swiper-slide {
+		width: auto;
+		flex-shrink: 0;
+		padding-right: 2em;
+	}
+
+	.block-header-top__slider a,
+	.block-header-top__usp {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		color: inherit;
+		text-decoration: none;
+		opacity: 0.75;
+		transition: opacity var(--theme-transition-fast);
+		white-space: nowrap;
+	}
+
+	.block-header-top__slider a:hover {
+		opacity: 1;
+	}
+
+	.block-header-top__icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+
+	.block-header-top__slider span {
+		font-size: 0.75em;
+		letter-spacing: var(--theme-letter-spacing);
+	}
+
+	.block-header-top__menu {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		gap: 1em;
+	}
+	
+	.button-region {
+		font-size:0.8em;
+	}
+
+	/* Mobile: enable autoplay sliding */
+	@media (max-width: 768px) {
+		.block-header-top__slider .swiper-slide {
+			padding-right: 3em;
 		}
 	}
 {%- endstyle -%}
 
-{% javascript %}
-	class HeaderTop extends HTMLElement {
-		constructor() {
-			super();
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const slider = document.querySelector('[data-usps-slider]');
+		if (slider && typeof Swiper !== 'undefined') {
+			new Swiper(slider, {
+				slidesPerView: 'auto',
+				spaceBetween: 0,
+				loop: true,
+				speed: 4000,
+				autoplay: {
+					delay: 5000,
+					disableOnInteraction: false,
+				},
+				freeMode: true,
+				freeModeMomentum: false,
+				breakpoints: {
+					769: {
+						loop: false,
+						autoplay: false,
+						freeMode: true,
+						slidesPerView: 'auto',
+					}
+				}
+			});
 		}
-		connectedCallback() {
-			
-		}
-		disconnectedCallback() {
-			
-		}
-	}
-	customElements.define('header-top', HeaderTop);
-{% endjavascript %}
+	});
+</script>
 
 {% schema %}
 {
-  "name": "Block header top",
-  "tag": "section",
-  "class": "block-header-top",
-  "settings": [],
-  "blocks": [
-	  {
-		"type": "@app"
-	  }
-  ],
-  "presets": [
-	{
-	  "name": "Default header top for theme",
-	  "category": "Theme Header",
-	  "blocks": []
-	}
-  ]
+	"name": "Header top",
+	"tag": "section",
+	"class": "block-header-top",
+	"limit": 1,
+	"enabled_on": {
+		"groups": ["header"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Region"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_region_selector",
+			"label": "Show region selector",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#2e130d"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#ffffff"
+		}
+	],
+	"blocks": [
+		{
+			"type": "usp",
+			"name": "USP",
+			"settings": [
+				{
+					"type": "header",
+					"content": "Content"
+				},
+				{
+					"type": "text",
+					"id": "text",
+					"label": "Text",
+					"placeholder": "Free shipping"
+				},
+				{
+					"type": "url",
+					"id": "link",
+					"label": "Link"
+				},
+				{
+					"type": "text",
+					"id": "title",
+					"label": "Link title",
+					"placeholder": "Learn more about shipping"
+				},
+				{
+					"type": "select",
+					"id": "icon",
+					"label": "Icon",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "check-mark", "label": "Check mark" },
+						{ "value": "truck", "label": "Truck" },
+						{ "value": "cart", "label": "Cart" },
+						{ "value": "star", "label": "Star" },
+						{ "value": "heart", "label": "Heart" },
+						{ "value": "lock", "label": "Lock" },
+						{ "value": "return", "label": "Return" },
+						{ "value": "stopwatch", "label": "Stopwatch" },
+						{ "value": "price-tag", "label": "Price tag" },
+						{ "value": "question-mark", "label": "Question mark" },
+						{ "value": "chat-bubble", "label": "Chat bubble" },
+						{ "value": "map-pin", "label": "Map pin" }
+					],
+					"default": "check-mark"
+				}
+			]
+		},
+		{
+			"type": "@app"
+		}
+	],
+	"presets": [
+		{
+			"name": "Top bar",
+			"category": "Header",
+			"blocks": [
+				{ "type": "usp", "settings": { "icon": "truck" } },
+				{ "type": "usp", "settings": { "icon": "stopwatch" } },
+				{ "type": "usp", "settings": { "icon": "cart" } },
+				{ "type": "usp", "settings": { "icon": "price-tag" } }
+			]
+		}
+	]
 }
 {% endschema %}

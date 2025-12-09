@@ -1,0 +1,359 @@
+{%- comment -%}
+============================================================================
+BLOCK-MARKETING-COLLECTIONS
+============================================================================
+Collection grid section for marketing pages.
+
+FEATURES:
+- Select specific collections via blocks OR show all
+- Hide empty collections option
+- Hide 'All' collection option
+- Configurable grid layout
+- Sort options
+
+DEPENDENCIES:
+- html-collection-card snippet
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	assign show_all = section.settings.show_all_collections
+	assign hide_empty = section.settings.hide_empty_collections
+	assign hide_all_collection = section.settings.hide_all_collection
+	assign sort = section.settings.sort
+	
+	assign heading_text = section.settings.heading
+	if heading_text == blank
+		assign heading_text = 'collection.heading' | t
+	endif
+	
+	assign has_heading = true
+	if section.settings.heading == blank and section.settings.subheading == blank
+		assign has_heading = false
+	endif
+	
+	case section.settings.image_ratio
+		when 'square'
+			assign ratio = '1 / 1'
+		when 'portrait'
+			assign ratio = '2 / 3'
+		when 'landscape'
+			assign ratio = '3 / 2'
+		else
+			assign ratio = '1 / 1'
+	endcase
+-%}
+
+{%- capture collections_html -%}
+	{%- if show_all -%}
+		{%- comment -%} Show all collections {%- endcomment -%}
+		{%- assign collections_to_show = collections -%}
+		
+		{%- case sort -%}
+			{%- when 'alphabetical' -%}
+				{%- assign collections_to_show = collections | sort: 'title' -%}
+			{%- when 'alphabetical_desc' -%}
+				{%- assign collections_to_show = collections | sort: 'title' | reverse -%}
+			{%- when 'products_count' -%}
+				{%- assign collections_to_show = collections | sort: 'all_products_count' | reverse -%}
+			{%- when 'date' -%}
+				{%- assign collections_to_show = collections | sort: 'published_at' | reverse -%}
+		{%- endcase -%}
+		
+		{%- for collection in collections_to_show -%}
+			{%- liquid
+				assign skip = false
+				if hide_all_collection and collection.handle == 'all'
+					assign skip = true
+				endif
+				if hide_empty and collection.all_products_count == 0
+					assign skip = true
+				endif
+			-%}
+			{%- unless skip -%}
+				<li class="block-marketing-collections__item">
+					{%- render 'html-collection-card',
+						collection: collection,
+						show_count: section.settings.show_product_count,
+						image_ratio: ratio,
+						text_align: section.settings.card_text_align
+					-%}
+				</li>
+			{%- endunless -%}
+		{%- endfor -%}
+	{%- else -%}
+		{%- comment -%} Show selected collections from blocks {%- endcomment -%}
+		{%- for block in section.blocks -%}
+			{%- if block.type == 'collection' and block.settings.collection != blank -%}
+				{%- assign collection = block.settings.collection -%}
+				{%- liquid
+					assign skip = false
+					if hide_empty and collection.all_products_count == 0
+						assign skip = true
+					endif
+				-%}
+				{%- unless skip -%}
+					<li class="block-marketing-collections__item" {{ block.shopify_attributes }}>
+						{%- render 'html-collection-card',
+							collection: collection,
+							show_count: section.settings.show_product_count,
+							image_ratio: ratio,
+							text_align: section.settings.card_text_align
+						-%}
+					</li>
+				{%- endunless -%}
+			{%- endif -%}
+		{%- endfor -%}
+	{%- endif -%}
+{%- endcapture -%}
+
+{%- assign has_collections = collections_html | strip | size -%}
+
+<div class="block-marketing-collections__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	<header class="block-marketing-collections__header">
+		<h2 class="block-marketing-collections__title">{{ heading_text }}</h2>
+		{%- if section.settings.subheading != blank -%}
+			<p class="block-marketing-collections__subheading">{{ section.settings.subheading }}</p>
+		{%- endif -%}
+	</header>
+
+	{%- if has_collections > 0 -%}
+		<ul class="block-marketing-collections__grid">
+			{{ collections_html }}
+		</ul>
+	{%- else -%}
+		<p class="block-marketing-collections__empty">{{ 'collection.empty' | t | default: 'No collections found.' }}</p>
+	{%- endif -%}
+</div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-collections {
+		background-color: {{ section.settings.background_color | default: '#ffffff' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: 3em;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-collections__header {
+		text-align: {{ section.settings.text_align | default: 'center' }};
+	}
+
+	.block-marketing-collections__title {
+		font-family: var(--theme-font-family-serif);
+		font-size: clamp(1.6em, 4vw, 2em);
+		font-weight: 400;
+		margin: 0;
+	}
+
+	.block-marketing-collections__subheading {
+		margin: 0.5em 0 0;
+		opacity: 0.8;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-collections__grid {
+		--min: {{ section.settings.card_min_width | default: 200 }}px;
+		--gap: 0.5em;
+
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(var(--min), 1fr));
+		gap: var(--gap);
+		list-style: none;
+		margin: 0;
+		margin-block-start: 2em;
+		padding: 0;
+	}
+
+	.block-marketing-collections__item {
+		display: flex;
+	}
+
+	.block-marketing-collections__empty {
+		text-align: center;
+		opacity: 0.6;
+		padding: 3em 1em;
+	}
+
+	@media (max-width: 749px) {
+		.block-marketing-collections__grid {
+			--min: 45%;
+		}
+	}
+
+	@media (max-width: 479px) {
+		.block-marketing-collections__grid {
+			--min: 100%;
+		}
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "Collections",
+	"tag": "section",
+	"class": "block-marketing-collections",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "text",
+			"id": "subheading",
+			"label": "Subheading"
+		},
+		{
+			"type": "header",
+			"content": "Collections"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_all_collections",
+			"label": "Show all collections",
+			"info": "When enabled, ignores collection blocks",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "sort",
+			"label": "Sort collections by",
+			"options": [
+				{ "value": "alphabetical", "label": "Alphabetically, A-Z" },
+				{ "value": "alphabetical_desc", "label": "Alphabetically, Z-A" },
+				{ "value": "products_count", "label": "Product count, high to low" },
+				{ "value": "date", "label": "Date, new to old" }
+			],
+			"default": "alphabetical",
+			"info": "Only applies when showing all collections"
+		},
+		{
+			"type": "checkbox",
+			"id": "hide_empty_collections",
+			"label": "Hide empty collections",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "hide_all_collection",
+			"label": "Hide 'All' collection",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_product_count",
+			"label": "Show product count",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Image"
+		},
+		{
+			"type": "select",
+			"id": "image_ratio",
+			"label": "Image ratio",
+			"options": [
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" }
+			],
+			"default": "square"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "select",
+			"id": "text_align",
+			"label": "Header alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" }
+			],
+			"default": "center"
+		},
+		{
+			"type": "select",
+			"id": "card_text_align",
+			"label": "Card text alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" }
+			],
+			"default": "center"
+		},
+		{
+			"type": "range",
+			"id": "card_min_width",
+			"label": "Card minimum width",
+			"min": 150,
+			"max": 350,
+			"step": 25,
+			"default": 200,
+			"unit": "px"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"blocks": [
+		{
+			"type": "collection",
+			"name": "Collection",
+			"settings": [
+				{
+					"type": "collection",
+					"id": "collection",
+					"label": "Collection"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "Collections",
+			"category": "Marketing"
+		}
+	]
+}
+{% endschema %}

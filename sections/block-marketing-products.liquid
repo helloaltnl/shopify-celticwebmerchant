@@ -1,0 +1,437 @@
+{%- liquid
+	assign source_collection = section.settings.collection | default: collections['all']
+	assign max_products = section.settings.max_products | default: 12
+	assign grid_columns = section.settings.columns_desktop | default: 4
+	
+	assign heading = section.settings.heading
+	if heading == blank
+		if section.settings.collection != blank
+			assign heading = source_collection.title
+		else
+			assign heading = 'marketing.products_heading' | t
+		endif
+	endif
+	
+	assign show_more_text = section.settings.show_more_text
+	if show_more_text == blank
+		assign show_more_text = 'general.show_more' | t
+	endif
+	
+	assign show_less_text = section.settings.show_less_text
+	if show_less_text == blank
+		assign show_less_text = 'general.show_less' | t
+	endif
+-%}
+
+{%- if source_collection and source_collection.products_count > 0 -%}
+	<div class="block-marketing-products__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+		{%- if heading != blank -%}
+			<header class="block-marketing-products__header">
+				<h2 class="block-marketing-products__heading">
+					{%- if source_collection.url != blank -%}
+						<a href="{{ source_collection.url }}">{{ heading }}</a>
+					{%- else -%}
+						{{ heading }}
+					{%- endif -%}
+				</h2>
+			</header>
+		{%- endif -%}
+		
+		{%- capture products_html -%}
+			{%- for product in source_collection.products limit: max_products -%}
+				{%- liquid
+					assign show_product = true
+					
+					if section.settings.only_available
+						if product.available == false
+							assign show_product = false
+						endif
+					endif
+				-%}
+				
+				{%- if show_product -%}
+					<li class="block-marketing-products__item">
+						{%- render 'html-product-card',
+							product: product,
+							image_ratio: section.settings.image_ratio,
+							show_secondary_image: section.settings.show_secondary_image,
+							show_vendor: section.settings.show_vendor,
+							show_price: true,
+							show_stock: true,
+							show_delivery: true,
+							show_rating: section.settings.show_rating,
+							show_badges: true,
+							quick_add: section.settings.quick_add,
+							context: 'marketing'
+						-%}
+					</li>
+				{%- endif -%}
+			{%- endfor -%}
+		{%- endcapture -%}
+		
+		<ul
+			class="block-marketing-products__grid"
+			data-expandable-grid
+			data-visible-rows="{{ section.settings.visible_rows }}"
+			style="--grid-columns: {{ grid_columns }}; --grid-columns-tablet: {{ section.settings.columns_tablet }}; --grid-columns-mobile: {{ section.settings.columns_mobile }};"
+			role="list"
+		>
+			{{ products_html }}
+		</ul>
+		
+		{%- if section.settings.visible_rows > 0 -%}
+			<div class="block-marketing-products__actions">
+				<button
+					type="button"
+					class="block-marketing-products__toggle"
+					data-expandable-trigger
+					aria-expanded="false"
+				>
+					<span data-label-collapsed>{{ show_more_text }}</span>
+					<span data-label-expanded hidden>{{ show_less_text }}</span>
+					{%- render 'html-theme-icons', icon: 'chevron-down', size: 20 -%}
+				</button>
+			</div>
+		{%- endif -%}
+	</div>
+{%- endif -%}
+
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-products {
+		background-color: {{ section.settings.background_color | default: '#f5f5f5' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: 3em;
+	}
+
+	.block-marketing-products__header {
+		text-align: center;
+	}
+
+	.block-marketing-products__heading {
+		font-family: var(--theme-font-family-serif);
+		font-size: 2em;
+		font-weight: 400;
+		margin: 0;
+	}
+
+	.block-marketing-products__heading a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.block-marketing-products__heading a:hover {
+		opacity: 0.7;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-products__grid {
+		display: grid;
+		grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+		gap: 0.2em;
+		list-style: none;
+		margin: 0;
+		margin-block-start: 2em;
+		padding: 0;
+	}
+
+	.block-marketing-products__item {
+		margin: 0;
+		min-width: 0;
+	}
+
+	.block-marketing-products__item > .product-card {
+		height: 100%;
+	}
+
+	.block-marketing-products__actions {
+		margin-block-start: 2em;
+		text-align: center;
+	}
+
+	.block-marketing-products__toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		background-color: transparent;
+		border: none;
+		border-bottom: 2px solid currentColor;
+		padding: 0.5em 1em;
+		cursor: pointer;
+		font-family: inherit;
+		font-size: inherit;
+		color: inherit;
+	}
+
+	.block-marketing-products__toggle:hover {
+		opacity: 0.8;
+	}
+
+	.block-marketing-products__toggle svg {
+		transition: transform 200ms ease;
+	}
+
+	.block-marketing-products__toggle[aria-expanded="true"] svg {
+		transform: rotate(180deg);
+	}
+
+	@media (max-width: 989px) {
+		#shopify-section-{{ section.id }} .block-marketing-products__grid {
+			grid-template-columns: repeat(var(--grid-columns-tablet, 3), 1fr);
+		}
+	}
+
+	@media (max-width: 749px) {
+		#shopify-section-{{ section.id }} .block-marketing-products__grid {
+			grid-template-columns: repeat(var(--grid-columns-mobile, 2), 1fr);
+		}
+	}
+{% endstyle %}
+
+<script>
+	(function() {
+		const grids = document.querySelectorAll('[data-expandable-grid]');
+		
+		grids.forEach(function(grid) {
+			const trigger = grid.parentElement.querySelector('[data-expandable-trigger]');
+			const visibleRows = parseInt(grid.dataset.visibleRows, 10) || 0;
+			const items = grid.querySelectorAll('.block-marketing-products__item');
+			
+			if (!trigger || visibleRows === 0) {
+				items.forEach(function(item) { item.hidden = false; });
+				if (trigger) trigger.parentElement.hidden = true;
+				return;
+			}
+			
+			const collapsedLabel = trigger.querySelector('[data-label-collapsed]');
+			const expandedLabel = trigger.querySelector('[data-label-expanded]');
+			
+			let isExpanded = false;
+			
+			function getColumnCount() {
+				const gridStyle = getComputedStyle(grid);
+				const columns = gridStyle.gridTemplateColumns.split(' ').filter(Boolean).length;
+				return columns || 4;
+			}
+			
+			function updateVisibility() {
+				const columns = getColumnCount();
+				const visibleCount = visibleRows * columns;
+				
+				if (items.length <= visibleCount) {
+					trigger.parentElement.hidden = true;
+					items.forEach(function(item) { item.hidden = false; });
+					return;
+				}
+				
+				trigger.parentElement.hidden = false;
+				
+				items.forEach(function(item, index) {
+					item.hidden = index >= visibleCount && !isExpanded;
+				});
+			}
+			
+			function setState(expanded) {
+				isExpanded = expanded;
+				trigger.setAttribute('aria-expanded', expanded);
+				grid.classList.toggle('is-expanded', expanded);
+				if (collapsedLabel) collapsedLabel.hidden = expanded;
+				if (expandedLabel) expandedLabel.hidden = !expanded;
+				updateVisibility();
+			}
+			
+			setState(false);
+			
+			let resizeTimeout;
+			window.addEventListener('resize', function() {
+				clearTimeout(resizeTimeout);
+				resizeTimeout = setTimeout(updateVisibility, 100);
+			});
+			
+			trigger.addEventListener('click', function() {
+				setState(!isExpanded);
+			});
+		});
+	})();
+</script>
+
+{% schema %}
+{
+	"name": "Marketing products",
+	"tag": "section",
+	"class": "block-marketing-products",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "collection",
+			"id": "collection",
+			"label": "Collection"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading",
+			"info": "Leave empty to use collection title, or locale default if no collection selected"
+		},
+		{
+			"type": "range",
+			"id": "max_products",
+			"label": "Maximum products",
+			"min": 4,
+			"max": 24,
+			"step": 4,
+			"default": 12
+		},
+		{
+			"type": "checkbox",
+			"id": "only_available",
+			"label": "Only show available products",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Product card"
+		},
+		{
+			"type": "select",
+			"id": "image_ratio",
+			"label": "Image ratio",
+			"options": [
+				{ "value": "adapt", "label": "Adapt" },
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" }
+			],
+			"default": "portrait"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_secondary_image",
+			"label": "Show secondary image on hover",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_vendor",
+			"label": "Show vendor",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "show_rating",
+			"label": "Show rating",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "quick_add",
+			"label": "Enable quick add",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "range",
+			"id": "columns_desktop",
+			"label": "Columns (desktop)",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 4
+		},
+		{
+			"type": "select",
+			"id": "columns_tablet",
+			"label": "Columns (tablet)",
+			"options": [
+				{ "value": "1", "label": "1" },
+				{ "value": "2", "label": "2" },
+				{ "value": "3", "label": "3" }
+			],
+			"default": "3"
+		},
+		{
+			"type": "select",
+			"id": "columns_mobile",
+			"label": "Columns (mobile)",
+			"options": [
+				{ "value": "1", "label": "1" },
+				{ "value": "2", "label": "2" }
+			],
+			"default": "2"
+		},
+		{
+			"type": "range",
+			"id": "visible_rows",
+			"label": "Visible rows",
+			"info": "Set to 0 to show all products",
+			"min": 0,
+			"max": 4,
+			"step": 1,
+			"default": 1
+		},
+		{
+			"type": "text",
+			"id": "show_more_text",
+			"label": "Show more text",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "text",
+			"id": "show_less_text",
+			"label": "Show less text",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#f5f5f5"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"presets": [
+		{
+			"name": "Products",
+			"category": "Marketing"
+		}
+	]
+}
+{% endschema %}

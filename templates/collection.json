@@ -10,52 +10,91 @@
 {
   "sections": {
     "breadcrumbs": {
-      "type": "block-breadcrumbs",
+      "type": "block-page-breadcrumbs",
       "settings": {}
     },
     "collection-top": {
       "type": "block-collection-top",
-      "settings": {}
+      "settings": {
+        "show_image": false,
+        "show_meta_description": true,
+        "show_excerpt": true,
+        "show_count": false,
+        "width": "alignsmall",
+        "text_align": "center",
+        "background_color": "#ffffff",
+        "text_color": "#111111"
+      }
     },
     "collection-banners": {
       "type": "block-collection-banners",
-      "settings": {}
+      "settings": {
+        "menu": "",
+        "width": "align",
+        "background_color": "#ffffff",
+        "item_background_color": "#0f1f38",
+        "item_text_color": "#ffffff"
+      }
     },
-    "collection-overview": {
+    "collection-products": {
       "type": "block-collection-products",
-      "settings": {}
+      "settings": {
+        "width": "alignwide",
+        "grid_columns": 4,
+        "grid_columns_tablet": "3",
+        "grid_columns_mobile": "2",
+        "grid_gap": 0.2,
+        "products_per_page": 24,
+        "show_filter": true,
+        "show_sort": true,
+        "show_result_count": true,
+        "show_filter_counts": true,
+        "hide_empty_values": false,
+        "max_preview_filters": 8,
+        "auto_fill_preview": true,
+        "collapse_bar_mobile": true,
+        "auto_submit": false,
+        "card_layout": "vertical",
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_rating": false,
+        "show_vendor": false,
+        "show_badges": false,
+        "quick_add": false,
+        "background_color": "#f8f8f8",
+        "text_color": "#111111"
+      }
     },
-    // "collection-products": {
-    //   "type": "block-collection-products",
-    //   "settings": {}
-    // },
-    // "product-grid": {
-    //   "type": "main-collection-product-grid",
-    //   "settings": {
-    //     "products_per_page": 16,
-    //     "columns_desktop": 4,
-    //     "image_ratio": "adapt",
-    //     "show_secondary_image": false,
-    //     "show_vendor": false,
-    //     "show_rating": false,
-    //     "enable_filtering": true,
-    //     "enable_sorting": true,
-    //     "columns_mobile": "2",
-    //     "padding_top": 36,
-    //     "padding_bottom": 36
-    //   }
-    // },
+    "collection-info": {
+      "type": "block-collection-info",
+      "settings": {
+        "title": "Gerelateerde blogs",
+        "read_more_text": "",
+        "width": "align",
+        "background_color": "#f8f8f8",
+        "text_color": "#111111",
+        "knowledge_background_color": "#0f1f38",
+        "knowledge_text_color": "#ffffff"
+      }
+    },
     "collection-bottom": {
       "type": "block-collection-bottom",
-      "settings": {}
+      "settings": {
+        "show_title": false,
+        "heading_tag": "h2",
+        "width": "alignsmall",
+        "text_align": "center",
+        "background_color": "#ffffff",
+        "text_color": "#111111"
+      }
     }
   },
   "order": [
     "breadcrumbs",
     "collection-top",
     "collection-banners",
-    "collection-overview",
-    //"collection-products",
+    "collection-products",
+    "collection-info",
     "collection-bottom"
   ]
 }

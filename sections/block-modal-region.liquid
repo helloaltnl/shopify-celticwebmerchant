@@ -1,0 +1,355 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-MODAL-REGION
+  ============================================================================
+
+  Purpose:
+  Modal for selecting language and/or currency preferences.
+  Uses Shopify's native localization system.
+  
+  Usage:
+  Add to footer-group.json or render directly in a template.
+  Add blocks to choose which form type to show.
+
+  Block Types:
+  - form_languages: Show only language selector
+  - form_currencies: Show only currency/country selector  
+  - form_region: Show both language + currency selectors
+
+  Dependencies:
+  - theme-modal.js
+  - theme-ux.css
+  - html-theme-icons snippet
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign auto_submit = section.settings.auto_submit
+  assign show_trigger = section.settings.show_trigger
+  assign modal_id = section.settings.modal_id | default: 'region-modal'
+-%}
+
+{%- comment -%} Trigger Button {%- endcomment -%}
+{%- if show_trigger -%}
+  <button 
+    type="button" 
+    class="block-modal-region__trigger"
+    aria-haspopup="dialog"
+    data-modal-trigger="{{ modal_id }}"
+  >
+    <span class="block-modal-region__trigger-icon" aria-hidden="true">
+      {%- render 'html-theme-icons', icon: 'globe', size: 20 -%}
+    </span>
+    <span class="block-modal-region__trigger-text">
+      {{ localization.language.endonym_name | capitalize }} | {{ localization.country.iso_code }}
+    </span>
+  </button>
+{%- endif -%}
+
+{%- comment -%} Modal {%- endcomment -%}
+<div 
+  data-modal="{{ modal_id }}"
+  id="{{ modal_id }}"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="{{ modal_id }}-title"
+  hidden
+>
+  <div data-modal-overlay></div>
+  
+  <div class="theme-modal__content block-modal-region__content">
+    <header class="theme-modal__header">
+      <h2 class="theme-modal__title" id="{{ modal_id }}-title">
+        {{ 'localization.modal_heading' | t }}
+      </h2>
+      <button 
+        type="button" 
+        class="theme-modal__close"
+        data-modal-close
+        aria-label="{{ 'accessibility.close' | t }}"
+      >
+        {%- render 'html-theme-icons', icon: 'close', size: 20 -%}
+      </button>
+    </header>
+
+    <div class="theme-modal__body">
+      {%- form 'localization', id: modal_id, class: 'block-modal-region__form' -%}
+        {%- for block in section.blocks -%}
+          <div class="block-modal-region__block" {{ block.shopify_attributes }}>
+            {%- case block.type -%}
+              {%- when 'form_languages' -%}
+                {%- if block.settings.show_label -%}
+                  <label class="block-modal-region__label">
+                    {{ block.settings.label | default: 'localization.language' | t }}
+                  </label>
+                {%- endif -%}
+                {%- render 'html-form-languages' -%}
+
+              {%- when 'form_currencies' -%}
+                {%- if block.settings.show_label -%}
+                  <label class="block-modal-region__label">
+                    {{ block.settings.label | default: 'localization.country' | t }}
+                  </label>
+                {%- endif -%}
+                {%- render 'html-form-currencies', show_search: block.settings.show_search -%}
+
+              {%- when 'form_region' -%}
+                {%- render 'html-form-region', 
+                  show_language: block.settings.show_language,
+                  show_country: block.settings.show_country,
+                  show_search: block.settings.show_search
+                -%}
+            {%- endcase -%}
+          </div>
+        {%- endfor -%}
+
+        {%- unless auto_submit -%}
+          <div class="block-modal-region__actions">
+            <button type="submit" class="block-modal-region__submit">
+              {{ 'localization.update_preferences' | t }}
+            </button>
+          </div>
+        {%- endunless -%}
+      {%- endform -%}
+
+      {%- if section.settings.show_info_text -%}
+        <p class="block-modal-region__info">
+          {{ 'localization.info_text' | t }}
+        </p>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{%- comment -%} Auto-submit script (only when enabled) {%- endcomment -%}
+{%- if auto_submit -%}
+<script>
+  (function() {
+    var form = document.querySelector('#{{ modal_id }} .block-modal-region__form');
+    if (!form) return;
+    
+    form.querySelectorAll('select').forEach(function(select) {
+      select.addEventListener('change', function() {
+        form.submit();
+      });
+    });
+  })();
+</script>
+{%- endif -%}
+
+<style>
+  /* Trigger Button */
+  .block-modal-region__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.5em 0.75em;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1em;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 200ms ease;
+  }
+
+  .block-modal-region__trigger:hover {
+    opacity: 0.7;
+  }
+
+  .block-modal-region__trigger-icon {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  /* Modal content overrides */
+  .block-modal-region__content {
+    max-width: 500px;
+  }
+
+  /* Form */
+  .block-modal-region__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .block-modal-region__block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .block-modal-region__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.75;
+  }
+
+  /* Actions */
+  .block-modal-region__actions {
+    margin-top: 0.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .block-modal-region__submit {
+    width: 100%;
+    padding: 1em;
+    background: var(--theme-color-blue, #0f1f38);
+    color: var(--theme-color-white, #fff);
+    border: none;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 200ms ease;
+  }
+
+  .block-modal-region__submit:hover {
+    opacity: 0.9;
+  }
+
+  /* Info text */
+  .block-modal-region__info {
+    margin: 1.5rem -1.5rem -1.5rem;
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    opacity: 0.75;
+  }
+</style>
+
+{% schema %}
+{
+	"name": "Region modal",
+	"tag": "section",
+	"class": "block-modal-region",
+	"enabled_on": {
+		"groups": ["footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Trigger"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_trigger",
+			"label": "Show trigger button",
+			"default": true
+		},
+		{
+			"type": "text",
+			"id": "modal_id",
+			"label": "Modal ID",
+			"default": "region-modal"
+		},
+		{
+			"type": "checkbox",
+			"id": "auto_submit",
+			"label": "Auto-submit on change",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_info_text",
+			"label": "Show info text",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "How to use"
+		},
+		{
+			"type": "paragraph",
+			"content": "Add to footer group. Trigger with data-modal-trigger attribute matching the Modal ID. Uses Shopify's native localization system."
+		}
+	],
+	"blocks": [
+		{
+			"type": "form_languages",
+			"name": "Language selector",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "checkbox",
+					"id": "show_label",
+					"label": "Show label",
+					"default": true
+				},
+				{
+					"type": "text",
+					"id": "label",
+					"label": "Label",
+					"placeholder": "Language"
+				}
+			]
+		},
+		{
+			"type": "form_currencies",
+			"name": "Country selector",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "checkbox",
+					"id": "show_label",
+					"label": "Show label",
+					"default": true
+				},
+				{
+					"type": "text",
+					"id": "label",
+					"label": "Label",
+					"placeholder": "Country"
+				},
+				{
+					"type": "checkbox",
+					"id": "show_search",
+					"label": "Show search field",
+					"default": true
+				}
+			]
+		},
+		{
+			"type": "form_region",
+			"name": "Combined selector",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "checkbox",
+					"id": "show_language",
+					"label": "Show language",
+					"default": true
+				},
+				{
+					"type": "checkbox",
+					"id": "show_country",
+					"label": "Show country",
+					"default": true
+				},
+				{
+					"type": "checkbox",
+					"id": "show_search",
+					"label": "Show search field",
+					"default": true
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "Region",
+			"category": "Modal",
+			"blocks": [
+				{ "type": "form_region" }
+			]
+		}
+	]
+}
+{% endschema %}

@@ -1,183 +1,233 @@
-{% if product.metafields.custom['recommended-products'] != blank %}
-<section class="pupsell" data-fragment-skip="upsells" data-no-track>
-		<p><strong>Altijd handig</strong></p>
-	  {% assign upsell_variants = product.metafields.custom['recommended-products'].value %}
-	  <ul class="upsell-products">
-		{% for variant in upsell_variants %}
-		  {% assign upsell_product 	= variant.product %}
-		  {% assign upsell_image 	= variant.featured_image | default: upsell_product.featured_image %}
-		  <li class="upsell-item">
-			  <label>
-				<input
-				type="checkbox"
-				class="js-upsell-checkbox"
-				data-variant-id="{{ variant.id }}"
-				>
-				{% if upsell_image %}
-					<figure class="upsell-thumb">
-						<picture>
-							<img
-							src="{{ upsell_image | image_url: width: 128 }}"
-							alt="{{ upsell_product.title | escape }}"
-							loading="lazy"
-							>
-						</picture>
-					</figure>
-				{% endif %}
-				<span class="upsell-title">
-					{{ variant.title }}
-					{% comment %} {% if upsell_product.has_only_default_variant %}
-						{{ upsell_product.title }}
-					{% else %}
-						{{ upsell_product.title }} – {{ variant.title }}
-					{% endif %} {% endcomment %}
-				</span>
-				<span class="upsell-price">
-					{% render 'html-product-price', product: product, variant: variant, show_plus:true %}
-				</span>
-			  </label>
-		  </li>
-		{% endfor %}
-	  </ul>
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-		  const checkboxes = document.querySelectorAll('.js-upsell-checkbox');
-		  if (!checkboxes.length) return;
-		
-		  // 1) Bij pageload: cart ophalen en checkboxen syncen
-		  fetch('/cart.js', {
-			headers: { 'Accept': 'application/json' }
-		  })
-			.then((res) => res.json())
-			.then((cart) => {
-			  const inCartIds = new Set(cart.items.map((item) => item.variant_id));
-		
-			  checkboxes.forEach((cb) => {
-				const id = Number(cb.dataset.variantId);
-				cb.checked = inCartIds.has(id);
-			  });
-			})
-			.catch((err) => console.error('Fout bij ophalen cart:', err));
-		
-		  // 2) Bij check/uncheck: toevoegen / verwijderen
-		  checkboxes.forEach((cb) => {
-			cb.addEventListener('change', function (event) {
-			  const variantId = event.target.dataset.variantId;
-		
-			  if (event.target.checked) {
-				addUpsellToCart(variantId);
-			  } else {
-				removeUpsellFromCart(variantId);
-			  }
-			});
-		  });
-		
-		  function addUpsellToCart(variantId) {
-			fetch('/cart/add.js', {
-			  method: 'POST',
-			  headers: {
-				'Content-Type': 'application/json',
-				'Accept': 'application/json'
-			  },
-			  body: JSON.stringify({
-				id: Number(variantId),
-				quantity: 1
-			  })
-			})
-			  .then((res) => res.json())
-			  .then((data) => {
-				console.log('Upsell toegevoegd:', data);
-				// hier evt. mini-cart/cart drawer verversen
-			  })
-			  .catch((err) => console.error('Fout bij toevoegen upsell:', err));
-		  }
-		
-		  function removeUpsellFromCart(variantId) {
-			fetch('/cart.js', {
-			  headers: { 'Accept': 'application/json' }
-			})
-			  .then((res) => res.json())
-			  .then((cart) => {
-				const index = cart.items.findIndex(
-				  (item) => item.variant_id === Number(variantId)
-				);
-		
-				if (index === -1) return;
-		
-				return fetch('/cart/change.js', {
-				  method: 'POST',
-				  headers: {
-					'Content-Type': 'application/json',
-					'Accept': 'application/json'
-				  },
-				  body: JSON.stringify({
-					line: index + 1, // line is 1-based
-					quantity: 0
-				  })
-				});
-			  })
-			  .then((res) => {
-				if (!res) return;
-				return res.json();
-			  })
-			  .then((data) => {
-				if (!data) return;
-				console.log('Upsell verwijderd:', data);
-				// hier evt. mini-cart/cart drawer verversen
-			  })
-			  .catch((err) => console.error('Fout bij verwijderen upsell:', err));
-		  }
-		});
-	</script>
-	<style>
-		.pupsell {
-			background-color: var(--theme-color-grey); padding: 1em; margin-bottom: 1em;
-			display:none;
-			& p { margin-top: 0; }
-			& ul {
-				list-style: none; padding:0; margin: 0; margin-bottom: 1em;
-			}
-			& .upsell-item {
-				& > label {
-					display: flex; flex-direction: row; flex-wrap: nowrap;
-					align-items: flex-start; justify-content: space-between; column-gap: 1em;
-					&:hover { cursor: pointer;}
-				}
-				& input {
-					flex-shrink: 0; font-size: inherit;
-					appearance: none; display: block;
-					width: 1.2em;
-					height: 1.2em;
-					border-radius: 0px;
-					margin-right: 0.3em;
-					border: 1px solid #fff;
-					background-color: #fff;
-					&:checked {
-						background: #000 url('data:image/svg+xml;utf8,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve" fill="white"><path d="M20.7,6.7l-11,11C9.5,17.9,9.3,18,9,18s-0.5-0.1-0.7-0.3l-5-5c-0.4-0.4-0.4-1,0-1.4s1-0.4,1.4,0L9,15.6L19.3,5.3 c0.4-0.4,1-0.4,1.4,0S21.1,6.3,20.7,6.7z"/> </svg>') no-repeat center center / 16px;
-					}
-				}
-				& .upsell-thumb {
-					display: block;
-					margin: 0; padding: 0;
-					width: 2em; height: 2em;
-					flex-shrink: 0;
-					& picture {
-						display: block; height:100%; width:100%;
-						& img {
-							height:100%; width:100%; object-fit: cover;
-						}
-					}
-				}
-				& .upsell-title {
-					flex-grow: 1;
-				}
-				& .upsell-price { 
-					flex-basis: 96px; justify-self: flex-end; margin-left: auto; text-align: right; white-space: nowrap;
-					& .price { white-space: nowrap;}
-				}
-			}
-		}
-	</style>
-</section>
+{%- comment -%}
+  ============================================================================
+  HTML-PRODUCT-UPSELL
+  ============================================================================
+  Upsell products with checkbox add-to-cart functionality.
+  
+  PARAMETERS:
+  - product: {Object} Product object (required)
+  
+  METAFIELDS:
+  - product.metafields.custom['recommended-products']: List of variant references
+  
+  FEATURES:
+  - Checkbox toggles add/remove from cart
+  - Auto-syncs with current cart state on load
+  - Shows variant image, title, and price
+  ============================================================================
+{%- endcomment -%}
 
-{% endif %}
+{%- liquid
+  assign p = product
+  assign upsell_metafield = p.metafields.custom['recommended-products']
+-%}
+
+{%- if upsell_metafield != blank -%}
+  {%- assign upsell_variants = upsell_metafield.value -%}
+  
+  <div class="product-upsell" data-fragment-skip="upsells" data-product-upsell>
+    <p class="product-upsell__heading">
+      <strong>{{ 'product.upsell_heading' | t }}</strong>
+    </p>
+    
+    <ul class="product-upsell__list">
+      {%- for variant in upsell_variants -%}
+        {%- liquid
+          assign upsell_product = variant.product
+          assign upsell_image = variant.featured_image | default: upsell_product.featured_image
+        -%}
+        
+        <li class="product-upsell__item">
+          <label class="product-upsell__label">
+            <input
+              type="checkbox"
+              class="product-upsell__checkbox"
+              data-variant-id="{{ variant.id }}"
+            >
+            
+            {%- if upsell_image -%}
+              <figure class="product-upsell__image">
+                <img
+                  src="{{ upsell_image | image_url: width: 128 }}"
+                  alt="{{ upsell_product.title | escape }}"
+                  width="64"
+                  height="64"
+                  loading="lazy"
+                >
+              </figure>
+            {%- endif -%}
+            
+            <span class="product-upsell__title">{{ variant.title }}</span>
+            
+            <span class="product-upsell__price">
+              {%- render 'helper-price-formatted', amount: variant.price -%}
+            </span>
+          </label>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+
+  <style>
+    .product-upsell {
+      background-color: var(--theme-color-grey);
+      padding: 1em;
+      /* margins controlled by parent */
+    }
+
+    .product-upsell__heading {
+      margin: 0 0 0.75em;
+    }
+
+    .product-upsell__list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+    }
+
+    .product-upsell__label {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 0.75em;
+      cursor: pointer;
+    }
+
+    .product-upsell__checkbox {
+      flex-shrink: 0;
+      appearance: none;
+      width: 1.25em;
+      height: 1.25em;
+      border: 2px solid var(--theme-color-blue);
+      border-radius: 2px;
+      background-color: #fff;
+      cursor: pointer;
+      transition: background-color 150ms ease;
+    }
+
+    .product-upsell__checkbox:checked {
+      background-color: var(--theme-color-blue);
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M20.7,6.7l-11,11C9.5,17.9,9.3,18,9,18s-0.5-0.1-0.7-0.3l-5-5c-0.4-0.4-0.4-1,0-1.4s1-0.4,1.4,0L9,15.6L19.3,5.3c0.4-0.4,1-0.4,1.4,0S21.1,6.3,20.7,6.7z"/></svg>');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 1em;
+    }
+
+    .product-upsell__checkbox:focus-visible {
+      outline: 2px solid var(--theme-color-blue);
+      outline-offset: 2px;
+    }
+
+    .product-upsell__image {
+      flex-shrink: 0;
+      width: 3em;
+      height: 3em;
+      margin: 0;
+    }
+
+    .product-upsell__image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-upsell__title {
+      flex-grow: 1;
+      font-size: 0.9em;
+    }
+
+    .product-upsell__price {
+      flex-shrink: 0;
+      text-align: right;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+  </style>
+
+  <script>
+    (function() {
+      const container = document.querySelector('[data-product-upsell]');
+      if (!container) return;
+
+      const checkboxes = container.querySelectorAll('.product-upsell__checkbox');
+      if (!checkboxes.length) return;
+
+      // Sync checkboxes with current cart on load
+      fetch('/cart.js', { headers: { 'Accept': 'application/json' } })
+        .then(function(res) { return res.json(); })
+        .then(function(cart) {
+          var inCartIds = cart.items.map(function(item) { return item.variant_id; });
+          
+          checkboxes.forEach(function(cb) {
+            var id = Number(cb.dataset.variantId);
+            cb.checked = inCartIds.indexOf(id) !== -1;
+          });
+        })
+        .catch(function(err) { console.error('Error fetching cart:', err); });
+
+      // Handle checkbox changes
+      checkboxes.forEach(function(cb) {
+        cb.addEventListener('change', function(e) {
+          var variantId = e.target.dataset.variantId;
+          
+          if (e.target.checked) {
+            addToCart(variantId);
+          } else {
+            removeFromCart(variantId);
+          }
+        });
+      });
+
+      function addToCart(variantId) {
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ id: Number(variantId), quantity: 1 })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          document.dispatchEvent(new CustomEvent('cart:updated', { detail: data }));
+        })
+        .catch(function(err) { console.error('Error adding upsell:', err); });
+      }
+
+      function removeFromCart(variantId) {
+        fetch('/cart.js', { headers: { 'Accept': 'application/json' } })
+          .then(function(res) { return res.json(); })
+          .then(function(cart) {
+            var index = -1;
+            for (var i = 0; i < cart.items.length; i++) {
+              if (cart.items[i].variant_id === Number(variantId)) {
+                index = i;
+                break;
+              }
+            }
+            
+            if (index === -1) return null;
+
+            return fetch('/cart/change.js', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({ line: index + 1, quantity: 0 })
+            });
+          })
+          .then(function(res) { return res ? res.json() : null; })
+          .then(function(data) {
+            if (data) {
+              document.dispatchEvent(new CustomEvent('cart:updated', { detail: data }));
+            }
+          })
+          .catch(function(err) { console.error('Error removing upsell:', err); });
+      }
+    })();
+  </script>
+{%- endif -%}

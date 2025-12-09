@@ -14,36 +14,54 @@
       "blocks": {
         "items": {
           "type": "cart_items",
-          "settings": {}
+          "settings": {
+            "show_vendor": false,
+            "show_recommended": true,
+            "max_recommended": 4,
+            "hide_out_of_stock": true
+          }
         },
         "subtotal": {
           "type": "cart_subtotal",
+          "settings": {
+            "show_cart_note": false
+          }
+        },
+        "app_block_sidebar_yRT4NQ": {
+          "type": "app_block_sidebar",
+          "settings": {}
+        },
+        "oo_eu_tax_exemption_cart_tax_exemption_MDMRjm": {
+          "type": "shopify://apps/oo-eu-tax-exemption/blocks/cart-tax-exemption/bc577450-6605-4fce-887f-6c25c2bccc22",
           "settings": {}
         },
         "payment": {
           "type": "cart_payments",
-          "settings": {}
+          "settings": {
+            "button_text": "",
+            "show_additional_buttons": false,
+            "show_terms": true,
+            "terms_text": ""
+          }
         }
       },
       "block_order": [
         "items",
         "subtotal",
+        "app_block_sidebar_yRT4NQ",
+        "oo_eu_tax_exemption_cart_tax_exemption_MDMRjm",
         "payment"
       ],
-      "settings": {}
-      
-    },
-
-    "block_product_recommended_4eGXpK": {
-      "type": "block-product-recommended",
-      "name": "Recommended products",
       "settings": {
-        "heading": "Aanbevolen producten"
+        "heading": "",
+        "show_continue_shopping": true,
+        "width": "alignwide",
+        "background_color": "#f8f8f8",
+        "text_color": "#111111"
       }
     }
   },
   "order": [
-    "cart-order",
-    "block_product_recommended_4eGXpK"
+    "cart-order"
   ]
 }

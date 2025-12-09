@@ -1,0 +1,306 @@
+{%- liquid
+  assign obj = object | default: collection | default: search
+  assign sort_by = obj.sort_by | default: obj.default_sort_by
+  assign drawer_id = 'filter-drawer-' | append: section_id
+  
+  comment
+    Settings worden doorgegeven via render call als section.settings
+  endcomment
+  if settings.show_filter_counts == nil
+    assign show_filter_counts = true
+  else
+    assign show_filter_counts = settings.show_filter_counts
+  endif
+  
+  if settings.hide_empty_values == nil
+    assign hide_empty_values = false
+  else
+    assign hide_empty_values = settings.hide_empty_values
+  endif
+-%}
+
+<div 
+  class="product-filter__drawer"
+  id="{{ drawer_id }}"
+  data-drawer="{{ drawer_id }}"
+  data-drawer-position="right"
+  role="dialog"
+  aria-modal="true"
+  aria-label="{{ 'collection.filtering.title' | t }}"
+  hidden
+>
+  <div class="product-filter__backdrop" data-drawer-overlay></div>
+  
+  <div class="product-filter__drawer-content theme-drawer__content">
+    <header class="product-filter__drawer-head theme-drawer__header">
+      <h2 class="product-filter__drawer-title theme-drawer__title">
+        {{ 'collection.filtering.title' | t }}
+      </h2>
+      <button type="button" class="product-filter__close theme-drawer__close" data-drawer-close aria-label="{{ 'accessibility.close' | t }}">
+        {%- render 'html-theme-icons', icon: 'close', size: 24 -%}
+      </button>
+    </header>
+
+    <div class="product-filter__drawer-body theme-drawer__body">
+      <form id="DrawerFiltersForm-{{ section_id }}" class="facets facets--drawer" data-facets method="get" action="">
+        {%- if obj.terms -%}
+          <input type="hidden" name="q" value="{{ obj.terms | escape }}">
+          <input type="hidden" name="options[prefix]" value="last">
+          <input type="hidden" name="type" value="product">
+        {%- endif -%}
+
+        <div class="facets__groups" role="list">
+          {%- for filter in obj.filters -%}
+            {%- case filter.type -%}
+              {%- when 'boolean','list' -%}
+                <details class="facet" data-index="{{ forloop.index }}" data-param="{{ filter.param_name }}">
+                  <summary class="facet__summary">
+                    <span class="facet__name">{{ filter.label | escape }}</span>
+                    <span class="facet__icon">
+                      {%- render 'html-theme-icons', icon: 'caret', size: 20 -%}
+                    </span>
+                  </summary>
+                  <fieldset class="facet__fieldset">
+                    <legend class="visually-hidden">{{ filter.label | escape }}</legend>
+                    <ul class="facet__values" role="list">
+                      {%- for value in filter.values -%}
+                        {%- if hide_empty_values and value.count == 0 and value.active == false -%}
+                          {%- continue -%}
+                        {%- endif -%}
+                        {%- assign input_id = 'Drawer-' | append: filter.param_name | escape | append: '-' | append: forloop.index0 | append: '-' | append: section_id -%}
+                        <li data-value="{{ value.value | escape }}">
+                          <label for="{{ input_id }}" class="facet__check{% if value.active %} is-active{% endif %}{% if value.count == 0 and value.active == false %} is-disabled{% endif %}">
+                            <input type="checkbox"
+                                   id="{{ input_id }}"
+                                   name="{{ value.param_name }}"
+                                   value="{{ value.value }}"
+                                   {% if value.active %}checked{% endif %}
+                                   {% if value.count == 0 and value.active == false %}disabled{% endif %}>
+                            <span class="facet__text">{{ value.label | escape }}</span>
+                            {%- if show_filter_counts -%}
+                              <span class="facet__qty">({{ value.count }})</span>
+                            {%- endif -%}
+                          </label>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </fieldset>
+                </details>
+
+              {%- when 'price_range' -%}
+                {%- liquid
+                  assign min_value = filter.min_value.value | default: 0 | divided_by: 100.0
+                  assign max_value = filter.max_value.value | default: filter.range_max | divided_by: 100.0
+                  assign range_max = filter.range_max | divided_by: 100.0
+                -%}
+                <details class="facet facet--price" data-index="{{ forloop.index }}" data-param="{{ filter.param_name }}">
+                  <summary class="facet__summary">
+                    <span class="facet__name">{{ filter.label | escape }}</span>
+                    <span class="facet__icon">
+                      {%- render 'html-theme-icons', icon: 'caret', size: 20 -%}
+                    </span>
+                  </summary>
+                  <fieldset class="facet__fieldset">
+                    <div class="facet__price-range" data-price-range>
+                      <div class="facet__price-slider">
+                        <input 
+                          type="range" 
+                          class="facet__range facet__range--min" 
+                          min="0" 
+                          max="{{ range_max | ceil }}" 
+                          step="1" 
+                          value="{{ min_value | floor }}"
+                          data-range-min
+                        >
+                        <input 
+                          type="range" 
+                          class="facet__range facet__range--max" 
+                          min="0" 
+                          max="{{ range_max | ceil }}" 
+                          step="1" 
+                          value="{{ max_value | ceil }}"
+                          data-range-max
+                        >
+                      </div>
+                      <div class="facet__price-inputs">
+                        <div class="facet__price-field">
+                          <label class="facet__price-label" for="Drawer-{{ filter.label | handle }}-GTE-{{ section_id }}">{{ 'collection.filtering.from' | t }}</label>
+                          <div class="facet__price-input-wrap">
+                            <span class="facet__price-currency">{{ cart.currency.symbol }}</span>
+                            <input 
+                              class="facet__price-input" 
+                              name="{{ filter.min_value.param_name }}" 
+                              id="Drawer-{{ filter.label | handle }}-GTE-{{ section_id }}" 
+                              type="text" 
+                              inputmode="decimal" 
+                              placeholder="0" 
+                              value="{% if filter.min_value.value %}{{ min_value | floor }}{% endif %}"
+                              data-input-min
+                            >
+                          </div>
+                        </div>
+                        <div class="facet__price-field">
+                          <label class="facet__price-label" for="Drawer-{{ filter.label | handle }}-LTE-{{ section_id }}">{{ 'collection.filtering.to' | t }}</label>
+                          <div class="facet__price-input-wrap">
+                            <span class="facet__price-currency">{{ cart.currency.symbol }}</span>
+                            <input 
+                              class="facet__price-input" 
+                              name="{{ filter.max_value.param_name }}" 
+                              id="Drawer-{{ filter.label | handle }}-LTE-{{ section_id }}" 
+                              type="text" 
+                              inputmode="decimal" 
+                              placeholder="{{ range_max | ceil }}" 
+                              value="{% if filter.max_value.value %}{{ max_value | ceil }}{% endif %}"
+                              data-input-max
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </fieldset>
+                </details>
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+
+        <noscript><button class="button" type="submit">{{ 'collection.filtering.apply' | t }}</button></noscript>
+      </form>	
+    </div>
+    
+    <footer class="product-filter__drawer-foot theme-drawer__footer">
+      <div class="product-filter__drawer-resultcount">
+        {%- liquid
+          comment
+            For search: use results_count for total (not paginated .size)
+          endcomment
+          if search
+            assign result_count = search.results_count
+          elsif obj.products_count
+            assign result_count = obj.products_count
+          else
+            assign result_count = 0
+          endif
+        -%}
+        <span class="facets__resultcount" data-facets-resultcount aria-live="polite">
+          {{ 'collection.filtering.results' | t: count: result_count }}
+        </span>
+      </div>
+      <div class="product-filter__drawer-actions">
+        <button type="submit" form="DrawerFiltersForm-{{ section_id }}" class="button" data-mode="page">
+          {{ 'collection.filtering.apply' | t }}
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<style>
+  /* Filter drawer section-specific styles */
+  .product-filter__drawer-content {
+    width: min(560px, 95vw);
+  }
+
+  .product-filter__drawer-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .product-filter__drawer-body .facets {
+    padding: 1rem;
+  }
+
+  .product-filter__drawer-body .facet {
+    width: 100%;
+    border-bottom: 1px solid var(--theme-color-grey);
+  }
+
+  .product-filter__drawer-body .facet__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 1rem 0;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .product-filter__drawer-body .facet__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .product-filter__drawer-body .facet__name {
+    font-weight: 500;
+  }
+
+  .product-filter__drawer-body .facet__icon {
+    transition: transform 200ms ease;
+  }
+
+  .product-filter__drawer-body .facet[open] .facet__icon {
+    transform: rotate(180deg);
+  }
+
+  .product-filter__drawer-body .facet__fieldset {
+    border: none;
+    padding: 0 0 1rem;
+    margin: 0;
+    width: 100%;
+  }
+
+  .product-filter__drawer-body .facet--price .facet__fieldset {
+    padding: 0.5rem 0 1.25rem;
+  }
+
+  .product-filter__drawer-body .facet__values {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .product-filter__drawer-body .facet__check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    cursor: pointer;
+  }
+
+  .product-filter__drawer-body .facet__check input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid #333;
+    border-radius: 2px;
+    accent-color: var(--theme-color-blue);
+  }
+
+  .product-filter__drawer-body .facet__check.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .product-filter__drawer-body .facet__text {
+    flex: 1; line-height: 1.2em;
+  }
+
+  .product-filter__drawer-body .facet__qty {
+    opacity: 0.6;
+    font-size: 0.875rem;
+  }
+
+  .product-filter__drawer-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .product-filter__drawer-resultcount {
+    font-size: 0.875rem;
+    opacity: 0.7;
+  }
+
+  .product-filter__drawer-actions .button {
+    white-space: nowrap;
+  }
+</style>

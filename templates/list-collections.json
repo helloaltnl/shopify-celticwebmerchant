@@ -12,9 +12,19 @@
     "main": {
       "type": "main-list-collections",
       "settings": {
-        "title": "Collections",
+        "heading": "",
+        "subheading": "",
         "sort": "alphabetical",
-        "image_ratio": "square"
+        "hide_empty_collections": true,
+        "hide_all_collection": true,
+        "show_product_count": true,
+        "image_ratio": "portrait",
+        "width": "alignwide",
+        "text_align": "center",
+        "card_text_align": "center",
+        "card_min_width": 200,
+        "background_color": "#ffffff",
+        "text_color": "#111111"
       }
     }
   },

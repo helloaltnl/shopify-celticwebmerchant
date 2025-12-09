@@ -1,380 +1,349 @@
-<section class="block-marketing-promo">
-  <div class="block-marketing-promo__inner alignwide is-constrained">
-    <div class="block-marketing-promo__content block-marketing-promo__content--{{ section.settings.layout }}">
-      {%- if section.settings.banner_text != blank -%}
-        <div class="block-marketing-promo__banner">
-          {%- render 'html-marketing-banner',
-            text: section.settings.banner_text,
-            cta_text: section.settings.banner_cta_text,
-            cta_url: section.settings.banner_cta_url,
-            style: section.settings.banner_style,
-            dismissible: false
-          -%}
-        </div>
-      {%- endif -%}
-      
-      {%- if section.settings.heading != blank -%}
-        <div class="block-marketing-promo__heading">
-          {%- render 'html-marketing-headline',
-            heading: section.settings.heading,
-            subheading: section.settings.subheading,
-            alignment: 'center',
-            size: 'large'
-          -%}
-        </div>
-      {%- endif -%}
-      
-      {%- if section.settings.show_countdown and section.settings.countdown_end_date != blank -%}
-        <div class="block-marketing-promo__countdown">
-          {%- render 'html-marketing-countdown',
-            end_date: section.settings.countdown_end_date,
-            heading: section.settings.countdown_heading,
-            message: section.settings.countdown_message,
-            style: section.settings.countdown_style,
-            size: section.settings.countdown_size,
-            alignment: 'center'
-          -%}
-        </div>
-      {%- endif -%}
-      
-      {%- if section.settings.text != blank -%}
-        <div class="block-marketing-promo__text">
-          {%- render 'html-marketing-text',
-            text: section.settings.text,
-            alignment: 'center',
-            width: 'medium'
-          -%}
-        </div>
-      {%- endif -%}
-      
-      {%- if section.settings.cta_text != blank and section.settings.cta_url != blank -%}
-        <div class="block-marketing-promo__cta">
-          {%- render 'html-marketing-cta',
-            text: section.settings.cta_text,
-            url: section.settings.cta_url,
-            style: section.settings.cta_style,
-            size: 'large',
-            alignment: 'center'
-          -%}
-        </div>
-      {%- endif -%}
-      
-      {%- if section.settings.show_usp -%}
-        <div class="block-marketing-promo__usp">
-          <div class="promo-usp">
-            {%- for block in section.blocks -%}
-              {%- if block.type == 'usp' -%}
-                <div class="promo-usp__item" {{ block.shopify_attributes }}>
-                  {%- if block.settings.icon != blank -%}
-                    <div class="promo-usp__icon">{{ block.settings.icon }}</div>
-                  {%- endif -%}
-                  <p class="promo-usp__text">{{ block.settings.text | escape }}</p>
-                </div>
-              {%- endif -%}
-            {%- endfor -%}
-          </div>
-        </div>
-      {%- endif -%}
-    </div>
-  </div>
-</section>
+<div class="block-marketing-promo__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	<div class="block-marketing-promo__inner block-marketing-promo__inner--{{ section.settings.layout }}">
+		{%- if section.settings.heading != blank -%}
+			{%- render 'html-marketing-headline',
+				heading: section.settings.heading,
+				subheading: section.settings.subheading,
+				alignment: 'center',
+				size: 'large'
+			-%}
+		{%- endif -%}
+		
+		{%- if section.settings.show_countdown and section.settings.countdown_end_date != blank -%}
+			<div class="block-marketing-promo__countdown">
+				{%- render 'html-marketing-countdown',
+					end_date: section.settings.countdown_end_date,
+					heading: section.settings.countdown_heading,
+					message: section.settings.countdown_message,
+					style: section.settings.countdown_style,
+					size: section.settings.countdown_size,
+					alignment: 'center'
+				-%}
+			</div>
+		{%- endif -%}
+		
+		{%- if section.settings.text != blank -%}
+			<div class="block-marketing-promo__text">
+				{%- render 'html-marketing-text',
+					text: section.settings.text,
+					alignment: 'center',
+					width: 'medium'
+				-%}
+			</div>
+		{%- endif -%}
+		
+		{%- if section.settings.cta_url != blank -%}
+			<div class="block-marketing-promo__actions">
+				{%- render 'html-marketing-cta',
+					text: section.settings.cta_text,
+					url: section.settings.cta_url,
+					style: section.settings.cta_style,
+					size: 'large',
+					alignment: 'center',
+					button_color: section.settings.button_color,
+					button_text_color: section.settings.button_text_color
+				-%}
+			</div>
+		{%- endif -%}
+		
+		{%- if section.settings.show_usp and section.blocks.size > 0 -%}
+			<ul class="block-marketing-promo__usp" role="list">
+				{%- for block in section.blocks -%}
+					{%- if block.type == 'usp' -%}
+						<li class="block-marketing-promo__usp-item" {{ block.shopify_attributes }}>
+							{%- if block.settings.icon != blank -%}
+								<span class="block-marketing-promo__usp-icon">{{ block.settings.icon }}</span>
+							{%- endif -%}
+							<span class="block-marketing-promo__usp-text">{{ block.settings.text | escape }}</span>
+						</li>
+					{%- endif -%}
+				{%- endfor -%}
+			</ul>
+		{%- endif -%}
+	</div>
+</div>
 
-{%- style -%}
-  .block-marketing-promo {
-    background-color: {{ section.settings.background_color | default: 'transparent' }};
-    padding: 3rem 0;
-  }
-  
-  .block-marketing-promo__content--boxed {
-    background-color: #f9f9f9;
-    padding: 3rem 2rem;
-    border-radius: 12px;
-  }
-  
-  .block-marketing-promo__content--bordered {
-    border: 2px solid #e0e0e0;
-    padding: 3rem 2rem;
-    border-radius: 12px;
-  }
-  
-  .block-marketing-promo__banner,
-  .block-marketing-promo__heading,
-  .block-marketing-promo__countdown,
-  .block-marketing-promo__text,
-  .block-marketing-promo__cta {
-    margin-bottom: 2rem;
-  }
-  
-  .block-marketing-promo__cta {
-    margin-bottom: 0;
-  }
-  
-  .block-marketing-promo__usp {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid #e0e0e0;
-  }
-  
-  .promo-usp {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-  
-  .promo-usp__item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  
-  .promo-usp__icon {
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
-  }
-  
-  .promo-usp__icon svg {
-    width: 100%;
-    height: 100%;
-  }
-  
-  .promo-usp__text {
-    margin: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-  
-  @media (max-width: 749px) {
-    .block-marketing-promo {
-      padding: 2rem 0;
-    }
-    
-    .block-marketing-promo__content--boxed,
-    .block-marketing-promo__content--bordered {
-      padding: 2rem 1rem;
-    }
-    
-    .promo-usp {
-      flex-direction: column;
-      align-items: center;
-    }
-  }
-{%- endstyle -%}
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-promo {
+		background-color: {{ section.settings.background_color | default: '#ffffff' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: 3em;
+	}
+
+	.block-marketing-promo__inner--boxed {
+		background-color: rgba(0, 0, 0, 0.03);
+		padding: 0em;
+		border-radius: 0em;
+	}
+
+	.block-marketing-promo__inner--bordered {
+		border: 2px solid rgba(0, 0, 0, 0.1);
+		padding: 2em;
+		border-radius: 0.5em;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-headline {
+		text-align: center;
+	}
+
+	.block-marketing-promo__countdown {
+		margin-block-start: 1.5em;
+	}
+
+	.block-marketing-promo__text {
+		margin-block-start: 1.5em;
+	}
+
+	.block-marketing-promo__actions {
+		margin-block-start: 0em;
+	}
+
+	.block-marketing-promo__usp {
+		display: flex;
+		justify-content: center;
+		gap: 2em;
+		flex-wrap: wrap;
+		list-style: none;
+		margin: 0;
+		margin-block-start: 2em;
+		padding: 0;
+		padding-block-start: 2em;
+		border-top: 1px solid rgba(0, 0, 0, 0.1);
+	}
+
+	.block-marketing-promo__usp-item {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		margin: 0;
+	}
+
+	.block-marketing-promo__usp-icon {
+		width: 1.5em;
+		height: 1.5em;
+		flex-shrink: 0;
+	}
+
+	.block-marketing-promo__usp-icon svg {
+		width: 100%;
+		height: 100%;
+	}
+
+	.block-marketing-promo__usp-text {
+		font-size: 0.875em;
+		font-weight: 600;
+	}
+
+	@media (max-width: 749px) {
+		.block-marketing-promo__usp {
+			flex-direction: column;
+			align-items: center;
+			gap: 1em;
+		}
+	}
+{% endstyle %}
 
 {% schema %}
 {
-  "name": "Marketing Promo",
-  "tag": "section",
-  "class": "block-marketing-promo",
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  },
-  "settings": [
-    {
-      "type": "select",
-      "id": "layout",
-      "label": "Layout Style",
-      "options": [
-        { "value": "default", "label": "Default" },
-        { "value": "boxed", "label": "Boxed" },
-        { "value": "bordered", "label": "Bordered" }
-      ],
-      "default": "default"
-    },
-    {
-      "type": "color",
-      "id": "background_color",
-      "label": "Background Color"
-    },
-    {
-      "type": "header",
-      "content": "Banner"
-    },
-    {
-      "type": "textarea",
-      "id": "banner_text",
-      "label": "Banner Text"
-    },
-    {
-      "type": "text",
-      "id": "banner_cta_text",
-      "label": "Banner Button Text"
-    },
-    {
-      "type": "url",
-      "id": "banner_cta_url",
-      "label": "Banner Button URL"
-    },
-    {
-      "type": "select",
-      "id": "banner_style",
-      "label": "Banner Style",
-      "options": [
-        { "value": "info", "label": "Info" },
-        { "value": "success", "label": "Success" },
-        { "value": "warning", "label": "Warning" },
-        { "value": "promo", "label": "Promo" }
-      ],
-      "default": "promo"
-    },
-    {
-      "type": "header",
-      "content": "Heading"
-    },
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Limited Time Offer"
-    },
-    {
-      "type": "text",
-      "id": "subheading",
-      "label": "Subheading",
-      "default": "Don't miss out!"
-    },
-    {
-      "type": "header",
-      "content": "Countdown"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_countdown",
-      "label": "Show Countdown Timer",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "countdown_end_date",
-      "label": "End Date",
-      "info": "Format: YYYY-MM-DDTHH:MM:SS (e.g., 2025-12-31T23:59:59)"
-    },
-    {
-      "type": "text",
-      "id": "countdown_heading",
-      "label": "Countdown Heading"
-    },
-    {
-      "type": "text",
-      "id": "countdown_message",
-      "label": "Message After Countdown",
-      "default": "Offer expired"
-    },
-    {
-      "type": "select",
-      "id": "countdown_style",
-      "label": "Countdown Style",
-      "options": [
-        { "value": "minimal", "label": "Minimal" },
-        { "value": "boxed", "label": "Boxed" },
-        { "value": "highlight", "label": "Highlighted" }
-      ],
-      "default": "highlight"
-    },
-    {
-      "type": "select",
-      "id": "countdown_size",
-      "label": "Countdown Size",
-      "options": [
-        { "value": "small", "label": "Small" },
-        { "value": "medium", "label": "Medium" },
-        { "value": "large", "label": "Large" }
-      ],
-      "default": "large"
-    },
-    {
-      "type": "header",
-      "content": "Content"
-    },
-    {
-      "type": "richtext",
-      "id": "text",
-      "label": "Description"
-    },
-    {
-      "type": "header",
-      "content": "Call to Action"
-    },
-    {
-      "type": "text",
-      "id": "cta_text",
-      "label": "Button Text",
-      "default": "Shop Now"
-    },
-    {
-      "type": "url",
-      "id": "cta_url",
-      "label": "Button URL"
-    },
-    {
-      "type": "select",
-      "id": "cta_style",
-      "label": "Button Style",
-      "options": [
-        { "value": "primary", "label": "Primary" },
-        { "value": "secondary", "label": "Secondary" },
-        { "value": "outline", "label": "Outline" }
-      ],
-      "default": "primary"
-    },
-    {
-      "type": "header",
-      "content": "Trust Badges"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_usp",
-      "label": "Show USP/Trust Badges",
-      "default": true
-    }
-  ],
-  "blocks": [
-    {
-      "type": "usp",
-      "name": "USP Badge",
-      "settings": [
-        {
-          "type": "html",
-          "id": "icon",
-          "label": "Icon SVG",
-          "info": "Paste SVG code"
-        },
-        {
-          "type": "text",
-          "id": "text",
-          "label": "Text",
-          "default": "Free Shipping"
-        }
-      ]
-    }
-  ],
-  "max_blocks": 6,
-  "presets": [
-    {
-      "name": "Marketing Promo",
-      "category": "Theme Marketing",
-      "blocks": [
-        {
-          "type": "usp",
-          "settings": {
-            "text": "Free Shipping"
-          }
-        },
-        {
-          "type": "usp",
-          "settings": {
-            "text": "Easy Returns"
-          }
-        },
-        {
-          "type": "usp",
-          "settings": {
-            "text": "Secure Checkout"
-          }
-        }
-      ]
-    }
-  ]
+	"name": "Marketing promo",
+	"tag": "section",
+	"class": "block-marketing-promo",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading"
+		},
+		{
+			"type": "text",
+			"id": "subheading",
+			"label": "Subheading"
+		},
+		{
+			"type": "richtext",
+			"id": "text",
+			"label": "Description"
+		},
+		{
+			"type": "text",
+			"id": "cta_text",
+			"label": "Button text",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "url",
+			"id": "cta_url",
+			"label": "Button link"
+		},
+		{
+			"type": "select",
+			"id": "cta_style",
+			"label": "Button style",
+			"options": [
+				{ "value": "primary", "label": "Primary" },
+				{ "value": "secondary", "label": "Secondary" },
+				{ "value": "outline", "label": "Outline" }
+			],
+			"default": "primary"
+		},
+		{
+			"type": "header",
+			"content": "Countdown"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_countdown",
+			"label": "Show countdown timer",
+			"default": false
+		},
+		{
+			"type": "text",
+			"id": "countdown_end_date",
+			"label": "End date",
+			"info": "Format: 2025-12-31T23:59:59"
+		},
+		{
+			"type": "text",
+			"id": "countdown_heading",
+			"label": "Countdown heading"
+		},
+		{
+			"type": "text",
+			"id": "countdown_message",
+			"label": "Expired message"
+		},
+		{
+			"type": "select",
+			"id": "countdown_style",
+			"label": "Countdown style",
+			"options": [
+				{ "value": "minimal", "label": "Minimal" },
+				{ "value": "boxed", "label": "Boxed" },
+				{ "value": "highlight", "label": "Highlighted" }
+			],
+			"default": "highlight"
+		},
+		{
+			"type": "select",
+			"id": "countdown_size",
+			"label": "Countdown size",
+			"options": [
+				{ "value": "small", "label": "Small" },
+				{ "value": "medium", "label": "Medium" },
+				{ "value": "large", "label": "Large" }
+			],
+			"default": "large"
+		},
+		{
+			"type": "header",
+			"content": "Trust badges"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_usp",
+			"label": "Show trust badges",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "select",
+			"id": "layout",
+			"label": "Style",
+			"options": [
+				{ "value": "default", "label": "Default" },
+				{ "value": "boxed", "label": "Boxed" },
+				{ "value": "bordered", "label": "Bordered" }
+			],
+			"default": "default"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "color",
+			"id": "button_color",
+			"label": "Button color"
+		},
+		{
+			"type": "color",
+			"id": "button_text_color",
+			"label": "Button text color"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"blocks": [
+		{
+			"type": "usp",
+			"name": "Trust badge",
+			"settings": [
+				{
+					"type": "html",
+					"id": "icon",
+					"label": "Icon (SVG)"
+				},
+				{
+					"type": "text",
+					"id": "text",
+					"label": "Text"
+				}
+			]
+		}
+	],
+	"max_blocks": 6,
+	"presets": [
+		{
+			"name": "Promo",
+			"category": "Marketing",
+			"blocks": [
+				{ "type": "usp" },
+				{ "type": "usp" },
+				{ "type": "usp" }
+			]
+		}
+	]
 }
 {% endschema %}

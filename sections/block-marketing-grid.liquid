@@ -1,682 +1,753 @@
-{% comment %}
-  Block: Marketing Grid
-  Flexible grid or slider layout for showcasing mixed content types
-  
-  Features:
-  - Grid layouts (3, 4, 5 items with creative asymmetric layouts)
-  - Slider/carousel mode
-  - Multiple content types: banners, videos, products, collections
-  - Design variants: blue, red, green
-  
-  Blocks:
-  - banner: Image + text banner
-  - video: YouTube/Vimeo video with cover
-  - product: Product card
-  - collection: Collection card
-{% endcomment %}
+{%- liquid
+	assign has_heading = false
+	if section.settings.heading != blank or section.settings.subtext != blank
+		assign has_heading = true
+	endif
+-%}
 
-<section class="marketing-grid-section has-bg-{{ section.settings.background_color }}" id="marketing-grid-{{ section.id }}">
-  <div class="marketing-grid-section__inner alignwide is-constrained">
-    {%- if section.settings.heading != blank or section.settings.subtext != blank -%}
-      <div class="marketing-grid-section__header">
-        {%- if section.settings.heading != blank -%}
-          <h2 class="marketing-grid-section__title">{{ section.settings.heading }}</h2>
-        {%- endif -%}
-        {%- if section.settings.subtext != blank -%}
-          <p class="marketing-grid-section__subtitle">{{ section.settings.subtext }}</p>
-        {%- endif -%}
-      </div>
-    {%- endif -%}
-    
-    <div 
-      class="marketing-grid is-{{ section.settings.view }} has-items-{{ section.blocks.size }} {% unless section.settings.enable_gaps %}has-no-gaps{% endunless %}" 
-      {{ section.shopify_attributes }}
-    >
-      {%- for block in section.blocks -%}
-        <div class="marketing-grid-item" {{ block.shopify_attributes }}>
-          {%- case block.type -%}
-            
-            {%- when 'banner' -%}
-              {%- render 'html-marketing-grid-banner',
-                image: block.settings.image,
-                label: block.settings.label,
-                heading: block.settings.heading,
-                text: block.settings.text,
-                link_url: block.settings.link_url,
-                design: block.settings.design,
-                block_id: block.id
-              -%}
-            
-            {%- when 'video' -%}
-              {%- render 'html-marketing-grid-video',
-                video_url: block.settings.video_url,
-                cover_image: block.settings.cover_image,
-                description: block.settings.description,
-                design: block.settings.design,
-                block_id: block.id
-              -%}
-            
-            {%- when 'product' -%}
-              {%- render 'html-marketing-grid-product',
-                product: block.settings.product,
-                show_secondary_image: block.settings.second_image,
-                design: block.settings.design,
-                block_id: block.id
-              -%}
-            
-            {%- when 'collection' -%}
-              {%- render 'html-marketing-grid-collection',
-                collection: block.settings.collection,
-                show_description: block.settings.show_description,
-                design: block.settings.design,
-                block_id: block.id
-              -%}
-          
-          {%- endcase -%}
-        </div>
-      {%- endfor -%}
-    </div>
-  </div>
-</section>
+<div class="block-marketing-grid__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	{%- if has_heading -%}
+		<header class="block-marketing-grid__header">
+			{%- if section.settings.heading != blank -%}
+				<h2 class="block-marketing-grid__title">{{ section.settings.heading }}</h2>
+			{%- endif -%}
+			{%- if section.settings.subtext != blank -%}
+				<p class="block-marketing-grid__subtitle">{{ section.settings.subtext }}</p>
+			{%- endif -%}
+		</header>
+	{%- endif -%}
+	
+	{%- if section.settings.view == 'slider' -%}
+		<marketing-grid-slider class="block-marketing-grid__slider">
+			<div class="block-marketing-grid__slider-container swiper" data-marketing-grid-swiper>
+				<ul class="block-marketing-grid__grid swiper-wrapper is-slider{% unless section.settings.enable_gaps %} has-no-gaps{% endunless %}{% if has_heading %} has-heading{% endif %}" role="list">
+					{%- for block in section.blocks -%}
+						<li class="block-marketing-grid__item swiper-slide" {{ block.shopify_attributes }}>
+							{%- case block.type -%}
+								{%- when 'banner' -%}
+									{%- render 'html-marketing-grid-banner',
+										image: block.settings.image,
+										label: block.settings.label,
+										heading: block.settings.heading,
+										text: block.settings.text,
+										link_url: block.settings.link_url,
+										design: block.settings.design,
+										block_id: block.id
+									-%}
+								{%- when 'video' -%}
+									{%- render 'html-marketing-grid-video',
+										video: block.settings.video,
+										cover_image: block.settings.cover_image,
+										description: block.settings.description,
+										design: block.settings.design,
+										block_id: block.id
+									-%}
+								{%- when 'product' -%}
+									{%- render 'html-marketing-grid-product',
+										product: block.settings.product,
+										show_secondary_image: block.settings.second_image,
+										design: block.settings.design,
+										block_id: block.id
+									-%}
+								{%- when 'collection' -%}
+									{%- render 'html-marketing-grid-collection',
+										collection: block.settings.collection,
+										show_description: block.settings.show_description,
+										design: block.settings.design,
+										block_id: block.id
+									-%}
+							{%- endcase -%}
+						</li>
+					{%- endfor -%}
+				</ul>
+				
+				<div class="block-marketing-grid__pagination swiper-pagination"></div>
+				
+				<div class="block-marketing-grid__nav">
+					<button type="button" class="block-marketing-grid__nav-btn block-marketing-grid__nav-btn--prev swiper-button-prev" aria-label="{{ 'accessibility.slider.previous' | t }}">
+						{%- render 'html-theme-icons', icon: 'caret', size: 16 -%}
+					</button>
+					<button type="button" class="block-marketing-grid__nav-btn block-marketing-grid__nav-btn--next swiper-button-next" aria-label="{{ 'accessibility.slider.next' | t }}">
+						{%- render 'html-theme-icons', icon: 'caret', size: 16 -%}
+					</button>
+				</div>
+			</div>
+		</marketing-grid-slider>
+	{%- else -%}
+		<ul class="block-marketing-grid__grid is-grid has-items-{{ section.blocks.size }}{% unless section.settings.enable_gaps %} has-no-gaps{% endunless %}{% if has_heading %} has-heading{% endif %}" role="list">
+			{%- for block in section.blocks -%}
+				<li class="block-marketing-grid__item" {{ block.shopify_attributes }}>
+					{%- case block.type -%}
+						{%- when 'banner' -%}
+							{%- render 'html-marketing-grid-banner',
+								image: block.settings.image,
+								label: block.settings.label,
+								heading: block.settings.heading,
+								text: block.settings.text,
+								link_url: block.settings.link_url,
+								design: block.settings.design,
+								block_id: block.id
+							-%}
+						{%- when 'video' -%}
+							{%- render 'html-marketing-grid-video',
+								video: block.settings.video,
+								cover_image: block.settings.cover_image,
+								description: block.settings.description,
+								design: block.settings.design,
+								block_id: block.id
+							-%}
+						{%- when 'product' -%}
+							{%- render 'html-marketing-grid-product',
+								product: block.settings.product,
+								show_secondary_image: block.settings.second_image,
+								design: block.settings.design,
+								block_id: block.id
+							-%}
+						{%- when 'collection' -%}
+							{%- render 'html-marketing-grid-collection',
+								collection: block.settings.collection,
+								show_description: block.settings.show_description,
+								design: block.settings.design,
+								block_id: block.id
+							-%}
+					{%- endcase -%}
+				</li>
+			{%- endfor -%}
+		</ul>
+	{%- endif -%}
+</div>
 
-<style>
-  .marketing-grid-wrapper {
-    
-  }
-  .marketing-grid-section {
-    padding: 4em 0;
-    background-color: transparent;
-  }
-  
-  /* Background color variants */
-  .marketing-grid-section.has-bg-white {
-    background-color: #ffffff;
-  }
-  
-  .marketing-grid-section.has-bg-light-gray {
-    background-color: #f5f5f5;
-  }
-  
-  .marketing-grid-section.has-bg-gray {
-    background-color: #e5e5e5;
-  }
-  
-  .marketing-grid-section.has-bg-dark {
-    background-color: #1a1a1a;
-  }
-  
-  .marketing-grid-section.has-bg-blue {
-    background-color: var(--theme-color-blue, #1e40af);
-  }
-  
-  .marketing-grid-section.has-bg-red {
-    background-color: var(--theme-color-red, #dc2626);
-  }
-  
-  .marketing-grid-section.has-bg-green {
-    background-color: var(--theme-color-green, #16a34a);
-  }
-  
-  /* Adjust text color for dark backgrounds */
-  .marketing-grid-section.has-bg-dark .marketing-grid-section__title,
-  .marketing-grid-section.has-bg-dark .marketing-grid-section__subtitle,
-  .marketing-grid-section.has-bg-blue .marketing-grid-section__title,
-  .marketing-grid-section.has-bg-blue .marketing-grid-section__subtitle,
-  .marketing-grid-section.has-bg-red .marketing-grid-section__title,
-  .marketing-grid-section.has-bg-red .marketing-grid-section__subtitle,
-  .marketing-grid-section.has-bg-green .marketing-grid-section__title,
-  .marketing-grid-section.has-bg-green .marketing-grid-section__subtitle {
-    color: #ffffff;
-  }
-  
-  .marketing-grid-section__inner {
-    width: 100%;
-  }
-  
-  .marketing-grid-section__header {
-    text-align: center;
-    margin-bottom: 2.5em;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .marketing-grid-section__title {
-    font-size: 2em;
-    font-weight: 500;
-    margin: 0 0 0.5rem 0;
-    line-height: 1.2;
-  }
-  
-  .marketing-grid-section__subtitle {
-    font-size: 1em;
-    color: #666;
-    margin: 0;
-    line-height: 1.5;
-  }
-  
-  /* Grid layouts */
-  .marketing-grid {
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .marketing-grid.is-grid {
-    display: grid;
-    grid-column-gap: 0.5em;
-    grid-row-gap: 0.5em;
-    min-height: 500px;
-  }
-  
-  /* No gaps variant */
-  .marketing-grid.is-grid.has-no-gaps {
-    grid-column-gap: 0;
-    grid-row-gap: 0;
-  }
-  
-  /* Grid item wrapper */
-  .marketing-grid-item {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-height: 400px;
-  }
-  
-  /* Make inner components fill the grid item */
-  .marketing-grid-item > * {
-    width: 100%;
-    height: 100%;
-  }
-  
-  /* 3 items - Asymmetric left-heavy */
-  .marketing-grid.is-grid.has-items-3 {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-  }
-  
-  .marketing-grid.is-grid.has-items-3 > .marketing-grid-item:nth-child(1) {
-    grid-area: 1 / 1 / 3 / 2;
-  }
-  
-  .marketing-grid.is-grid.has-items-3 > .marketing-grid-item:nth-child(2) {
-    grid-area: 1 / 2 / 2 / 3;
-  }
-  
-  .marketing-grid.is-grid.has-items-3 > .marketing-grid-item:nth-child(3) {
-    grid-area: 2 / 2 / 3 / 3;
-  }
-  
-  /* 4 items - Asymmetric with large left */
-  .marketing-grid.is-grid.has-items-4 {
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-  }
-  
-  .marketing-grid.is-grid.has-items-4 > .marketing-grid-item:nth-child(1) {
-    grid-area: 1 / 1 / 3 / 2;
-  }
-  
-  .marketing-grid.is-grid.has-items-4 > .marketing-grid-item:nth-child(2) {
-    grid-area: 1 / 2 / 2 / 3;
-  }
-  
-  .marketing-grid.is-grid.has-items-4 > .marketing-grid-item:nth-child(3) {
-    grid-area: 1 / 3 / 2 / 4;
-  }
-  
-  .marketing-grid.is-grid.has-items-4 > .marketing-grid-item:nth-child(4) {
-    grid-area: 2 / 2 / 3 / 4;
-  }
-  
-  /* 5 items - Asymmetric with large left */
-  .marketing-grid.is-grid.has-items-5 {
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-  }
-  
-  .marketing-grid.is-grid.has-items-5 > .marketing-grid-item:nth-child(1) {
-    grid-area: 1 / 1 / 3 / 2;
-  }
-  
-  .marketing-grid.is-grid.has-items-5 > .marketing-grid-item:nth-child(2) {
-    grid-area: 1 / 2 / 2 / 3;
-  }
-  
-  .marketing-grid.is-grid.has-items-5 > .marketing-grid-item:nth-child(3) {
-    grid-area: 1 / 3 / 2 / 4;
-  }
-  
-  .marketing-grid.is-grid.has-items-5 > .marketing-grid-item:nth-child(4) {
-    grid-area: 2 / 2 / 3 / 3;
-  }
-  
-  .marketing-grid.is-grid.has-items-5 > .marketing-grid-item:nth-child(5) {
-    grid-area: 2 / 3 / 3 / 4;
-  }
-  
-  /* 1-2 items - Simple layouts */
-  .marketing-grid.is-grid.has-items-1 {
-    grid-template-columns: 1fr;
-    min-height: 600px;
-  }
-  
-  .marketing-grid.is-grid.has-items-2 {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: 1fr;
-  }
-  
-  /* 6+ items - Regular grid */
-  .marketing-grid.is-grid.has-items-6,
-  .marketing-grid.is-grid.has-items-7,
-  .marketing-grid.is-grid.has-items-8,
-  .marketing-grid.is-grid.has-items-9,
-  .marketing-grid.is-grid.has-items-10 {
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 1fr;
-  }
-  
-  /* Slider/Flex layout */
-  .marketing-grid.is-slider {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 0.5em;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);
-    height: 30em;
-  }
-  
-  /* No gaps variant for slider */
-  .marketing-grid.is-slider.has-no-gaps {
-    gap: 0;
-  }
-  
-  .marketing-grid.is-slider::-webkit-scrollbar {
-    height: 8px;
-  }
-  
-  .marketing-grid.is-slider::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-  }
-  
-  .marketing-grid.is-slider::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-  }
-  
-  .marketing-grid.is-slider::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.5);
-  }
-  
-  .marketing-grid.is-slider .marketing-grid-item {
-    flex: 0 0 auto;
-    width: 400px;
-    max-width: 90vw;
-    height: 100%;
-    scroll-snap-align: start;
-  }
-  
-  /* Responsive */
-  @media (max-width: 989px) {
-    .marketing-grid-section {
-      padding: 2rem 0;
-    }
-    
-    .marketing-grid-section__title {
-      font-size: 1.75rem;
-    }
-    
-    .marketing-grid-section__subtitle {
-      font-size: 1rem;
-    }
-    
-    /* Tablet: 2 columns for most grids */
-    .marketing-grid.is-grid.has-items-4,
-    .marketing-grid.is-grid.has-items-5,
-    .marketing-grid.is-grid.has-items-6,
-    .marketing-grid.is-grid.has-items-7,
-    .marketing-grid.is-grid.has-items-8,
-    .marketing-grid.is-grid.has-items-9,
-    .marketing-grid.is-grid.has-items-10 {
-      grid-template-columns: repeat(2, 1fr) !important;
-      grid-auto-rows: 1fr;
-    }
-    
-    .marketing-grid.is-grid.has-items-4 > .marketing-grid-item:nth-child(1),
-    .marketing-grid.is-grid.has-items-4 > .marketing-grid-item:nth-child(2),
-    .marketing-grid.is-grid.has-items-4 > .marketing-grid-item:nth-child(3),
-    .marketing-grid.is-grid.has-items-4 > .marketing-grid-item:nth-child(4),
-    .marketing-grid.is-grid.has-items-5 > .marketing-grid-item:nth-child(1),
-    .marketing-grid.is-grid.has-items-5 > .marketing-grid-item:nth-child(2),
-    .marketing-grid.is-grid.has-items-5 > .marketing-grid-item:nth-child(3),
-    .marketing-grid.is-grid.has-items-5 > .marketing-grid-item:nth-child(4),
-    .marketing-grid.is-grid.has-items-5 > .marketing-grid-item:nth-child(5) {
-      grid-area: auto !important;
-    }
-  }
-  
-  @media (max-width: 749px) {
-    .marketing-grid-section {
-      padding: 1.5rem 0;
-    }
-    
-    .marketing-grid-section__header {
-      margin-bottom: 1.5rem;
-    }
-    
-    .marketing-grid-section__title {
-      font-size: 1.5rem;
-    }
-    
-    .marketing-grid-section__subtitle {
-      font-size: 1em;
-    }
-    
-    /* Mobile: Single column for grids */
-    .marketing-grid.is-grid {
-      grid-template-columns: 1fr !important;
-      grid-auto-rows: 1fr;
-      min-height: auto;
-    }
-    
-    .marketing-grid.is-grid .marketing-grid-item {
-      grid-area: auto !important;
-      min-height: 300px;
-    }
-    
-    /* Mobile: Reduce slider item width */
-    .marketing-grid.is-slider .marketing-grid-item {
-      width: 300px;
-    }
-  }
-</style>
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-grid {
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: 3em;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__header {
+		text-align: center;
+		max-width: 800px;
+		margin-inline: auto;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__title {
+		font-family: var(--theme-font-family-serif);
+		font-size: 2em;
+		font-weight: 400;
+		margin: 0 0 0.5em;
+		line-height: 1.2;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__subtitle {
+		font-size: 1em;
+		opacity: 0.7;
+		margin: 0;
+		line-height: 1.5;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.has-heading {
+		margin-block-start: 2em;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid {
+		display: grid;
+		gap: 0.5em;
+		min-height: 500px;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-no-gaps {
+		gap: 0;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__item {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		min-height: 400px;
+		margin: 0;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__item > * {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* 1 item */
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-1 {
+		grid-template-columns: 1fr;
+		min-height: 600px;
+	}
+
+	/* 2 items */
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-2 {
+		grid-template-columns: repeat(2, 1fr);
+		grid-template-rows: 1fr;
+	}
+
+	/* 3 items - Asymmetric left-heavy */
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-3 {
+		grid-template-columns: repeat(2, 1fr);
+		grid-template-rows: repeat(2, 1fr);
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-3 > .block-marketing-grid__item:nth-child(1) {
+		grid-area: 1 / 1 / 3 / 2;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-3 > .block-marketing-grid__item:nth-child(2) {
+		grid-area: 1 / 2 / 2 / 3;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-3 > .block-marketing-grid__item:nth-child(3) {
+		grid-area: 2 / 2 / 3 / 3;
+	}
+
+	/* 4 items - Asymmetric with large left */
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 {
+		grid-template-columns: repeat(3, 1fr);
+		grid-template-rows: repeat(2, 1fr);
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 > .block-marketing-grid__item:nth-child(1) {
+		grid-area: 1 / 1 / 3 / 2;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 > .block-marketing-grid__item:nth-child(2) {
+		grid-area: 1 / 2 / 2 / 3;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 > .block-marketing-grid__item:nth-child(3) {
+		grid-area: 1 / 3 / 2 / 4;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 > .block-marketing-grid__item:nth-child(4) {
+		grid-area: 2 / 2 / 3 / 4;
+	}
+
+	/* 5 items - Asymmetric with large left */
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 {
+		grid-template-columns: repeat(3, 1fr);
+		grid-template-rows: repeat(2, 1fr);
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item:nth-child(1) {
+		grid-area: 1 / 1 / 3 / 2;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item:nth-child(2) {
+		grid-area: 1 / 2 / 2 / 3;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item:nth-child(3) {
+		grid-area: 1 / 3 / 2 / 4;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item:nth-child(4) {
+		grid-area: 2 / 2 / 3 / 3;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item:nth-child(5) {
+		grid-area: 2 / 3 / 3 / 4;
+	}
+
+	/* 6+ items - Regular grid */
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-6,
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-7,
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-8,
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-9,
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-10 {
+		grid-template-columns: repeat(3, 1fr);
+		grid-auto-rows: 1fr;
+	}
+
+	/* Slider mode */
+	#shopify-section-{{ section.id }} .block-marketing-grid__slider {
+		display: block;
+		position: relative;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__slider-container {
+		position: relative;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__slider-container.has-pagination {
+		padding-bottom: 3em;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-slider {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		height: 30em;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-slider .block-marketing-grid__item {
+		width: 400px;
+		max-width: 90vw;
+		height: 100%;
+	}
+
+	/* Pagination */
+	#shopify-section-{{ section.id }} .block-marketing-grid__pagination {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		display: flex;
+		justify-content: center;
+		gap: 0.5em;
+		padding: 0.5em;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet {
+		width: 0.5em;
+		height: 0.25em;
+		border-radius: 0;
+		background-color: currentColor;
+		opacity: 0.3;
+		border: none;
+		outline: none;
+		box-shadow: none;
+		cursor: pointer;
+		/* transition: opacity 150ms ease; */
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet:focus,
+	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet:focus-visible {
+		outline: none;
+		box-shadow: none;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet::before,
+	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet::after {
+		display: none;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet-active {
+		width: 1.5em;
+		opacity: 1;
+	}
+
+	/* Navigation buttons */
+	#shopify-section-{{ section.id }} .block-marketing-grid__nav {
+		display: none;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn {
+		position: absolute;
+		top: calc(50% - 1.5em);
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5em;
+		height: 2.5em;
+		padding: 0;
+		border: none;
+		background-color: var(--theme-color-white, #ffffff);
+		color: var(--theme-color-blue, #0f1f38);
+		cursor: pointer;
+		transition: background-color 150ms ease, color 150ms ease;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn:hover {
+		background-color: var(--theme-color-blue, #0f1f38);
+		color: var(--theme-color-white, #ffffff);
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn--prev {
+		left: 0;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn--prev svg {
+		transform: rotate(90deg);
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn--next {
+		right: 0;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn--next svg {
+		transform: rotate(-90deg);
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn.swiper-button-disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn::after {
+		display: none;
+	}
+
+	@media (min-width: 750px) {
+		#shopify-section-{{ section.id }} .block-marketing-grid__slider-container:hover .block-marketing-grid__nav {
+			display: block;
+		}
+	}
+
+	@media (max-width: 989px) {
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4,
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5,
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-6,
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-7,
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-8,
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-9,
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-10 {
+			grid-template-columns: repeat(2, 1fr);
+			grid-auto-rows: 1fr;
+		}
+
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 > .block-marketing-grid__item,
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item {
+			grid-area: auto;
+		}
+	}
+
+	@media (max-width: 749px) {
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid {
+			grid-template-columns: 1fr;
+			grid-auto-rows: 1fr;
+			min-height: auto;
+		}
+
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid .block-marketing-grid__item {
+			grid-area: auto;
+			min-height: 300px;
+		}
+
+		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-slider .block-marketing-grid__item {
+			width: 300px;
+		}
+	}
+{% endstyle %}
+
+<script>
+	class MarketingGridSlider extends HTMLElement {
+		constructor() {
+			super();
+			this.swiper = null;
+		}
+
+		connectedCallback() {
+			const swiperEl = this.querySelector('[data-marketing-grid-swiper]');
+			if (!swiperEl || typeof Swiper === 'undefined') return;
+
+			const self = this;
+			const hasNoGaps = swiperEl.querySelector('.has-no-gaps') !== null;
+			const gapSize = hasNoGaps ? 0 : 8;
+
+			this.swiper = new Swiper(swiperEl, {
+				direction: 'horizontal',
+				loop: false,
+				centeredSlides: false,
+				slidesPerView: 'auto',
+				slidesPerGroup: 1,
+				spaceBetween: gapSize,
+				grabCursor: true,
+				mousewheel: {
+					forceToAxis: true,
+					releaseOnEdges: true
+				},
+				pagination: {
+					el: swiperEl.querySelector('.swiper-pagination'),
+					clickable: true
+				},
+				navigation: {
+					nextEl: swiperEl.querySelector('.swiper-button-next'),
+					prevEl: swiperEl.querySelector('.swiper-button-prev')
+				},
+				on: {
+					init: function(swiper) {
+						self.handleOverflow(swiper);
+					},
+					resize: function(swiper) {
+						self.handleOverflow(swiper);
+					}
+				}
+			});
+		}
+
+		areAllSlidesInView(swiper) {
+			const wrapperWidth = swiper.wrapperEl.offsetWidth;
+			let totalSlidesWidth = 0;
+			const spaceBetween = swiper.params.spaceBetween || 0;
+
+			swiper.slides.forEach((slide, index) => {
+				totalSlidesWidth += slide.offsetWidth;
+				if (index < swiper.slides.length - 1) {
+					totalSlidesWidth += spaceBetween;
+				}
+			});
+
+			return totalSlidesWidth <= wrapperWidth;
+		}
+
+		handleOverflow(swiper) {
+			const container = swiper.el;
+			const wrapper = swiper.el.querySelector('.swiper-wrapper');
+			const pagination = swiper.el.querySelector('.swiper-pagination');
+			const nav = this.querySelector('.block-marketing-grid__nav');
+
+			if (this.areAllSlidesInView(swiper)) {
+				container.classList.remove('has-pagination');
+				wrapper.style.justifyContent = 'center';
+				if (pagination) pagination.style.display = 'none';
+				if (nav) nav.style.display = 'none';
+				swiper.allowTouchMove = false;
+			} else {
+				container.classList.add('has-pagination');
+				wrapper.style.justifyContent = '';
+				if (pagination) pagination.style.display = '';
+				if (nav) nav.style.display = '';
+				swiper.allowTouchMove = true;
+			}
+		}
+
+		disconnectedCallback() {
+			if (this.swiper) {
+				this.swiper.destroy(true, true);
+				this.swiper = null;
+			}
+		}
+	}
+
+	if (!customElements.get('marketing-grid-slider')) {
+		customElements.define('marketing-grid-slider', MarketingGridSlider);
+	}
+</script>
 
 {% schema %}
 {
-  "name": "Marketing Grid",
-  "tag": "section",
-  "class": "marketing-grid-wrapper",
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  },
-  "settings": [
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Featured Content"
-    },
-    {
-      "type": "textarea",
-      "id": "subtext",
-      "label": "Subtext",
-      "default": "Discover our curated collection"
-    },
-    {
-      "type": "select",
-      "id": "view",
-      "label": "Layout",
-      "default": "grid",
-      "options": [
-        {
-          "value": "grid",
-          "label": "Grid (asymmetric)"
-        },
-        {
-          "value": "slider",
-          "label": "Slider/Carousel"
-        }
-      ],
-      "info": "Grid works best with 3-5 items. Slider works for any number."
-    },
-    {
-      "type": "select",
-      "id": "background_color",
-      "label": "Background color",
-      "default": "transparent",
-      "options": [
-        {
-          "value": "transparent",
-          "label": "Transparent"
-        },
-        {
-          "value": "white",
-          "label": "White"
-        },
-        {
-          "value": "light-gray",
-          "label": "Light Gray"
-        },
-        {
-          "value": "gray",
-          "label": "Gray"
-        },
-        {
-          "value": "dark",
-          "label": "Dark"
-        },
-        {
-          "value": "blue",
-          "label": "Blue (Theme)"
-        },
-        {
-          "value": "red",
-          "label": "Red (Theme)"
-        },
-        {
-          "value": "green",
-          "label": "Green (Theme)"
-        }
-      ]
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_gaps",
-      "label": "Enable gaps between items",
-      "default": true,
-      "info": "Turn off for a seamless, edge-to-edge layout"
-    }
-  ],
-  "blocks": [
-    {
-      "type": "banner",
-      "name": "Banner",
-      "settings": [
-        {
-          "type": "image_picker",
-          "id": "image",
-          "label": "Background image"
-        },
-        {
-          "type": "text",
-          "id": "label",
-          "label": "Label",
-          "default": "New Collection",
-          "info": "Small badge text (optional)"
-        },
-        {
-          "type": "text",
-          "id": "heading",
-          "label": "Heading",
-          "default": "Summer Collection"
-        },
-        {
-          "type": "textarea",
-          "id": "text",
-          "label": "Description"
-        },
-        {
-          "type": "url",
-          "id": "link_url",
-          "label": "Link URL"
-        },
-        {
-          "type": "select",
-          "id": "design",
-          "label": "Design style",
-          "default": "blue",
-          "options": [
-            {
-              "value": "blue",
-              "label": "Blue"
-            },
-            {
-              "value": "red",
-              "label": "Red"
-            },
-            {
-              "value": "green",
-              "label": "Green"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "video",
-      "name": "Video",
-      "settings": [
-        {
-          "type": "video_url",
-          "id": "video_url",
-          "accept": ["youtube", "vimeo"],
-          "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
-          "label": "Video URL",
-          "placeholder": "https://www.youtube.com/watch?v=...",
-          "info": "YouTube or Vimeo URL"
-        },
-        {
-          "type": "image_picker",
-          "id": "cover_image",
-          "label": "Cover image",
-          "info": "Shows before video plays"
-        },
-        {
-          "type": "text",
-          "id": "description",
-          "default": "Video",
-          "label": "Video description",
-          "info": "For accessibility"
-        },
-        {
-          "type": "select",
-          "id": "design",
-          "label": "Design style",
-          "default": "blue",
-          "options": [
-            {
-              "value": "blue",
-              "label": "Blue"
-            },
-            {
-              "value": "red",
-              "label": "Red"
-            },
-            {
-              "value": "green",
-              "label": "Green"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "product",
-      "name": "Product",
-      "settings": [
-        {
-          "type": "product",
-          "id": "product",
-          "label": "Product"
-        },
-        {
-          "type": "checkbox",
-          "id": "second_image",
-          "default": false,
-          "label": "Show second image on hover"
-        },
-        {
-          "type": "select",
-          "id": "design",
-          "label": "Design style",
-          "default": "blue",
-          "options": [
-            {
-              "value": "blue",
-              "label": "Blue"
-            },
-            {
-              "value": "red",
-              "label": "Red"
-            },
-            {
-              "value": "green",
-              "label": "Green"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "collection",
-      "name": "Collection",
-      "settings": [
-        {
-          "type": "collection",
-          "id": "collection",
-          "label": "Collection"
-        },
-        {
-          "type": "checkbox",
-          "id": "show_description",
-          "default": true,
-          "label": "Show collection description"
-        },
-        {
-          "type": "select",
-          "id": "design",
-          "label": "Design style",
-          "default": "blue",
-          "options": [
-            {
-              "value": "blue",
-              "label": "Blue"
-            },
-            {
-              "value": "red",
-              "label": "Red"
-            },
-            {
-              "value": "green",
-              "label": "Green"
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "max_blocks": 10,
-  "presets": [
-    {
-      "name": "Marketing Grid",
-      "category": "Theme Marketing",
-      "blocks": [
-        {
-          "type": "banner"
-        },
-        {
-          "type": "product"
-        },
-        {
-          "type": "collection"
-        }
-      ]
-    }
-  ]
+	"name": "Marketing grid",
+	"tag": "section",
+	"class": "block-marketing-grid",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading"
+		},
+		{
+			"type": "textarea",
+			"id": "subtext",
+			"label": "Subtext"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "select",
+			"id": "view",
+			"label": "Display",
+			"options": [
+				{ "value": "grid", "label": "Grid" },
+				{ "value": "slider", "label": "Slider" }
+			],
+			"default": "grid"
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_gaps",
+			"label": "Show gaps",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"blocks": [
+		{
+			"type": "banner",
+			"name": "Banner",
+			"settings": [
+				{
+					"type": "image_picker",
+					"id": "image",
+					"label": "Image"
+				},
+				{
+					"type": "text",
+					"id": "label",
+					"label": "Label"
+				},
+				{
+					"type": "text",
+					"id": "heading",
+					"label": "Heading"
+				},
+				{
+					"type": "textarea",
+					"id": "text",
+					"label": "Text"
+				},
+				{
+					"type": "url",
+					"id": "link_url",
+					"label": "Link"
+				},
+				{
+					"type": "select",
+					"id": "design",
+					"label": "Accent color",
+					"options": [
+						{ "value": "blue", "label": "Blue" },
+						{ "value": "red", "label": "Red" },
+						{ "value": "green", "label": "Green" }
+					],
+					"default": "blue"
+				}
+			]
+		},
+		{
+			"type": "video",
+			"name": "Video",
+			"settings": [
+				{
+					"type": "video",
+					"id": "video",
+					"label": "Video"
+				},
+				{
+					"type": "image_picker",
+					"id": "cover_image",
+					"label": "Cover image"
+				},
+				{
+					"type": "text",
+					"id": "description",
+					"label": "Description"
+				},
+				{
+					"type": "select",
+					"id": "design",
+					"label": "Accent color",
+					"options": [
+						{ "value": "blue", "label": "Blue" },
+						{ "value": "red", "label": "Red" },
+						{ "value": "green", "label": "Green" }
+					],
+					"default": "blue"
+				}
+			]
+		},
+		{
+			"type": "product",
+			"name": "Product",
+			"settings": [
+				{
+					"type": "product",
+					"id": "product",
+					"label": "Product"
+				},
+				{
+					"type": "checkbox",
+					"id": "second_image",
+					"label": "Show secondary image on hover",
+					"default": false
+				},
+				{
+					"type": "select",
+					"id": "design",
+					"label": "Accent color",
+					"options": [
+						{ "value": "blue", "label": "Blue" },
+						{ "value": "red", "label": "Red" },
+						{ "value": "green", "label": "Green" }
+					],
+					"default": "blue"
+				}
+			]
+		},
+		{
+			"type": "collection",
+			"name": "Collection",
+			"settings": [
+				{
+					"type": "collection",
+					"id": "collection",
+					"label": "Collection"
+				},
+				{
+					"type": "checkbox",
+					"id": "show_description",
+					"label": "Show description",
+					"default": true
+				},
+				{
+					"type": "select",
+					"id": "design",
+					"label": "Accent color",
+					"options": [
+						{ "value": "blue", "label": "Blue" },
+						{ "value": "red", "label": "Red" },
+						{ "value": "green", "label": "Green" }
+					],
+					"default": "blue"
+				}
+			]
+		}
+	],
+	"max_blocks": 10,
+	"presets": [
+		{
+			"name": "Grid",
+			"category": "Marketing",
+			"blocks": [
+				{ "type": "banner" },
+				{ "type": "product" },
+				{ "type": "collection" }
+			]
+		}
+	]
 }
 {% endschema %}

@@ -8,55 +8,260 @@
  * ------------------------------------------------------------
  */
 {
-  "name": "t:sections.footer.name",
+  "name": "Footer",
   "type": "footer",
   "sections": {
-    "footer": {
-      "type": "footer",
+    "footer-usps": {
+      "type": "block-footer-usps",
       "blocks": {
-        "footer-0": {
-          "type": "link_list",
+        "usp-1": {
+          "type": "usp",
           "settings": {
-            "heading": "Quick links",
-            "menu": "footer"
+            "text": "Gratis verzending boven € 75 (NL/BE)",
+            "link": "",
+            "icon": "none"
           }
         },
-        "footer-1": {
-          "type": "link_list",
+        "usp-2": {
+          "type": "usp",
           "settings": {
-            "heading": "Info",
-            "menu": "footer"
+            "text": "Voor 20:30 verzonden",
+            "link": "",
+            "icon": "none"
           }
         },
-        "footer-2": {
-          "type": "text",
+        "usp-3": {
+          "type": "usp",
           "settings": {
-            "heading": "Our mission",
-            "subtext": "<p>Share contact information, store details, and brand content with your customers.<\/p>"
+            "text": "17.000 items op voorraad",
+            "link": "",
+            "icon": "none"
+          }
+        },
+        "usp-4": {
+          "type": "usp",
+          "settings": {
+            "text": "Laagste prijs garantie",
+            "link": "",
+            "icon": "none"
           }
         }
       },
       "block_order": [
-        "footer-0",
-        "footer-1",
-        "footer-2"
+        "usp-1",
+        "usp-2",
+        "usp-3",
+        "usp-4"
+      ],
+      "custom_css": [
+        "> * .block-footer-usps__icon {color: #22c55e !important;}"
       ],
       "settings": {
-        "color_scheme": "scheme-1",
-        "newsletter_enable": true,
-        "newsletter_heading": "Subscribe to our emails",
-        "show_social": true,
-        "enable_country_selector": false,
-        "enable_language_selector": false,
+        "width": "alignwide",
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff"
+      }
+    },
+    "footer-service": {
+      "type": "block-footer-service",
+      "blocks": {
+        "service_etMkLr": {
+          "type": "service",
+          "settings": {
+            "heading": "",
+            "text": "",
+            "link": "https://celticwebmerchant.zendesk.com/hc/en-us",
+            "link_text": ""
+          }
+        },
+        "showroom_deinET": {
+          "type": "showroom",
+          "settings": {
+            "heading": "",
+            "text": "",
+            "link": "https://celticwebmerchant.zendesk.com/hc/en-us/articles/9296295226258-Showroom",
+            "link_text": ""
+          }
+        },
+        "newsletter_iWfWmC": {
+          "type": "newsletter",
+          "settings": {
+            "heading": "",
+            "placeholder": ""
+          }
+        }
+      },
+      "block_order": [
+        "service_etMkLr",
+        "showroom_deinET",
+        "newsletter_iWfWmC"
+      ],
+      "settings": {
+        "width": "align",
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff"
+      }
+    },
+    "footer-links": {
+      "type": "block-footer-links",
+      "settings": {
+        "footer_menu": "footer-service",
+        "width": "align",
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff"
+      }
+    },
+    "footer-payments": {
+      "type": "block-footer-payments",
+      "settings": {
         "payment_enable": true,
-        "show_policy": false,
-        "margin_top": 48,
-        "padding_top": 36,
-        "padding_bottom": 36
+        "width": "align",
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff"
+      }
+    },
+    "footer-copyright": {
+      "type": "block-footer-copyright",
+      "settings": {
+        "copyright_text": "Celtic Webmerchant. Alle rechten voorbehouden.",
+        "developer_credit": "Theme ontwikkeld door HMWRK en totalli",
+        "show_policy": true,
+        "width": "align",
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff"
+      }
+    },
+    "block_search_overlay_a6H9hj": {
+      "type": "block-search-overlay",
+      "blocks": {
+        "popular_searches_ChJMVQ": {
+          "type": "popular_searches",
+          "settings": {
+            "heading": "Popular searches",
+            "search_terms": "Whisky, Gin, Rum, Vodka"
+          }
+        },
+        "recent_searches_UjxzAj": {
+          "type": "recent_searches",
+          "settings": {
+            "heading": "Recent searches",
+            "limit": 5
+          }
+        },
+        "product_results_9FwDyx": {
+          "type": "product_results",
+          "settings": {
+            "heading": "Products",
+            "limit": 6,
+            "show_price": true,
+            "show_vendor": false
+          }
+        },
+        "collection_results_nmECJM": {
+          "type": "collection_results",
+          "settings": {
+            "heading": "Collections",
+            "limit": 4
+          }
+        }
+      },
+      "block_order": [
+        "popular_searches_ChJMVQ",
+        "recent_searches_UjxzAj",
+        "product_results_9FwDyx",
+        "collection_results_nmECJM"
+      ],
+      "name": "t:sections.block-search-overlay.presets.name",
+      "settings": {
+        "overlay_id": "search-overlay",
+        "enable_predictive": true
+      }
+    },
+    "modal-region": {
+      "type": "block-modal-region",
+      "blocks": {
+        "form_region_jwUkyi": {
+          "type": "form_region",
+          "settings": {
+            "show_language": true,
+            "show_country": true,
+            "show_search": true
+          }
+        }
+      },
+      "block_order": [
+        "form_region_jwUkyi"
+      ],
+      "settings": {
+        "show_trigger": false,
+        "modal_id": "region-modal",
+        "auto_submit": false,
+        "show_info_text": true
+      }
+    },
+    "cart-preview": {
+      "type": "block-cart-preview",
+      "blocks": {
+        "cart-items": {
+          "type": "cart_items",
+          "settings": {
+            "show_vendor": false,
+            "show_recommended": true,
+            "max_recommended": 4,
+            "hide_out_of_stock": true
+          }
+        },
+        "cart-subtotal": {
+          "type": "cart_subtotal",
+          "settings": {
+            "show_cart_note": false
+          }
+        }
+      },
+      "block_order": [
+        "cart-items",
+        "cart-subtotal"
+      ],
+      "settings": {
+        "show_view_cart": true,
+        "disable_on_cart": true
+      }
+    },
+    "block_modal_share_kYTCmL": {
+      "type": "block-modal-share",
+      "name": "Share",
+      "settings": {
+        "modal_id": "share-modal",
+        "heading": "",
+        "show_facebook": true,
+        "show_twitter": true,
+        "show_pinterest": true,
+        "show_whatsapp": true,
+        "show_email": true,
+        "show_copy_link": true
+      }
+    },
+    "block_page_menu_GJpUfD": {
+      "type": "block-page-menu",
+      "name": "Mobile menu",
+      "settings": {
+        "primary_menu": "sale-menu",
+        "product_menu": "product-menu",
+        "secondary_menu": "tribe-menu",
+        "tertiary_menu": "extra-menu"
       }
     }
   },
   "order": [
-    "footer"
+    "footer-usps",
+    "footer-service",
+    "footer-links",
+    "footer-payments",
+    "footer-copyright",
+    "block_search_overlay_a6H9hj",
+    "modal-region",
+    "cart-preview",
+    "block_modal_share_kYTCmL",
+    "block_page_menu_GJpUfD"
   ]
 }

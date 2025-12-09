@@ -1,667 +1,840 @@
-{%- comment -%} Block Product Form (brains) {%- endcomment -%}
+{%- comment -%}
+  ============================================================================
+  BLOCK-PRODUCT-FORM
+  ============================================================================
+  Main product form section with media gallery and configurable form blocks.
+  
+  FEATURES:
+  - 2-column layout (media + form)
+  - Modular block-based form structure
+  - AJAX variant updates via Section Rendering API
+  - Fragment reconciliation with app integration support
+  
+  DEPENDENCIES:
+  - html-product-gallery snippet
+  - html-product-* snippets for each block type
+  ============================================================================
+{%- endcomment -%}
+
 {%- assign p = product -%}
 {%- if p == blank and section.settings.product != blank -%}
-{%- assign p = section.settings.product -%}
+  {%- assign p = section.settings.product -%}
 {%- endif -%}
 
 {%- if p != blank -%}
-<section class="product-order-content alignwide">
-	<section class="product-order__media">
-		{% render 	'html-product-gallery', 
-					product: p %}
-	</section>
-	<section class="product-order__form">
-		<div class="pform"
-			data-product-form
-			data-section-id="{{ section.id }}"
-			data-product-json="{{ p | json | escape }}">
-			<form action="/cart/add" method="post" id="{{ product_form_id }}" class="pform__form" novalidate>
-				{%- assign first_variant_id = p.selected_or_first_available_variant.id -%}
-				<input type="hidden" name="id" value="{{ first_variant_id }}" data-variant-id>
-			
-				{%- assign block_order_json = section.blocks | map: 'id' | json -%}
-				<div class="pform__segments"
-					data-fragment-parent="product-form"
-					data-block-order='{{ block_order_json | escape }}'>
-			
-				{%- for block in section.blocks -%}
-					<div class="pform__block"
-						data-block-key="{{ block.id }}"
-						data-fragment="{{ block.type }}"
-						{{ block.shopify_attributes }}>
-					{%- case block.type -%}
-						
-						{%- when 'reviews' -%}
-						{% render 'html-product-reviews', product: p %}
-							
-						{%- when 'heading' -%}
-						{% render 'html-product-heading', product: p, text: block.settings.text %}
-						
-						{%- when 'price' -%}
-						{% render 'html-product-price', product: p, show: true, from:'auto' %}
-						
-						{%- when 'description' -%}
-						{% render 'html-product-description', product: p %}
-			
-						{%- when 'variant_picker' -%}
-						{% render 'html-product-variant_picker', product: p, threshold_dropdown: block.settings.threshold_dropdown %}
-						
-						{%- when 'notify' -%}
-						{% render 'html-product-notify', product: p %}
-						
-						{%- when 'stock' -%}
-						{% render 'html-product-stock', product: p, show: true, from:'auto', show_low_stock:true, show_stock_count:true %}
-						
-						{%- when 'delivery' -%}
-						{% render 'html-product-delivery', product: p, show: true %}
-			
-						{%- when 'sku' -%}
-						{% render 'html-product-sku', product: p, show_label: block.settings.show_label %}
-			
-						{%- when 'upsell' -%}
-						{% render 'html-product-upsell', product: p %}
-						
-						{%- when 'quantity' -%}
-						{% render 'html-product-quantity', product: p %}
-			
-						{%- when 'selling_plans' -%}
-						{% render 'html-product-selling_plans', product: p %}
-			
-						{%- when 'atc' -%}
-						{% render 'html-product-atc', product: p, full_width: block.settings.full_width %}
-			
-						{%- when 'dynamic_checkout' -%}
-						{% render 'html-product-dynamic_checkout', product: p %}
-						
-						{%- when '@app' -%}
-						{% render block %}
-						
-					{%- endcase -%}
-					</div>
-				{%- endfor -%}
-			
-				</div>
-			</form>
-			{% render 'html-product-trust', product: p %}
-			
-			
-		</div>
-	</section>
-</section>
+<div class="block-product-form__content {{ section.settings.width }}">
+  <div class="block-product-form__media">
+    {%- render 'html-product-gallery', product: p -%}
+  </div>
+  
+  <div class="block-product-form__form">
+    <div class="block-product-form__wrapper"
+      data-product-form
+      data-section-id="{{ section.id }}"
+      data-product-json="{{ p | json | escape }}">
+      
+      <form action="/cart/add" method="post" id="product-form-{{ section.id }}" class="block-product-form__fields" novalidate>
+        {%- assign first_variant_id = p.selected_or_first_available_variant.id -%}
+        <input type="hidden" name="id" value="{{ first_variant_id }}" data-variant-id>
+        
+        <div class="block-product-form__blocks">
+          
+          {%- for block in section.blocks -%}
+            <div class="block-product-form__block"
+              {{ block.shopify_attributes }}>
+              
+              {%- case block.type -%}
+                {%- when 'rating' -%}
+                  {%- render 'html-product-rating', product: p, scroll_target: block.settings.scroll_target, show_count: block.settings.show_count, size: block.settings.size -%}
+                  
+                {%- when 'heading' -%}
+                  {%- render 'html-product-heading', product: p, show_vendor: block.settings.show_vendor -%}
+                  
+                {%- when 'price' -%}
+                  <div data-fragment-update="price">
+                    {%- render 'html-product-price', product: p -%}
+                  </div>
+                  
+                {%- when 'description' -%}
+                  {%- render 'html-product-description', product: p, truncate: block.settings.truncate, words: block.settings.words, read_more_target: block.settings.read_more_target -%}
+                  
+                {%- when 'variant_picker' -%}
+                  {%- render 'html-product-variant_picker', product: p, threshold_dropdown: block.settings.threshold_dropdown -%}
+                  
+                {%- when 'notify' -%}
+                  {%- render 'html-product-notify', product: p -%}
+                  
+                {%- when 'stock' -%}
+                  <div data-fragment-update="stock">
+                    {%- render 'html-product-stock', product: p, show_stock_count: block.settings.show_stock_count -%}
+                  </div>
+                  
+                {%- when 'delivery' -%}
+                  <div data-fragment-update="delivery">
+                    {%- render 'html-product-delivery', product: p, show: true -%}
+                  </div>
+                  
+                {%- when 'sku' -%}
+                  <div data-fragment-update="sku">
+                    {%- render 'html-product-sku', product: p, show_label: block.settings.show_label -%}
+                  </div>
+                  
+                {%- when 'upsell' -%}
+                  {%- render 'html-product-upsell', product: p -%}
+                  
+                {%- when 'selling_plans' -%}
+                  {%- render 'html-product-selling_plans', product: p -%}
+                  
+                {%- when 'atc' -%}
+                  <div data-fragment-update="atc">
+                    {%- render 'html-product-atc', product: p, full_width: block.settings.full_width, show_quantity: block.settings.show_quantity, show_wishlist: block.settings.show_wishlist -%}
+                  </div>
+                  
+                {%- when 'trust_payments' -%}
+                  {%- render 'html-product-payments', method_1: block.settings.method_1, method_2: block.settings.method_2, method_3: block.settings.method_3, method_4: block.settings.method_4, method_5: block.settings.method_5 -%}
+                  
+                {%- when 'dynamic_checkout' -%}
+                  {%- render 'html-product-dynamic_checkout', product: p -%}
+                  
+                {%- when 'trust_usps' -%}
+                  {%- render 'html-product-trust', product: p, item_1_text: block.settings.item_1_text, item_1_url: block.settings.item_1_url, item_2_text: block.settings.item_2_text, item_2_url: block.settings.item_2_url, item_3_text: block.settings.item_3_text, item_3_url: block.settings.item_3_url, item_4_text: block.settings.item_4_text, item_4_url: block.settings.item_4_url -%}
+                  
+                {%- when 'trust_identity' -%}
+                  {%- render 'html-product-identity', product: p, tag: block.settings.tag, message: block.settings.message, icon: block.settings.icon -%}
+                  
+                {%- when '@app' -%}
+                  {%- render block -%}
+              {%- endcase -%}
+            </div>
+          {%- endfor -%}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 
 {%- else -%}
-<div class="pform pform--empty">
-	<p>{{ 'products.product.product_unavailable' | t | default: 'Selecteer een product in de sectie-instellingen.' }}</p>
+<div class="block-product-form__empty">
+  <p>{{ 'products.product.product_unavailable' | t | default: 'Select a product in section settings.' }}</p>
 </div>
 {%- endif -%}
 
-{%- stylesheet -%}
-.product-order-content {
-	display:flex; flex-direction: row; flex-wrap: nowrap;
-	align-items: stretch; justify-content: center;
-	& > .product-order__media { 
-		position: relative; z-index: 1;
-		flex-grow: 1; flex-basis: 20em; max-width: 58vw;
-	}
-	& > .product-order__form {
-		position: relative; z-index: 0;
-		flex-grow: 1; flex-basis: 10em;
-		background-color: #fff;
-		& .pform {
-			padding:2em;
-		}
-	}
-}
-.pform__form {
-	& > .pform__segments {
-		& .pform__block {
-			&[data-fragment="heading"] {
-				& heading {
-					& h1 { font-size: 2.6em; margin-top: 0px;}
-				}
-			}
-			&[data-fragment="price"] {
-				& .product-card__price > span.price {
-					font-size: 1.4em;
-					&:not(.price--compare){ font-size: 1.8em; }
-				}
-			}
-			&[data-fragment="description"] {
-				& p {
-					letter-spacing: -0.02em;
-					 & a { color: inherit;}
-				}
-			}
-			&[data-fragment="variant_picker"] {
-				margin-bottom: 1em;
-				& fieldset.pform-variants {
-					border:none; padding:0; margin:0;
-					& > .pform-variants__group {
-						& legend.pform__label {}
-						& .pform__swatchgroup {
-							display: flex; flex-direction: row; flex-wrap: wrap;
-							align-content: flex-start; justify-content: flex-start;
-							column-gap: 0.5em; row-gap: 0.5em; margin-bottom: 1em;
-							& .pform__swatchgroup-item {
-								background-color: var(--theme-color-grey); 
-								
-								& > label {
-									display: block; padding: 0.5em 1em;
-									font-weight: 500; 
-									color: var(--theme-color-blue); border:var(--theme-color-grey) 2px solid;
-									&:hover {
-										cursor: pointer;
-									}
-								}
-								& > input[type="radio"] {
-									display: none;
-									&:checked + label {
-										background-color: var(--theme-color-grey); color: var(--theme-color-blue);
-										border:var(--theme-color-blue) 2px solid;
-									}
-								}
-								
-								&.is-sold-out {
-									position: relative; opacity: 0.5;
-									&::after {
-										content:'';
-										position: absolute; left:50%; top:50%; height:2px; width:calc(100% - 1em);
-										background-color: var(--theme-color-blue); transform: translate(-50%,-50%) rotate(-12deg);
-									}
-								}
-									
-							}
-						}
-					}
-				}
-			}
-			&[data-fragment="upsell"] {
-				opacity:1!important;
-			}
-			&[data-fragment="atc"] {
-				
-			}
-		}
-	}
-}
-.pform{display:grid;gap:1rem}
-.pform__label{font-weight:600}
-.pform__btn{min-height:48px}
+<style>
+  .block-product-form {
+    background-color: {{ section.settings.background_color }};
+    color: {{ section.settings.text_color }};
+  }
 
-@media (max-width: 960px) {
-	.product-order-content {
-		flex-wrap: wrap;
-		& > .product-order__media { flex-grow: 1; flex-basis: 100%; max-width: 100vw;}
-		& > .product-order__form { flex-grow: 1; flex-basis: 100%;}
-	}
-}
+  .block-product-form__content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: center;
+  }
 
-[data-product-form].is-rendering [data-fragment-skip]:not([data-fragment-skip="upsells"]) {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .2s ease;
-}
+  .block-product-form__media {
+    position: relative;
+    z-index: 1;
+    flex-grow: 1;
+    flex-basis: 20em;
+    max-width: 58vw;
+  }
 
-[data-product-form]:not(.is-rendering):not(.is-quickupdate) [data-fragment-skip] {
-  opacity: 1;
-  transition: opacity .3s ease .05s;
-}
+  .block-product-form__form {
+    position: relative;
+    z-index: 0;
+    flex-grow: 1;
+    flex-basis: 10em;
+    background-color: var(--theme-color-white);
+  }
 
-{%- endstylesheet -%}
+  .block-product-form__wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: {{ section.settings.block_gap }}em;
+    padding: 2em 1em;
+  }
+
+  .block-product-form__blocks {
+    display: flex;
+    flex-direction: column;
+    gap: {{ section.settings.block_gap }}em;
+  }
+
+  .block-product-form__block:empty {
+    display: none;
+  }
+
+  /* Empty state */
+  .block-product-form__empty {
+    padding: 4em 2em;
+    text-align: center;
+    opacity: 0.6;
+  }
+
+  /* Responsive */
+  @media (max-width: 960px) {
+    .block-product-form__content {
+      flex-wrap: wrap;
+    }
+
+    .block-product-form__media {
+      flex-grow: 1;
+      flex-basis: 100%;
+      max-width: 100vw;
+    }
+
+    .block-product-form__form {
+      flex-grow: 1;
+      flex-basis: 100%;
+    }
+  }
+
+  /* Loading state */
+  [data-product-form] {
+    transition: opacity 200ms ease;
+  }
+
+  [data-product-form].is-loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  /* Smooth transitions voor fragment updates */
+  [data-fragment-update] {
+    transition: opacity 150ms ease;
+  }
+
+  /*
+    ============================================================================
+    LOADING STATE UTILITIES
+    ============================================================================
+    Het product form krijgt .is-loading tijdens variant updates.
+    Gebruik deze classes om elementen te verbergen/tonen tijdens laden.
+    
+    BESCHIKBARE STATES:
+    - [data-product-form].is-loading    → wrapper tijdens fetch
+    - [data-fragment-update]            → elementen die worden geüpdatet
+    
+    HULPKLASSEN:
+    - .hide-while-loading               → verberg element tijdens laden
+    - .show-while-loading               → toon element alleen tijdens laden
+    - .no-transition-while-loading      → voorkom transitions tijdens laden
+    
+    VOORBEELDEN:
+    
+    1. Verberg een app-knop tijdens laden:
+       <div class="wc_wl_bis_btn hide-while-loading" ...></div>
+    
+    2. Toon een loader alleen tijdens laden:
+       <div class="my-spinner show-while-loading"></div>
+    
+    3. Via specifieke selector (als je geen class kan toevoegen):
+       [data-product-form].is-loading .wc_wl_bis_btn { opacity: 0; }
+    ============================================================================
+  */
+
+  /* Verberg elementen tijdens laden */
+  [data-product-form].is-loading .hide-while-loading {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Toon elementen alleen tijdens laden */
+  .show-while-loading {
+    opacity: 0;
+    pointer-events: none;
+  }
+  [data-product-form].is-loading .show-while-loading {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Voorkom layout shift door visibility te gebruiken ipv display */
+  [data-product-form].is-loading .invisible-while-loading {
+    visibility: hidden;
+  }
+
+  /*
+    APP-SPECIFIEKE FIXES
+    Voeg hier selectors toe voor third-party apps die moeten 
+    verbergen/aanpassen tijdens variant updates.
+  */
+  
+  /* Wishlist Club - back in stock button */
+  [data-product-form].is-loading .wc_wl_bis_btn {
+    opacity: 0;
+  }
+  .wc_wl_bis_btn {
+    transition: opacity 150ms ease;
+  }
+  
+  .block-product-form__form .product-stock--low-in-stock,
+  .block-product-form__form .product-stock--low-in-stock-backorder {
+	  background-color: #f05a22; color:#fff;
+  }
+</style>
 
 <script>
 (() => {
-  // ------------------------------
-  // Boot
-  // ------------------------------
-  const READY = /complete|interactive/;
-  const onReady = fn => READY.test(document.readyState) ? fn() : document.addEventListener('DOMContentLoaded', fn);
+  document.querySelectorAll('[data-product-form]').forEach(wrapper => {
+    const sectionId = wrapper.dataset.sectionId;
+    const product = JSON.parse(wrapper.dataset.productJson || '{}');
+    const form = wrapper.querySelector('form');
+    if (!sectionId || !form) return;
 
-  onReady(() => {
-	document.querySelectorAll('[data-product-form]').forEach(root => initProductForm(root));
+    // Variant change handler
+    form.addEventListener('change', (e) => {
+      const target = e.target;
+      if (!target.matches('[data-option-select], [name^="options["]')) return;
+      
+      e.stopImmediatePropagation();
+      e.stopPropagation();
+
+      // Bepaal variant uit geselecteerde opties
+      const options = (product.options || []).map((name, idx) => {
+        const select = wrapper.querySelector(`[data-option-select][data-option-index="${idx}"]`);
+        if (select) return select.value;
+        const radio = wrapper.querySelector(`input[name="options[${name}]"]:checked`);
+        return radio?.value || null;
+      });
+      
+      const variant = product.variants?.find(v => 
+        v.options.every((val, i) => val === options[i])
+      );
+      
+      if (!variant) return;
+
+      // Update hidden input
+      const variantInput = wrapper.querySelector('[data-variant-id]');
+      if (variantInput) variantInput.value = variant.id;
+
+      // Fetch nieuwe HTML (setTimeout voor isolatie van andere scripts)
+      setTimeout(async () => {
+        wrapper.classList.add('is-loading');
+        
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set('variant', variant.id);
+          url.searchParams.set('section_id', sectionId);
+          
+          // XMLHttpRequest ipv fetch (sommige apps patchen fetch)
+          const html = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url.toString());
+            xhr.onload = () => resolve(xhr.responseText);
+            xhr.onerror = () => reject(new Error('XHR failed'));
+            xhr.send();
+          });
+          
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          
+          // Vervang alleen elementen met data-fragment-update
+          wrapper.querySelectorAll('[data-fragment-update]').forEach(oldEl => {
+            const key = oldEl.dataset.fragmentUpdate;
+            const newEl = doc.querySelector(`[data-fragment-update="${key}"]`);
+            if (newEl) {
+              oldEl.style.opacity = '0';
+              setTimeout(() => {
+                oldEl.innerHTML = newEl.innerHTML;
+                oldEl.style.opacity = '';
+              }, 150);
+            }
+          });
+
+          // Update URL
+          history.replaceState({}, '', `?variant=${variant.id}`);
+
+          // Dispatch event
+          wrapper.dispatchEvent(new CustomEvent('product:updated', {
+            detail: { variantId: variant.id, variant, product },
+            bubbles: true
+          }));
+          
+        } catch (err) {
+          console.error('Variant update failed:', err);
+        } finally {
+          wrapper.classList.remove('is-loading');
+        }
+      }, 0);
+    }, true);
   });
-
-  // ------------------------------
-  // Init per Product Form
-  // ------------------------------
-  function initProductForm(root){
-	const sectionId = root.getAttribute('data-section-id');
-	const product   = safeJSON(root.getAttribute('data-product-json'));
-	const parent    = root.querySelector('[data-fragment-parent="product-form"]');
-	if (!sectionId || !product || !parent) return;
-
-	// 1) Variant-picker isoleren: laat change NIET doorbubbelen naar het form
-	isolateVariantPicker(root);
-
-	let inflight;                 // AbortController voor fetches
-	let prevState = snapshotState(root);
-
-	// 2) Centrale change-handler op root (bubbelt van form-af, behalve variant-picker)
-	root.addEventListener('change', (ev) => {
-	  if (!ev.target.closest('form')) return;
-	  const form = ev.target.closest('form');
-	  if (!form) return;
-
-	  // 1) Bepaal huidige variant op basis van UI
-	  const opts    = readCurrentOptions(root, product);
-	  const variant = findVariant(product, opts);
-
-	  // 2) Snelle client-side feedback
-	  quickClientUpdates(root, variant);
-
-	  // 3) Is er iets relevants veranderd?
-	  const nextState = snapshotState(root);
-	  if (equalStates(prevState, nextState)) {
-		// Zelfde state → toch een AFTER zodat apps (wishlist) kunnen initialiseren
-		dispatchLifecycle(root, 'product:fragments:after', { sectionId, product, state: nextState, variant });
-		return;
-	  }
-	  prevState = nextState;
-
-	  // 4) Maak URL deelbaar
-	  if (nextState.variantId) pushVariantToURL(nextState.variantId);
-
-	  // 5) Server-truth ophalen & reconcile (alleen relevante delen)
-	  inflight = fetchAndReplaceFragments(root, sectionId, product, nextState, inflight);
-	});
-
-	// Eerste AFTER zodat apps ook op first paint initten
-	dispatchLifecycle(root, 'product:fragments:after', {
-	  sectionId,
-	  product,
-	  state: prevState,
-	  variant: currentVariantFromState(product, prevState)
-	});
-  }
-
-  // ------------------------------
-  // Variant-picker isolatie
-  // ------------------------------
-  function isolateVariantPicker(root){
-	const sel = '[data-variant-picker] select,[data-variant-picker] input[name^="options["]';
-	root.querySelectorAll(sel).forEach(ctrl => {
-	  ctrl.addEventListener('change', (ev) => {
-		// voorkom bubbelen naar <form> — wij sturen later ZELF één change
-		ev.stopPropagation();
-		// trigger een synthetische change OP HET FORM zelf (bubbles: true)
-		const form = root.querySelector('form');
-		if (form){
-		  requestAnimationFrame(() => {
-			try { form.dispatchEvent(new Event('change', { bubbles:true })); } catch(_) {}
-		  });
-		}
-	  });
-	});
-  }
-
-  // ------------------------------
-  // Lifecycle helper
-  // ------------------------------
-  function dispatchLifecycle(root, name, detail){
-	const payload = { ...detail, root };
-	// Binnen section (bubbling)
-	root.dispatchEvent(new CustomEvent(name, { detail: payload, bubbles: true }));
-	// Globaal, voor third-party scripts
-	document.dispatchEvent(new CustomEvent(name, { detail: payload }));
-	if (isDev() && name !== 'product:fragments:fetch') {
-	  console.debug(`📦 ${name}`, payload);
-	}
-  }
-
-  // ------------------------------
-  // Selectie / Variant helpers
-  // ------------------------------
-  function readCurrentOptions(root, product){
-	return (product.options || []).map((name, idx) => {
-	  const sel = root.querySelector(`[data-option-select][data-option-index="${idx}"]`);
-	  if (sel) return sel.value;
-	  const checked = root.querySelector(`input[name="options[${CSS.escape(name)}]"]:checked`);
-	  if (checked) return checked.value;
-	  const owv = product.options_with_values && product.options_with_values[idx];
-	  return owv ? owv.selected_value : null;
-	});
-  }
-  function findVariant(product, opts){
-	return product.variants.find(v => v.options.every((val, i) => val === opts[i]));
-  }
-  function currentVariantFromState(product, state){
-	const id = Number(state?.variantId);
-	return Number.isFinite(id) ? product.variants.find(v => v.id === id) || null : null;
-  }
-
-  // ------------------------------
-  // State & URL helpers
-  // ------------------------------
-  function snapshotState(root){
-	return {
-	  variantId:   (root.querySelector('[data-variant-id]') || {}).value || '',
-	  sellingPlan: (root.querySelector('[name="selling_plan"]') || {}).value || '',
-	  quantity:    (root.querySelector('input[name="quantity"]') || {}).value || '',
-	  focusSel: (() => {
-		const a = document.activeElement;
-		if (!a || !root.contains(a)) return '';
-		if (a.id) return '#' + CSS.escape(a.id);
-		const n = a.getAttribute('name'); if (n) return `[name="${CSS.escape(n)}"]`;
-		return '';
-	  })(),
-	  scrollY: window.scrollY
-	};
-  }
-  function equalStates(a,b){
-	return a.variantId   === b.variantId &&
-		   a.sellingPlan === b.sellingPlan &&
-		   a.quantity    === b.quantity;
-  }
-  function pushVariantToURL(variantId){
-	const url = new URL(window.location.href);
-	url.searchParams.set('variant', variantId);
-	history.replaceState({}, '', url.toString());
-  }
-
-  // ------------------------------
-  // Snelle client updates (geen netwerk)
-  // ------------------------------
-  function quickClientUpdates(root, variant){
-	// Hidden variant id
-	const idEl = root.querySelector('[data-variant-id]');
-	if (variant?.id && idEl) idEl.value = variant.id;
-
-	root.classList.add('is-quickupdate');
-	
-	// Prijs (client-side)
-	if (variant && typeof variant.price === 'number' && window.Shopify?.formatMoney) {
-	  root.querySelectorAll('[data-fragment="price"] [data-price]').forEach(el => {
-		el.textContent = Shopify.formatMoney(variant.price);
-	  });
-	  root.querySelectorAll('[data-fragment="price"] [data-compare-at]').forEach(el => {
-		if (typeof variant.compare_at_price === 'number' && variant.compare_at_price > variant.price) {
-		  el.textContent = Shopify.formatMoney(variant.compare_at_price);
-		  el.hidden = false;
-		} else {
-		  el.hidden = true;
-		}
-	  });
-	}
-
-	// Quantity clamp (gebruik min/max van input)
-	root.querySelectorAll('input[name="quantity"]').forEach(input => {
-	  const min = toInt(input.getAttribute('min'), 1);
-	  const hasMax = input.hasAttribute('max') && input.getAttribute('max') !== '';
-	  const max = hasMax ? toInt(input.getAttribute('max'), Infinity) : Infinity;
-	  let v = toInt(input.value, min);
-	  v = Math.max(min, Math.min(max, v));
-	  if (String(v) !== input.value) input.value = String(v);
-	});
-
-	// ATC state
-	root.querySelectorAll('[data-fragment="atc"] [data-atc]').forEach(btn => {
-	  const txt = btn.querySelector('[data-atc-text]') || btn;
-	  if (!variant) {
-		btn.disabled = true; txt.textContent = btn.getAttribute('data-label-unavailable') || 'Unavailable';
-	  } else if (variant.available) {
-		btn.disabled = false; txt.textContent = btn.getAttribute('data-label-default') || 'Add to cart';
-	  } else {
-		btn.disabled = true; txt.textContent = btn.getAttribute('data-label-soldout') || 'Sold out';
-	  }
-	});
-
-	// Live preview event
-	root.dispatchEvent(new CustomEvent('product:variant:preview', {
-	  detail: { variant, root }, bubbles: true
-	}));
-	document.dispatchEvent(new CustomEvent('product:variant:preview', {
-	  detail: { variant, root }
-	}));
-	
-	requestAnimationFrame(() => root.classList.remove('is-quickupdate'));
-  }
-
-  // ------------------------------
-  // Fetch + Reconcile
-  // ------------------------------
-  async function fetchAndReplaceFragments(root, sectionId, product, state, prevCtrl){
-	// Annuleer vorige fetch
-	prevCtrl?.abort?.();
-	const ctrl = new AbortController();
-
-	// BEFORE (vóór netwerk)
-	dispatchLifecycle(root, 'product:fragments:before', { sectionId, product, state });
-
-	const url = new URL(window.location.href);
-	url.searchParams.set('section_id', sectionId);
-	if (state.variantId)   url.searchParams.set('variant', state.variantId); else url.searchParams.delete('variant');
-	if (state.sellingPlan) url.searchParams.set('selling_plan', state.sellingPlan); else url.searchParams.delete('selling_plan');
-	if (isDev()) url.searchParams.set('_cb', String(Date.now()));
-
-	root.classList.add('is-rendering');
-
-	let tpl = null;
-
-	try {
-	  const res = await fetch(url.toString(), {
-		method: 'GET',
-		headers: {
-		  'X-Requested-With': 'XMLHttpRequest',
-		  'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
-		  'Pragma': 'no-cache',
-		  'Expires': '0'
-		},
-		cache: isDev() ? 'no-store' : 'default',
-		signal: ctrl.signal,
-		credentials: 'same-origin'
-	  });
-
-	  if (res.status === 304) return ctrl;
-	  if (!res.ok) { console.warn('Section render non-200', res.status); return ctrl; }
-
-	  const html = await res.text();
-
-	  tpl = document.createElement('template');
-	  tpl.innerHTML = html;
-	  // ruis weg in dev
-	  tpl.content.querySelectorAll('script, link[rel="preconnect"], link[rel="prefetch"]').forEach(n => n.remove());
-
-	  // FETCH (na parse, vóór reconcile)
-	  dispatchLifecycle(root, 'product:fragments:fetch', { sectionId, product, state, template: tpl.content });
-
-	  // Reconcile/replace (incl. fragment-skip eilanden)
-	  reconcileBlocks(root, tpl.content, {
-		replaceTypes: ['price','stock','sku','selling_plans','atc'], // variant_picker blijft staan
-		addIfMissing: true,
-		removeIfGone: true
-	  });
-
-	  // Klein state herstel
-	  const qty = root.querySelector('input[name="quantity"]'); if (qty && state.quantity) qty.value = state.quantity;
-	  const sp  = root.querySelector('[name="selling_plan"]'); if (sp && state.sellingPlan) sp.value = state.sellingPlan;
-	  if (state.focusSel) { const f = root.querySelector(state.focusSel); try { f?.focus({preventScroll:true}); } catch(e){} }
-	  window.scrollTo({ top: state.scrollY });
-
-	  // Wacht één frame voor layout settle
-	  await new Promise(requestAnimationFrame);
-
-	  // AFTER (na plaatsen + herstel)
-	  dispatchLifecycle(root, 'product:fragments:after', { sectionId, product, state, variant: currentVariantFromState(product, state) });
-
-	  // ✨ Nudge voor apps die naar form-change luisteren (wishlist e.d.)
-	  const form = root.querySelector('form');
-	  if (form) requestAnimationFrame(() => { try { form.dispatchEvent(new Event('change', { bubbles:true })); } catch(_) {} });
-
-	  // (optioneel) publiek app-signaal met IDs
-	  const vId = Number(state?.variantId) || null;
-	  try { window.wlProductVariantChange?.(product?.id, vId); } catch(_) {}
-	  try { window.wlBackInStockProductVariantChange?.(product?.id, vId); } catch(_) {}
-
-	} catch (e) {
-	  if (e.name !== 'AbortError') console.error('Fragment render failed', e);
-	} finally {
-	  root.classList.remove('is-rendering');
-	}
-
-	return ctrl;
-  }
-
-  // ------------------------------
-  // Reconcile met servervolgorde + fragment-skip eilanden
-  // ------------------------------
-  function reconcileBlocks(root, incoming, { addIfMissing = true, removeIfGone = true, replaceTypes = [] } = {}){
-	const parentSel = '[data-fragment-parent="product-form"]';
-	const curParent = root.querySelector(parentSel);
-	const incParent = incoming.querySelector(parentSel);
-	if (!curParent || !incParent) return;
-
-	// Bewaar 'eilanden' uit huidige DOM
-	const islandMap = captureSkipIslands(curParent);
-
-	// Servervolgorde
-	let order = [];
-	try { order = JSON.parse(incParent.getAttribute('data-block-order') || '[]'); } catch(_){ order = []; }
-
-	const curByKey = new Map([...curParent.querySelectorAll('[data-block-key]')].map(el => [el.getAttribute('data-block-key'), el]));
-	const incByKey = new Map([...incParent.querySelectorAll('[data-block-key]')].map(el => [el.getAttribute('data-block-key'), el]));
-
-	const canReplace = (el) => {
-	  if (!replaceTypes || replaceTypes.length === 0) return true;
-	  const t = el.getAttribute('data-fragment');
-	  return replaceTypes.includes(t);
-	};
-
-	let insertAfter = null;
-	order.forEach(key => {
-	  const next = incByKey.get(key);
-	  if (!next) return;
-	  const cur  = curByKey.get(key);
-
-	  if (cur) {
-		if (canReplace(cur)) {
-		  // Vervang block
-		  cur.replaceWith(next);
-		  // Eilanden terugzetten in het ZOJUIST geplaatste block
-		  restoreSkipIslands(next, islandMap);
-		  insertAfter = curParent.querySelector(`[data-block-key="${CSS.escape(key)}"]`);
-		} else {
-		  insertAfter = cur; // volgorde respecteren, inhoud laten staan
-		}
-	  } else if (addIfMissing) {
-		if (insertAfter && insertAfter.parentNode === curParent) {
-		  insertAfter.after(next);
-		} else {
-		  curParent.appendChild(next);
-		}
-		restoreSkipIslands(next, islandMap);
-		insertAfter = next;
-	  }
-	});
-
-	if (removeIfGone) {
-	  curParent.querySelectorAll('[data-block-key]').forEach(el => {
-		const key = el.getAttribute('data-block-key');
-		if (!order.includes(key) && canReplace(el)) el.remove();
-	  });
-	}
-  }
-
-  // ---- fragment-skip helpers ----
-  function captureSkipIslands(scope){
-	// key → Node (levende node behouden, niet clonen)
-	const map = new Map();
-	const all = scope.querySelectorAll('[data-fragment-skip]');
-	let autoIdx = 0;
-	all.forEach(el => {
-	  const raw = (el.getAttribute('data-fragment-skip') || '').trim();
-	  const key = raw || `__auto_${autoIdx++}`;
-	  map.set(key, el);
-	});
-	return map;
-  }
-  function restoreSkipIslands(newBlock, islandMap){
-	if (!islandMap || islandMap.size === 0) return;
-
-	const list = newBlock.querySelectorAll('[data-fragment-skip]');
-	let autoIdx = 0;
-	list.forEach(slot => {
-	  let raw = (slot.getAttribute('data-fragment-skip') || '').trim();
-	  let key = raw || `__auto_${autoIdx++}`;
-	  const old = islandMap.get(key);
-	  if (!old) return;
-
-	  // Vervang placeholder in nieuw fragment door OUDE node (incl. listeners)
-	  slot.replaceWith(old);
-	  // Eventueel placeholder attribute schoonmaken (naar wens):
-	  if (raw === '') { old.setAttribute('data-fragment-skip', ''); }
-	});
-  }
-
-  // ------------------------------
-  // Utils
-  // ------------------------------
-  function safeJSON(str){ try { return JSON.parse(str || '') } catch(_){ return null } }
-  function toInt(v, def){ const n = parseInt(v, 10); return Number.isFinite(n) ? n : def; }
-  function isDev(){
-	const h = location.hostname;
-	return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.test');
-  }
 })();
 </script>
 
-<script>
-  window.productData = {{ product | json }};
-  console.info('Product data:', window.productData);
-</script>
 {%- schema -%}
 {
 	"name": "Product form",
-	"templates": ["product"], 
+	"tag": "section",
+	"class": "block-product-form",
+	"limit": 1,
+	"enabled_on": {
+		"templates": ["product"]
+	},
 	"settings": [
-		{ "type": "product", "id": "product", "label": "Fallback product (niet op PDP)" }
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "product",
+			"id": "product",
+			"label": "Product"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "range",
+			"id": "block_gap",
+			"label": "Block spacing",
+			"min": 0,
+			"max": 2,
+			"step": 0.1,
+			"default": 0.8,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		}
 	],
 	"blocks": [
-		{ "type": "reviews", "name": "Reviews", "settings": []},
-		{ "type": "heading", "name": "Titel", "settings": [
-			{ "type":"text","id":"text","label":"Tekst","default":"Koop dit product"}
-		]},
-		{ "type": "price", "name": "Prijs", "settings": []},
-		{ "type": "description", "name": "Description", "settings": []},
-		{ "type": "variant_picker", "name": "Variant picker", "settings": [
-			{ 
-				"type":"range",
-				"id":"threshold_dropdown",
-				"min":0,
-				"max":20,
-				"step":1,
-				"label":"Dropdown vanaf aantal opties",
-				"default":10 
-			}
-		]},
-		{ "type": "notify", "name": "Notify", "settings": []},
-		{ "type": "upsell", "name": "Upsell", "settings": []},
-		{ "type": "stock", "name": "Voorraad", "settings": []},
-		{ "type": "delivery", "name": "Levertijd", "settings": []},
-		{ "type": "sku", "name": "SKU", "settings": [{ "type":"checkbox","id":"show_label","label":"Toon label","default":true }]},
-		{ "type": "quantity", "name": "Aantal", "settings": []},
-		{ "type": "selling_plans", "name": "Abonnementen", "settings": []},
-		{ "type": "atc", "name": "Add To Cart knop", "settings": [{ "type":"checkbox","id":"full_width","label":"Volledige breedte","default":true }]},
-		{ "type": "dynamic_checkout", "name": "Dynamische checkout", "settings": []},
-		{ "type": "trust", "name": "Trust icons", "settings": []},
-		{ "type": "@app" }
+		{
+			"type": "rating",
+			"name": "Rating",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "text",
+					"id": "scroll_target",
+					"label": "Scroll target",
+					"placeholder": "#reviews"
+				},
+				{
+					"type": "checkbox",
+					"id": "show_count",
+					"label": "Show review count",
+					"default": true
+				},
+				{
+					"type": "range",
+					"id": "size",
+					"label": "Star size",
+					"min": 12,
+					"max": 24,
+					"step": 2,
+					"default": 16,
+					"unit": "px"
+				}
+			]
+		},
+		{
+			"type": "heading",
+			"name": "Heading",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "checkbox",
+					"id": "show_vendor",
+					"label": "Show vendor",
+					"default": true
+				}
+			]
+		},
+		{
+			"type": "price",
+			"name": "Price",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "paragraph",
+					"content": "Compare at price and tax notice settings are in Theme Settings → Product."
+				}
+			]
+		},
+		{
+			"type": "description",
+			"name": "Description",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "checkbox",
+					"id": "truncate",
+					"label": "Truncate description",
+					"default": false
+				},
+				{
+					"type": "range",
+					"id": "words",
+					"label": "Word limit",
+					"min": 10,
+					"max": 100,
+					"step": 5,
+					"default": 30
+				},
+				{
+					"type": "text",
+					"id": "read_more_target",
+					"label": "Read more target",
+					"placeholder": "#product-information"
+				}
+			]
+		},
+		{
+			"type": "variant_picker",
+			"name": "Variant picker",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "range",
+					"id": "threshold_dropdown",
+					"label": "Dropdown threshold",
+					"min": 0,
+					"max": 20,
+					"step": 1,
+					"default": 10
+				}
+			]
+		},
+		{
+			"type": "notify",
+			"name": "Back in stock",
+			"limit": 1,
+			"settings": []
+		},
+		{
+			"type": "upsell",
+			"name": "Upsell",
+			"limit": 1,
+			"settings": []
+		},
+		{
+			"type": "stock",
+			"name": "Stock",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "paragraph",
+					"content": "Threshold is set in Theme Settings → Product."
+				},
+				{
+					"type": "checkbox",
+					"id": "show_stock_count",
+					"label": "Show stock count",
+					"info": "Backorder products always show 'In stock' without count",
+					"default": true
+				}
+			]
+		},
+		{
+			"type": "delivery",
+			"name": "Delivery",
+			"limit": 1,
+			"settings": []
+		},
+		{
+			"type": "sku",
+			"name": "SKU",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "checkbox",
+					"id": "show_label",
+					"label": "Show label",
+					"default": true
+				}
+			]
+		},
+		{
+			"type": "selling_plans",
+			"name": "Selling plans",
+			"limit": 1,
+			"settings": []
+		},
+		{
+			"type": "atc",
+			"name": "Add to cart",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "checkbox",
+					"id": "full_width",
+					"label": "Full width",
+					"default": true
+				},
+				{
+					"type": "checkbox",
+					"id": "show_quantity",
+					"label": "Show quantity input",
+					"default": true
+				},
+				{
+					"type": "checkbox",
+					"id": "show_wishlist",
+					"label": "Show wishlist button",
+					"default": true
+				}
+			]
+		},
+		{
+			"type": "trust_payments",
+			"name": "Payment icons",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "select",
+					"id": "method_1",
+					"label": "Method 1",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "visa", "label": "Visa" },
+						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "amex", "label": "American Express" },
+						{ "value": "paypal", "label": "PayPal" },
+						{ "value": "ideal", "label": "iDEAL" },
+						{ "value": "bancontact", "label": "Bancontact" },
+						{ "value": "klarna", "label": "Klarna" },
+						{ "value": "apple_pay", "label": "Apple Pay" },
+						{ "value": "google_pay", "label": "Google Pay" },
+						{ "value": "shop_pay", "label": "Shop Pay" },
+						{ "value": "maestro", "label": "Maestro" },
+						{ "value": "sofort", "label": "Sofort" }
+					],
+					"default": "ideal"
+				},
+				{
+					"type": "select",
+					"id": "method_2",
+					"label": "Method 2",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "visa", "label": "Visa" },
+						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "amex", "label": "American Express" },
+						{ "value": "paypal", "label": "PayPal" },
+						{ "value": "ideal", "label": "iDEAL" },
+						{ "value": "bancontact", "label": "Bancontact" },
+						{ "value": "klarna", "label": "Klarna" },
+						{ "value": "apple_pay", "label": "Apple Pay" },
+						{ "value": "google_pay", "label": "Google Pay" },
+						{ "value": "shop_pay", "label": "Shop Pay" },
+						{ "value": "maestro", "label": "Maestro" },
+						{ "value": "sofort", "label": "Sofort" }
+					],
+					"default": "visa"
+				},
+				{
+					"type": "select",
+					"id": "method_3",
+					"label": "Method 3",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "visa", "label": "Visa" },
+						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "amex", "label": "American Express" },
+						{ "value": "paypal", "label": "PayPal" },
+						{ "value": "ideal", "label": "iDEAL" },
+						{ "value": "bancontact", "label": "Bancontact" },
+						{ "value": "klarna", "label": "Klarna" },
+						{ "value": "apple_pay", "label": "Apple Pay" },
+						{ "value": "google_pay", "label": "Google Pay" },
+						{ "value": "shop_pay", "label": "Shop Pay" },
+						{ "value": "maestro", "label": "Maestro" },
+						{ "value": "sofort", "label": "Sofort" }
+					],
+					"default": "mastercard"
+				},
+				{
+					"type": "select",
+					"id": "method_4",
+					"label": "Method 4",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "visa", "label": "Visa" },
+						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "amex", "label": "American Express" },
+						{ "value": "paypal", "label": "PayPal" },
+						{ "value": "ideal", "label": "iDEAL" },
+						{ "value": "bancontact", "label": "Bancontact" },
+						{ "value": "klarna", "label": "Klarna" },
+						{ "value": "apple_pay", "label": "Apple Pay" },
+						{ "value": "google_pay", "label": "Google Pay" },
+						{ "value": "shop_pay", "label": "Shop Pay" },
+						{ "value": "maestro", "label": "Maestro" },
+						{ "value": "sofort", "label": "Sofort" }
+					],
+					"default": "paypal"
+				},
+				{
+					"type": "select",
+					"id": "method_5",
+					"label": "Method 5",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "visa", "label": "Visa" },
+						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "amex", "label": "American Express" },
+						{ "value": "paypal", "label": "PayPal" },
+						{ "value": "ideal", "label": "iDEAL" },
+						{ "value": "bancontact", "label": "Bancontact" },
+						{ "value": "klarna", "label": "Klarna" },
+						{ "value": "apple_pay", "label": "Apple Pay" },
+						{ "value": "google_pay", "label": "Google Pay" },
+						{ "value": "shop_pay", "label": "Shop Pay" },
+						{ "value": "maestro", "label": "Maestro" },
+						{ "value": "sofort", "label": "Sofort" }
+					],
+					"default": "klarna"
+				}
+			]
+		},
+		{
+			"type": "dynamic_checkout",
+			"name": "Dynamic checkout",
+			"limit": 1,
+			"settings": []
+		},
+		{
+			"type": "trust_usps",
+			"name": "Trust USPs",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "header",
+					"content": "Item 1"
+				},
+				{
+					"type": "text",
+					"id": "item_1_text",
+					"label": "Text",
+					"placeholder": "Money back guarantee"
+				},
+				{
+					"type": "url",
+					"id": "item_1_url",
+					"label": "Link"
+				},
+				{
+					"type": "header",
+					"content": "Item 2"
+				},
+				{
+					"type": "text",
+					"id": "item_2_text",
+					"label": "Text",
+					"placeholder": "Worldwide shipping"
+				},
+				{
+					"type": "url",
+					"id": "item_2_url",
+					"label": "Link"
+				},
+				{
+					"type": "header",
+					"content": "Item 3"
+				},
+				{
+					"type": "text",
+					"id": "item_3_text",
+					"label": "Text",
+					"placeholder": "Track your delivery"
+				},
+				{
+					"type": "url",
+					"id": "item_3_url",
+					"label": "Link"
+				},
+				{
+					"type": "header",
+					"content": "Item 4"
+				},
+				{
+					"type": "text",
+					"id": "item_4_text",
+					"label": "Text",
+					"placeholder": "Lifetime warranty"
+				},
+				{
+					"type": "url",
+					"id": "item_4_url",
+					"label": "Link"
+				}
+			]
+		},
+		{
+			"type": "trust_identity",
+			"name": "Identity check",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "text",
+					"id": "tag",
+					"label": "Tag",
+					"placeholder": "ID check"
+				},
+				{
+					"type": "image_picker",
+					"id": "icon",
+					"label": "Icon"
+				},
+				{
+					"type": "textarea",
+					"id": "message",
+					"label": "Message",
+					"placeholder": "This item is only sold to 18+. We will ship your order after ID verification."
+				}
+			]
+		},
+		{
+			"type": "@app"
+		}
 	],
 	"presets": [
 		{
-			"name":"Product order",
-			"category": "Theme Product",
-			"blocks":[
-				{"type":"reviews"},
-				{"type":"heading"},
-				{"type":"price"},
-				{"type":"description"},
-				{"type":"variant_picker"},
-				{"type":"notify"},
-				{"type":"upsell"},
-				{"type":"stock"},
-				{"type":"quantity"},
-				{"type":"atc"},
-				{"type":"dynamic_checkout"},
+			"name": "Form",
+			"category": "Product",
+			"blocks": [
+				{ "type": "rating" },
+				{ "type": "heading" },
+				{ "type": "price" },
+				{ "type": "description" },
+				{ "type": "variant_picker" },
+				{ "type": "notify" },
+				{ "type": "upsell" },
+				{ "type": "stock" },
+				{ "type": "atc" },
+				{ "type": "trust_payments" },
+				{ "type": "dynamic_checkout" },
+				{ "type": "trust_usps" },
+				{ "type": "trust_identity" }
 			]
 		}
 	]

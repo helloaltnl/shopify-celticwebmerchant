@@ -11,7 +11,9 @@
   - muted: {Boolean} Mute video - default: true (for background type)
   - controls: {Boolean} Show controls - default: true (for standard type)
   - width: {String} narrow | medium | wide | full - default: medium
-  - aspect_ratio: {String} 16-9 | 4-3 | 1-1 - default: 16-9
+  - aspect_ratio: {String} 16-9 | 4-3 | 1-1 | 2-3 | 3-2 - default: 16-9
+  - focus_x: {Number} 0-100 - horizontal focus point for cover image - default: 50
+  - focus_y: {Number} 0-100 - vertical focus point for cover image - default: 50
 {% endcomment %}
 
 {%- liquid
@@ -23,6 +25,8 @@
   assign controls = controls | default: true
   assign width = width | default: 'medium'
   assign aspect_ratio = aspect_ratio | default: '16-9'
+  assign focus_x = focus_x | default: 50
+  assign focus_y = focus_y | default: 50
   
   if video_url != blank
     assign video_id = ''
@@ -53,6 +57,7 @@
             width="{{ cover_image.width }}"
             height="{{ cover_image.height }}"
             loading="lazy"
+            style="object-position: {{ focus_x }}% {{ focus_y }}%;"
           />
           <button 
             class="marketing-video__play-button" 
@@ -173,6 +178,14 @@
   
   .marketing-video--ratio-1-1 .marketing-video__wrapper {
     aspect-ratio: 1 / 1;
+  }
+  
+  .marketing-video--ratio-2-3 .marketing-video__wrapper {
+    aspect-ratio: 2 / 3;
+  }
+  
+  .marketing-video--ratio-3-2 .marketing-video__wrapper {
+    aspect-ratio: 3 / 2;
   }
   
   /* Player */

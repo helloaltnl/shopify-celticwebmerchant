@@ -1,0 +1,151 @@
+{%- liquid
+  assign obj = object | default: collection | default: search
+  assign clear_url = obj.url | default: routes.search_url
+  
+  assign has_active = false
+  if obj.terms
+	assign clear_url = clear_url | append: '?q=' | append: obj.terms | url_encode | append: '&options[prefix]=last&type=product'
+  endif
+  
+  comment
+    Check for active filters (list/boolean) and price range
+  endcomment
+  for filter in obj.filters
+	if filter.type == 'price_range'
+	  if filter.min_value.value != nil or filter.max_value.value != nil
+		assign has_active = true
+	  endif
+	elsif filter.active_values.size > 0
+	  assign has_active = true
+	endif
+  endfor
+-%}
+
+<nav class="facets__active" data-active-pills>
+	{%- if has_active -%}
+	<ul>
+		{%- for filter in obj.filters -%}
+			{%- if filter.type == 'price_range' -%}
+				{%- comment -%} Price range pill {%- endcomment -%}
+				{%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+					{%- liquid
+					  assign min_val = filter.min_value.value | default: 0 | divided_by: 100.0 | floor
+					  assign max_val = filter.max_value.value | divided_by: 100.0 | ceil
+					  assign range_max = filter.range_max | divided_by: 100.0 | ceil
+					  
+					  comment
+					    Build price display string
+					  endcomment
+					  if filter.min_value.value != nil and filter.max_value.value != nil
+						assign price_display = cart.currency.symbol | append: min_val | append: ' – ' | append: cart.currency.symbol | append: max_val
+					  elsif filter.min_value.value != nil
+						assign price_display = cart.currency.symbol | append: min_val | append: '+'
+					  else
+						assign price_display = '< ' | append: cart.currency.symbol | append: max_val
+					  endif
+					  
+					  comment
+					    Build URL to remove price filter
+					  endcomment
+					  assign price_clear_url = obj.url | default: routes.search_url
+					  if obj.terms
+						assign price_clear_url = price_clear_url | append: '?q=' | append: obj.terms | url_encode | append: '&options[prefix]=last&type=product'
+					  endif
+					-%}
+					<li>
+						<a class="pill" href="{{ price_clear_url }}">
+							<span class="pill__info">
+								<span class="pill__label">{{ filter.label }}</span>
+								<span class="pill__value">{{ price_display }}</span>
+							</span>
+							<span class="pill__icon" aria-hidden="true">×</span>
+						</a>
+					</li>
+				{%- endif -%}
+			{%- else -%}
+				{%- comment -%} Regular filter pills {%- endcomment -%}
+				{%- for val in filter.active_values -%}
+					<li>
+						<a class="pill" href="{{ val.url_to_remove }}">
+							<span class="pill__info">
+								<span class="pill__label">{{ filter.label }}</span>
+								<span class="pill__value">{{ val.label }}</span>
+							</span>
+							<span class="pill__icon" aria-hidden="true">×</span>
+						</a>
+					</li>
+				{%- endfor -%}
+			{%- endif -%}
+		{%- endfor -%}
+		<li class="clear">
+			<a class="pill pill--clear" href="{{ clear_url }}">
+				<span>
+					{{ 'collection.filtering.clear_all' | t }}
+				</span>
+			</a>
+		</li>
+	</ul>
+
+	<section>
+		<span class="facets__resultcount" data-facets-resultcount aria-live="polite">
+		{%- liquid
+			if obj.results_count
+				comment
+					Search results
+				endcomment
+				assign result_count = obj.results_count
+			else
+				comment
+					Collection products
+				endcomment
+				assign result_count = obj.products_count
+			endif
+		-%}
+		{{ 'collection.filtering.results' | t: count: result_count }}
+		</span>
+	</section>
+
+	<style>
+		.facets__active {
+			display: flex; flex-direction: row;
+			flex-wrap: nowrap; align-items: flex-start; justify-content: space-between;
+			column-gap: 2em; row-gap: 1em; padding-top:1em; padding-bottom: 1em;
+			border-top:var(--theme-color-blue) 1px solid;  margin-top: 1em;
+			& ul {
+					display: flex; flex-direction: row;
+					flex-wrap: wrap; align-items: flex-start; justify-content: flex-start;
+					column-gap: 0.4em; row-gap: 1em;
+					list-style: none; padding:0; margin: 0;
+				& li {
+					& .pill {
+						display: inline-flex; flex-direction: row; flex-wrap:nowrap;
+						align-items: center; justify-content: flex-start;
+						column-gap: 1em;
+						font-size: 0.8em; line-height: 1em;
+						text-decoration: none;
+						background-color: var(--theme-color-blue); color:#fff;
+						padding:0.6em 1em;
+						& .pill__info {
+							& .pill__label {
+								display: block; font-size: 0.8em; letter-spacing: -0.02em; opacity: 0.6;
+							}
+							& .pill__value {
+								display: block; letter-spacing: -0.02em;
+							}
+						}
+						
+						& .pill__icon {}
+						&.pill--clear {
+							background-color: transparent; color: var(--theme-color-blue); letter-spacing: -0.02em;
+						}
+					}
+					&.clear { align-self: center; }	
+				}
+			}
+			& section {
+				font-size: 0.8em; line-height: 1em; padding: 1.2em 0; letter-spacing: -0.02em; white-space: nowrap;
+			}
+		}
+	</style>
+	{%- endif -%}
+</nav>

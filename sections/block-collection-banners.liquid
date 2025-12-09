@@ -1,239 +1,428 @@
-<section class="block-collection-banners-content align">
-	{% assign menu_handle = section.settings.menu | default: 'product-menu' %}
-	{% assign breadcrumb_menu = linklists[menu_handle].links %}
-	{% assign current_url = request.path | prepend: '' %}
-	{% assign clean_url = current_url | split: '?' | first %}
-	{% assign has_slider = false %}
-	
-	{% comment %} First, find which items to display {% endcomment %}
-	{% assign slider_items = null %}
-	{% for link in breadcrumb_menu %}
-		{% if clean_url == link.url %}
-			{% if link.links.size > 0 %}
-				{% assign slider_items = link.links %}
-				{% assign has_slider = true %}
-			{% endif %}
-		{% endif %}
-		
-		{% if link.links.size > 0 %}
-			{% for child in link.links %}
-				{% if clean_url == child.url %}
-					{% if child.links.size > 0 %}
-						{% assign slider_items = child.links %}
-						{% assign has_slider = true %}
-					{% endif %}
-				{% endif %}
-			{% endfor %}
-		{% endif %}
-	{% endfor %}
-	
-	{% comment %} Then build the slider once with the found items {% endcomment %}
-	{% capture build_trail %}
-		<ul class="swiper-wrapper">
-		{% for item in slider_items %}
-			<li class="swiper-slide">
-			<a href="{{ item.url }}">
-				{% comment %} Try to get collection from URL {% endcomment %}
-				{% assign url_parts = item.url | split: '/' %}
-				{% assign handle = url_parts.last %}
-				{% assign link_collection = collections[handle] %}
-				
-				{% if link_collection %}
-					{% comment %} It's a collection link {% endcomment %}
-					{% if link_collection.image %}
-					<img class="lazy" data-src="{{ link_collection.image | image_url: width: 96 }}" alt="{{ link_collection.image.alt | default: link_collection.title | escape }}">
-					{% endif %}
-				{% else %}
-					{% comment %} It's a page or other link type {% endcomment %}
-					{% if item.object.image %}
-					<img class="lazy" data-src="{{ item.object.image | image_url: width: 96 }}" alt="{{ item.object.image.alt | default: item.title | escape }}">
-					{% endif %}
-				{% endif %}
-				<span>{{ item.title }}</span>
-			</a>
-			</li>
-		{% endfor %}
-		</ul>
-	{% endcapture %}
-	{% if has_slider %}
-	<collection-banners>
-		<nav class="collection-banners swiper">
-			{{ build_trail }}
-			<!-- If we need pagination -->
-			  <div class="swiper-pagination"></div>
-			
-			  <!-- If we need navigation buttons -->
-			  <div class="swiper-buttons">
-				<div class="swiper-button swiper-button-prev"><</div>
-				<div class="swiper-button swiper-button-next">></div>
-			  </div>
-			  
-			  <!-- If we need scrollbar -->
-			  <!-- <div class="swiper-scrollbar"></div> -->
-		</nav>
-	</collection-banners>
-	{% endif %}
-</section>
+{% comment %}
+  ============================================================================
+  BLOCK-COLLECTION-BANNERS
+  ============================================================================
+  Displays sub-collection banners based on current collection's position in menu.
+  Shows child collections as a horizontal slider.
 
-{%- style -%}
-	.block-collection-banners {
-		position: relative; isolation: isolate; 
-		& > .block-collection-banners-content {
-			text-align: center; overflow: hidden; padding-bottom: 0em;
-			& nav.collection-banners {
-				padding-bottom: 2em;
-				& > ul { 
-					display: flex; flex-direction: row; flex-wrap: nowrap;
-					list-style: none; padding:0; margin:0; 
-					& > li {
-						flex-basis: 16em; flex-grow: 0; flex-shrink: 0; height: auto;
-						& > a {
-							display: flex; flex-direction: row; flex-wrap: nowrap;
-							justify-content: flex-start; align-items: stretch;
-							column-gap: 0em; height:100%; text-decoration: none;
-							background-color: var(--theme-color-blue); color: var(--theme-color-white);
-							& > img { flex-basis: 96px; flex-grow: 0; flex-shrink: 0; overflow: hidden; object-fit: cover;}
-							& > span {
-								flex-grow: 1;
-								font-family: 'Absara Pro';
-								font-size: 1em; font-weight: 400; line-height: 1.2em;
-								text-align: left; padding: 1em;
-								align-self: center;
-							}
-						}
-					}
+  FEATURES:
+  - Automatic detection of sub-collections from menu
+  - SwiperJS horizontal slider
+  - Collection images with titles
+  - Width alignment options
+  - Color customization
+
+  DEPENDENCIES:
+  - vendor-swiperjs.min.js
+  - vendor-swiperjs.min.css
+  - html-theme-icons snippet
+  ============================================================================
+{% endcomment %}
+
+{%- assign menu_handle = section.settings.menu | default: 'product-menu' -%}
+{%- assign breadcrumb_menu = linklists[menu_handle].links -%}
+{%- assign current_url = request.path -%}
+{%- assign clean_url = current_url | split: '?' | first -%}
+{%- assign slider_items = nil -%}
+
+{%- comment -%} Find sub-items to display based on current URL {%- endcomment -%}
+{%- for link in breadcrumb_menu -%}
+	{%- if clean_url == link.url and link.links.size > 0 -%}
+		{%- assign slider_items = link.links -%}
+		{%- break -%}
+	{%- endif -%}
+	
+	{%- if link.links.size > 0 -%}
+		{%- for child in link.links -%}
+			{%- if clean_url == child.url and child.links.size > 0 -%}
+				{%- assign slider_items = child.links -%}
+				{%- break -%}
+			{%- endif -%}
+		{%- endfor -%}
+	{%- endif -%}
+{%- endfor -%}
+
+{%- if slider_items != nil and slider_items.size > 0 -%}
+<collection-banners class="block-collection-banners__wrapper" data-section-id="{{ section.id }}">
+	<div class="block-collection-banners__content {{ section.settings.width }}">
+		<nav class="block-collection-banners__slider swiper" data-collection-banners-slider>
+			<ul class="block-collection-banners__list swiper-wrapper">
+				{%- for item in slider_items -%}
+					{%- assign url_parts = item.url | split: '/' -%}
+					{%- assign handle = url_parts.last -%}
+					{%- assign link_collection = collections[handle] -%}
 					
-				}
-				&:not(.swiper) {
-					& > ul {
-						overflow: hidden; overflow-x: auto; column-gap: 16px;
-					}
-				}
-			}
-			& .swiper-pagination {
-				position: absolute; height:2em; padding:0.25em 2em; top:auto; bottom:0;
-				& .swiper-pagination-bullet {
-					border-radius: 0; width:0.5em; height:0.25em;
-					/* background-color: var(--theme-color-grey); */
-					transition: width 125ms ease-in;
-					&.swiper-pagination-bullet-active {
-						width:1em; background-color: var(--theme-color-blue);
-					}
-				}
-			}
-			& .swiper-buttons {
-				position: absolute; bottom:0; width:100%; display:none;
-				& .swiper-button {
-					width:2em; height:2em;
-					padding:0; margin:0; top:calc(50% - 2em);
-					background-color: rgba(255,255,255,0.8); background-color: var(--theme-color-white); color: var(--theme-color-blue);
-					&.swiper-button-prev { left:0; transform: translateX(0);}
-					&.swiper-button-next { right:0; transform: translateX(0);}
-					&::after, &::before { display: none;}
-				}
-			}
-		}
-		&::after {
-			content:''; position: absolute; left:0; top:calc(50% - 2em); right:0; bottom:0;
-			background-color: var(--theme-color-grey);
+					<li class="block-collection-banners__item swiper-slide">
+						<a href="{{ item.url }}" class="block-collection-banners__link">
+							{%- liquid
+								assign has_image = false
+								if link_collection and link_collection.image
+									assign has_image = true
+									assign image_src = link_collection.image | image_url: width: 192
+									assign image_alt = link_collection.image.alt | default: link_collection.title | escape
+								elsif item.object.image
+									assign has_image = true
+									assign image_src = item.object.image | image_url: width: 192
+									assign image_alt = item.object.image.alt | default: item.title | escape
+								endif
+							-%}
+							{%- if has_image -%}
+								<img 
+									class="block-collection-banners__image" 
+									src="{{ image_src }}" 
+									alt="{{ image_alt }}"
+									width="96"
+									height="96"
+									loading="eager"
+								>
+							{%- endif -%}
+							<span class="block-collection-banners__title">{{ item.title }}</span>
+						</a>
+					</li>
+				{%- endfor -%}
+			</ul>
+			
+			<div class="block-collection-banners__pagination swiper-pagination"></div>
+			
+			<div class="block-collection-banners__nav">
+				<button type="button" class="block-collection-banners__nav-btn block-collection-banners__nav-btn--prev swiper-button-prev" aria-label="{{ 'accessibility.slider.previous' | t }}">
+					{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+				</button>
+				<button type="button" class="block-collection-banners__nav-btn block-collection-banners__nav-btn--next swiper-button-next" aria-label="{{ 'accessibility.slider.next' | t }}">
+					{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+				</button>
+			</div>
+		</nav>
+	</div>
+</collection-banners>
+{%- endif -%}
+
+{% style %}
+	.block-collection-banners {
+		position: relative;
+		isolation: isolate;
+		background-color: {{ section.settings.background_color }};
+	}
+
+	
+
+	.block-collection-banners__wrapper {
+		display: block;
+	}
+	
+	/* Background accent */
+	.block-collection-banners__wrapper::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: calc(50% - 1.25em);
+		bottom: 0;
+		background-color: var(--theme-color-grey);
+		z-index: -1;
+	}
+
+	.block-collection-banners__content {
+		padding-top: 1em;
+		padding-bottom: 1em;
+	}
+
+	/* Slider */
+	.block-collection-banners__slider {
+		position: relative;
+		padding-bottom: 2.5em;
+	}
+
+	.block-collection-banners__list {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	/* Items */
+	.block-collection-banners__item {
+		flex: 0 0 auto;
+		width: 15em;
+		height: auto;
+	}
+
+	.block-collection-banners__link {
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
+		gap: 0;
+		height: 100%;
+		text-decoration: none;
+		background-color: {{ section.settings.item_background_color }};
+		color: {{ section.settings.item_text_color }};
+		transition: opacity 150ms ease;
+	}
+
+	.block-collection-banners__link:hover {
+		opacity: 0.9;
+	}
+
+	.block-collection-banners__image {
+		flex: 0 0 80px;
+		width: 80px;
+		aspect-ratio:2/3;
+		min-height:100%;
+		/* height: 100%;
+		min-height: 80px; */
+		object-fit: cover;
+	}
+
+	.block-collection-banners__title {
+		flex: 1 1 auto;
+		display: flex;
+		align-items: center;
+		padding: 0.75em 1em;
+		font-family: var(--theme-font-family-serif);
+		font-size: 0.95em;
+		font-weight: 400;
+		line-height: 1.3;
+		text-align: left;
+	}
+
+	/* Pagination */
+	.block-collection-banners__pagination {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		display: flex;
+		justify-content: center;
+		gap: 0.5em;
+		padding: 0.5em;
+	}
+
+	.block-collection-banners__pagination .swiper-pagination-bullet {
+		width: 0.5em;
+		height: 0.25em;
+		border-radius: 0;
+		background-color: var(--theme-color-brown);
+		opacity: 0.3;
+		border: none;
+		outline: none;
+		box-shadow: none;
+	}
+
+	.block-collection-banners__pagination .swiper-pagination-bullet:focus,
+	.block-collection-banners__pagination .swiper-pagination-bullet:focus-visible {
+		outline: none;
+		box-shadow: none;
+	}
+
+	.block-collection-banners__pagination .swiper-pagination-bullet::before,
+	.block-collection-banners__pagination .swiper-pagination-bullet::after {
+		display: none;
+	}
+
+	.block-collection-banners__pagination .swiper-pagination-bullet-active {
+		width: 1.5em;
+		opacity: 1;
+		background-color: {{ section.settings.item_background_color }};
+	}
+
+	/* Navigation buttons */
+	.block-collection-banners__nav {
+		display: none;
+	}
+
+	.block-collection-banners__nav-btn {
+		position: absolute;
+		top: calc(50% - 1.25em);
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5em;
+		height: 2.5em;
+		padding: 0.5em;
+		border: none;
+		background-color: var(--theme-color-white);
+		color: {{ section.settings.item_background_color }};
+		cursor: pointer;
+		transition: background-color 150ms ease, color 150ms ease;
+	}
+
+	.block-collection-banners__nav-btn:hover {
+		background-color: {{ section.settings.item_background_color }};
+		color: var(--theme-color-white);
+	}
+
+	.block-collection-banners__nav-btn--prev {
+		left: 1em;
+	}
+
+	.block-collection-banners__nav-btn--prev svg {
+		transform: rotate(90deg);
+	}
+
+	.block-collection-banners__nav-btn--next {
+		right: 1em;
+	}
+
+	.block-collection-banners__nav-btn--next svg {
+		transform: rotate(-90deg);
+	}
+
+	.block-collection-banners__nav-btn.swiper-button-disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+
+	/* Hide default Swiper navigation styles */
+	.block-collection-banners__nav-btn::after {
+		display: none;
+	}
+
+	/* Show nav buttons on hover (desktop) */
+	@media (min-width: 768px) {
+		.block-collection-banners__slider:hover .block-collection-banners__nav {
+			display: block;
 		}
 	}
-{%- endstyle -%}
+{% endstyle %}
 
 {% javascript %}
 	class CollectionBanners extends HTMLElement {
 		constructor() {
 			super();
+			this.swiper = null;
 		}
+
 		connectedCallback() {
-			const swiper = new Swiper('.swiper', {
-			  // Optional parameters
-			  direction: 'horizontal',
-			  loop: false,
-			  slidesPerView: 'auto',
-			  slidesPerGroup: 3,
-			  //slidesPerGroupAuto: 1,
-			  spaceBetween: 16,
-			  mousewheel: {
-				  forceToAxis:true,
-				  releaseOnEdges:true
-			  },
-			  
-			  // If we need pagination
-			  pagination: {
-				el: '.swiper-pagination',
-			  },
-			
-			  // Navigation arrows
-			  navigation: {
-				nextEl: '.swiper-button-next',
-				prevEl: '.swiper-button-prev',
-			  },
-			
-			  // And if we need scrollbar
-			  scrollbar: {
-				el: '.swiper-scrollbar',
-			  },
-			  
-			  on: {
-				  init(sw) {
-					updateSlidesPerGroup(sw);
-				  },
-				  resize(sw) {
-					updateSlidesPerGroup(sw);
-				  }
+			const swiperEl = this.querySelector('[data-collection-banners-slider]');
+			if (!swiperEl || typeof Swiper === 'undefined') return;
+
+			this.swiper = new Swiper(swiperEl, {
+				direction: 'horizontal',
+				loop: false,
+				slidesPerView: 'auto',
+				slidesPerGroup: 1,
+				spaceBetween: 12,
+				grabCursor: true,
+				mousewheel: {
+					forceToAxis: true,
+					releaseOnEdges: true
+				},
+				pagination: {
+					el: swiperEl.querySelector('.swiper-pagination'),
+					clickable: true
+				},
+				navigation: {
+					nextEl: swiperEl.querySelector('.swiper-button-next'),
+					prevEl: swiperEl.querySelector('.swiper-button-prev')
+				},
+				on: {
+					init: (swiper) => this.updateSlidesPerGroup(swiper),
+					resize: (swiper) => this.updateSlidesPerGroup(swiper)
 				}
 			});
-			function updateSlidesPerGroup(swiper) {
-				// swiper.slidesPerViewDynamic() tells you how many slides fit in the viewport
-				const visibleSlides = getFullyVisibleSlides(swiper);
-				swiper.params.slidesPerGroup = visibleSlides > 0 ? visibleSlides : 1;
-				swiper.loopDestroy();
-				swiper.loopCreate();
-				swiper.update();
-			}
-			function getFullyVisibleSlides(swiper) {
-				// helper to count only *fully visible* slides
-				const wrapperRect = swiper.wrapperEl.getBoundingClientRect();
-				let count = 0;
-				swiper.slides.forEach((slide) => {
-					const rect = slide.getBoundingClientRect();
-					if (rect.left >= wrapperRect.left && rect.right <= wrapperRect.right) {
-						count++;
-					}
-				});
-				return count > 0 ? count : 1;
-			}
 		}
+
+		updateSlidesPerGroup(swiper) {
+			const visibleSlides = this.getFullyVisibleSlides(swiper);
+			swiper.params.slidesPerGroup = visibleSlides > 0 ? visibleSlides : 1;
+			swiper.update();
+		}
+
+		getFullyVisibleSlides(swiper) {
+			const wrapperRect = swiper.wrapperEl.getBoundingClientRect();
+			let count = 0;
+			swiper.slides.forEach((slide) => {
+				const rect = slide.getBoundingClientRect();
+				if (rect.left >= wrapperRect.left && rect.right <= wrapperRect.right) {
+					count++;
+				}
+			});
+			return count > 0 ? count : 1;
+		}
+
 		disconnectedCallback() {
-			
+			if (this.swiper) {
+				this.swiper.destroy(true, true);
+				this.swiper = null;
+			}
 		}
 	}
+
 	customElements.define('collection-banners', CollectionBanners);
 {% endjavascript %}
 
 {% schema %}
 {
-  "name": "Collection banners",
-  "tag": "section",
-  "class": "block-collection-banners",
-  "disabled_on": {
-	"groups": ["header", "footer"]
-  },
-  "settings": [
-	{
-	  "type": "link_list",
-	  "id": "menu",
-	  "label": "Menu",
-	  "info": "Select which menu to use for navigation breadcrumbs (defaults to 'product-menu' if not set)"
-	}
-  ],
-  "presets": [
-	{
-	  "name": "Collection banners",
-	  "category": "Theme Collection",
-	  "blocks": []
-	}
-  ]
+	"name": "Collection banners",
+	"tag": "section",
+	"class": "block-collection-banners",
+	"enabled_on": {
+		"templates": ["collection"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "link_list",
+			"id": "menu",
+			"label": "Menu"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "align"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "item_background_color",
+			"label": "Item background",
+			"default": "#0f1f38"
+		},
+		{
+			"type": "color",
+			"id": "item_text_color",
+			"label": "Item text",
+			"default": "#ffffff"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "This section automatically displays child collections based on the current collection's position in the selected menu."
+		}
+	],
+	"presets": [
+		{
+			"name": "Banners",
+			"category": "Collection"
+		}
+	]
 }
 {% endschema %}

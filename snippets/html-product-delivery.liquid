@@ -1,35 +1,119 @@
-{%- if product.metafields.ism_deliverydate.deliverydate != blank -%}
-	{%- assign delivery_raw = product.metafields.ism_deliverydate.deliverydate.value -%}
-	{%- if delivery_raw != blank -%}
-		{%- assign delivery = delivery_raw | parse_json -%}
-		
-		{%- assign stock_status = '' -%}
-		{%- if product and product.available == false -%}
-			{%- assign stock_status = 'out' -%}
-		{%- else -%}
-		
-		{%- assign v = product.selected_or_first_available_variant | default: product.variants.first -%}
-		{%- if v and v.inventory_management -%}
-			{%- if v.inventory_quantity > 0 -%}
-				{%- assign stock_status = 'in' -%}
-			{%- else -%}
-				{%- if v.inventory_policy == 'continue' -%}
-					{%- assign stock_status = 'in' -%}
-				{%- else -%}
-					{%- assign stock_status = 'out' -%}
-				{%- endif -%}
-			{%- endif -%}
-		{%- else -%}
-			{%- assign stock_status = 'in' -%}
-		{%- endif -%}
-		<div class="product-card__delivery" data-delivery-title="{{ delivery.title }}">
-			{%- case stock_status -%}
-				{%- when 'in' -%}
-					<span>{{ delivery.inStockMessage }}</span>
-				{%- else -%}
-					<span>{{ delivery.outStockMessage }}</span>
-			{%- endcase -%}
-		</div>	
-		{%- endif -%}
-	{%- endif -%}
+{%- comment -%}
+  ============================================================================
+  HTML-PRODUCT-DELIVERY
+  ============================================================================
+  Displays delivery time based on product stock status and delivery references.
+
+  PARAMETERS:
+  - product: {Object} Product object (required)
+  - show: {Boolean} Whether to render (default: true)
+
+  METAFIELDS:
+  - product.metafields.custom.product-delivery-references: List of delivery-reference
+    - Each delivery-reference has:
+      - type: Metaobject reference to delivery-reference-type
+        - type.value.condition: 'in-stock', 'low-in-stock', or 'out-of-stock'
+        - type.value.title: Label for backend display only
+      - title: The message to display
+  
+  STOCK STATUS MAPPING:
+  - In stock → uses 'in-stock' reference
+  - Low stock → uses 'low-in-stock' reference (falls back to 'in-stock')
+  - Backorder → uses 'in-stock' reference
+  - Out of stock → uses 'out-of-stock' reference
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign show = show | default: true
+  assign delivery_refs = product.metafields.custom['product-delivery-references'].value
+  
+  # Use block setting if provided and > 0, otherwise fall back to theme setting
+  if low_stock_threshold == blank or low_stock_threshold == nil or low_stock_threshold == 0
+    assign low_stock_threshold = settings.stock_low_threshold | default: 3
+  endif
+-%}
+
+{%- if show and delivery_refs != blank -%}
+  {%- liquid
+    # Determine stock status
+    assign stock_status = 'in'
+    
+    if product and product.available == false
+      assign stock_status = 'out'
+    else
+      assign v = product.selected_or_first_available_variant | default: product.variants.first
+      if v and v.inventory_management
+        if v.inventory_quantity > 0
+          if v.inventory_quantity <= low_stock_threshold
+            assign stock_status = 'low'
+          else
+            assign stock_status = 'in'
+          endif
+        else
+          if v.inventory_policy == 'continue'
+            # Backorder - treat as in out-backorder and add class product-delivery--out-of-stock-backorder
+            assign stock_status = 'out'
+          else
+            assign stock_status = 'out'
+          endif
+        endif
+      endif
+    endif
+    
+    # Find the matching delivery reference
+    assign delivery_message = ''
+    assign in_stock_message = ''
+    assign low_stock_message = ''
+    assign out_stock_message = ''
+    
+    for ref in delivery_refs
+      assign ref_condition = ref.type.value.condition
+      assign ref_title = ref.title.value
+      
+      if ref_condition == 'in-stock'
+        assign in_stock_message = ref_title
+      elsif ref_condition == 'low-in-stock'
+        assign low_stock_message = ref_title
+      elsif ref_condition == 'out-of-stock'
+        assign out_stock_message = ref_title
+      endif
+    endfor
+    
+    # Select message based on status
+    case stock_status
+      when 'in'
+        assign delivery_message = in_stock_message
+      when 'low'
+        assign delivery_message = low_stock_message | default: in_stock_message
+      when 'out'
+        assign delivery_message = out_stock_message
+    endcase
+  -%}
+
+  {%- if delivery_message != blank -%}
+    <div class="product-delivery">
+      <span class="product-delivery__message{% if stock_status == 'out' %} product-delivery__message--out{% elsif stock_status == 'low' %} product-delivery__message--low{% endif %}">
+        {{ delivery_message }}
+      </span>
+    </div>
+  {%- endif -%}
 {%- endif -%}
+
+<style>
+  .product-delivery {
+    /* margins controlled by parent */
+  }
+
+  .product-delivery__message {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 0.875em;
+    color: #009922;
+  }
+
+  .product-delivery__message--out {
+    color: #009922;
+  }
+</style>

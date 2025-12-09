@@ -1,0 +1,392 @@
+{%- liquid
+	assign has_heading = false
+	if section.settings.heading != blank or section.settings.subheading != blank or section.settings.text != blank
+		assign has_heading = true
+	endif
+	
+	assign has_button = false
+	if section.settings.cta_text != blank and section.settings.cta_url != blank
+		assign has_button = true
+	endif
+	
+	case section.settings.image_ratio
+		when 'square'
+			assign ratio = '1 / 1'
+		when 'portrait'
+			assign ratio = '2 / 3'
+		when 'landscape'
+			assign ratio = '3 / 2'
+		else
+			assign ratio = false
+	endcase
+-%}
+
+<div class="block-marketing-gallery__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	{%- if section.settings.heading != blank -%}
+		{%- render 'html-marketing-headline',
+			heading: section.settings.heading,
+			subheading: section.settings.subheading,
+			alignment: 'center'
+		-%}
+	{%- endif -%}
+	
+	{%- if section.settings.text != blank -%}
+		{%- render 'html-marketing-text',
+			text: section.settings.text,
+			alignment: 'center',
+			width: 'medium'
+		-%}
+	{%- endif -%}
+	
+	{%- if section.blocks.size > 0 -%}
+		<ul class="block-marketing-gallery__grid block-marketing-gallery__grid--{{ section.settings.layout }}{% if has_heading %} block-marketing-gallery__grid--has-heading{% endif %}{% if has_button %} block-marketing-gallery__grid--has-button{% endif %}" role="list">
+			{%- for block in section.blocks -%}
+				{%- if block.type == 'image' -%}
+					<li class="block-marketing-gallery__item" {{ block.shopify_attributes }}>
+						{%- if block.settings.image -%}
+							{%- if section.settings.enable_lightbox -%}
+								<a href="{{ block.settings.image | image_url: width: 2000 }}" class="block-marketing-gallery__link" data-lightbox="gallery">
+							{%- elsif block.settings.link -%}
+								<a href="{{ block.settings.link }}" class="block-marketing-gallery__link">
+							{%- endif -%}
+							
+							<img
+								src="{{ block.settings.image | image_url: width: 800 }}"
+								srcset="
+									{{ block.settings.image | image_url: width: 400 }} 400w,
+									{{ block.settings.image | image_url: width: 600 }} 600w,
+									{{ block.settings.image | image_url: width: 800 }} 800w,
+									{{ block.settings.image | image_url: width: 1200 }} 1200w
+								"
+								sizes="(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw"
+								alt="{{ block.settings.image.alt | default: block.settings.caption | escape }}"
+								width="{{ block.settings.image.width }}"
+								height="{{ block.settings.image.height }}"
+								loading="lazy"
+								class="block-marketing-gallery__image"
+							>
+							
+							{%- if block.settings.caption != blank and section.settings.show_captions -%}
+								<span class="block-marketing-gallery__caption">{{ block.settings.caption | escape }}</span>
+							{%- endif -%}
+							
+							{%- if section.settings.enable_lightbox or block.settings.link -%}
+								</a>
+							{%- endif -%}
+						{%- else -%}
+							<div class="block-marketing-gallery__placeholder">
+								{{ 'image' | placeholder_svg_tag }}
+							</div>
+						{%- endif -%}
+					</li>
+				{%- endif -%}
+			{%- endfor -%}
+		</ul>
+	{%- endif -%}
+	
+	{%- if has_button -%}
+		<div class="block-marketing-gallery__actions">
+			{%- render 'html-marketing-cta',
+				text: section.settings.cta_text,
+				url: section.settings.cta_url,
+				style: section.settings.cta_style,
+				alignment: 'center'
+			-%}
+		</div>
+	{%- endif -%}
+</div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-gallery {
+		background-color: {{ section.settings.background_color | default: '#ffffff' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: 3em;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-gallery__grid {
+		display: grid;
+		grid-template-columns: repeat({{ section.settings.columns_desktop | default: 3 }}, 1fr);
+		gap: 0.5em;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.block-marketing-gallery__grid--has-heading {
+		margin-block-start: 2em;
+	}
+
+	.block-marketing-gallery__grid--has-button {
+		margin-block-end: 2em;
+	}
+
+	.block-marketing-gallery__grid--carousel {
+		display: flex;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.block-marketing-gallery__grid--carousel .block-marketing-gallery__item {
+		flex: 0 0 80%;
+		scroll-snap-align: start;
+	}
+
+	.block-marketing-gallery__item {
+		position: relative;
+		overflow: hidden;
+		margin: 0;
+	}
+
+	.block-marketing-gallery__link {
+		display: block;
+		position: relative;
+	}
+
+	.block-marketing-gallery__image {
+		width: 100%;
+		height: 100%;
+		display: block;
+		transition: transform 200ms ease;
+		{%- if ratio -%}
+			aspect-ratio: {{ ratio }};
+			object-fit: cover;
+		{%- endif -%}
+	}
+
+	.block-marketing-gallery__link:hover .block-marketing-gallery__image {
+		transform: scale(1.05);
+	}
+
+	.block-marketing-gallery__caption {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding: 1em;
+		background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+		color: #fff;
+		font-size: 0.875em;
+	}
+
+	.block-marketing-gallery__placeholder {
+		width: 100%;
+		aspect-ratio: 1 / 1;
+		background-color: rgba(0, 0, 0, 0.05);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.block-marketing-gallery__placeholder svg {
+		width: 50%;
+		height: auto;
+		opacity: 0.2;
+	}
+
+	.block-marketing-gallery__actions {
+		text-align: center;
+	}
+
+	@media (min-width: 750px) {
+		.block-marketing-gallery__grid--carousel .block-marketing-gallery__item {
+			flex: 0 0 50%;
+		}
+	}
+
+	@media (min-width: 990px) {
+		.block-marketing-gallery__grid--carousel .block-marketing-gallery__item {
+			flex: 0 0 33.333%;
+		}
+	}
+
+	@media (max-width: 989px) {
+		#shopify-section-{{ section.id }} .block-marketing-gallery__grid:not(.block-marketing-gallery__grid--carousel) {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 749px) {
+		#shopify-section-{{ section.id }} .block-marketing-gallery__grid:not(.block-marketing-gallery__grid--carousel) {
+			grid-template-columns: 1fr;
+		}
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "Marketing gallery",
+	"tag": "section",
+	"class": "block-marketing-gallery",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading"
+		},
+		{
+			"type": "text",
+			"id": "subheading",
+			"label": "Subheading"
+		},
+		{
+			"type": "richtext",
+			"id": "text",
+			"label": "Description"
+		},
+		{
+			"type": "text",
+			"id": "cta_text",
+			"label": "Button text"
+		},
+		{
+			"type": "url",
+			"id": "cta_url",
+			"label": "Button link"
+		},
+		{
+			"type": "select",
+			"id": "cta_style",
+			"label": "Button style",
+			"options": [
+				{ "value": "primary", "label": "Primary" },
+				{ "value": "secondary", "label": "Secondary" },
+				{ "value": "outline", "label": "Outline" }
+			],
+			"default": "outline"
+		},
+		{
+			"type": "header",
+			"content": "Image"
+		},
+		{
+			"type": "select",
+			"id": "image_ratio",
+			"label": "Image ratio",
+			"options": [
+				{ "value": "adapt", "label": "Adapt" },
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" }
+			],
+			"default": "square"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_captions",
+			"label": "Show captions",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "enable_lightbox",
+			"label": "Enable lightbox",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "select",
+			"id": "layout",
+			"label": "Grid layout",
+			"options": [
+				{ "value": "grid", "label": "Grid" },
+				{ "value": "carousel", "label": "Carousel" }
+			],
+			"default": "grid"
+		},
+		{
+			"type": "range",
+			"id": "columns_desktop",
+			"label": "Columns (desktop)",
+			"min": 2,
+			"max": 4,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"blocks": [
+		{
+			"type": "image",
+			"name": "Image",
+			"settings": [
+				{
+					"type": "image_picker",
+					"id": "image",
+					"label": "Image"
+				},
+				{
+					"type": "text",
+					"id": "caption",
+					"label": "Caption"
+				},
+				{
+					"type": "url",
+					"id": "link",
+					"label": "Link"
+				}
+			]
+		}
+	],
+	"max_blocks": 20,
+	"presets": [
+		{
+			"name": "Gallery",
+			"category": "Marketing",
+			"blocks": [
+				{ "type": "image" },
+				{ "type": "image" },
+				{ "type": "image" },
+				{ "type": "image" }
+			]
+		}
+	]
+}
+{% endschema %}

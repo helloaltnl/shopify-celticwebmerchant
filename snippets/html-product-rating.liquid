@@ -1,0 +1,115 @@
+{%- comment -%}
+  ============================================================================
+  HTML-PRODUCT-RATING
+  ============================================================================
+  Displays star rating with link to reviews section.
+  
+  PARAMETERS:
+  - product: {Object} Product object (required)
+  - scroll_target: {String} CSS selector to scroll to (default: '#reviews')
+  - show_count: {Boolean} Show review count (default: true)
+  - size: {Number} Star size in pixels (default: 16)
+  
+  METAFIELDS (Doran Product Reviews):
+  - product.metafields.doran.prAvgRating: Average rating (0-5)
+  - product.metafields.doran.prReviewCount: Number of reviews
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign p = product
+  assign rating = p.metafields.doran.prAvgRating | default: 0 | times: 1.0
+  assign review_count = p.metafields.doran.prReviewCount | default: 0 | times: 1
+  assign target = scroll_target | default: '#reviews'
+  assign star_size = size | default: 16
+  assign display_count = show_count | default: true
+-%}
+
+{%- if review_count > 0 -%}
+  <a 
+    href="{{ target }}" 
+    class="product-rating" 
+    data-scroll-to="{{ target }}"
+    aria-label="{{ 'product.rating.stars' | t: rating: rating, max: 5, count: review_count }}"
+  >
+    <span class="product-rating__stars" style="--star-size: {{ star_size }}px;" aria-hidden="true">
+      {%- for i in (1..5) -%}
+        {%- assign fill_amount = rating | minus: i | plus: 1 -%}
+        {%- if fill_amount >= 1 -%}
+          {%- assign fill_percent = 100 -%}
+        {%- elsif fill_amount > 0 -%}
+          {%- assign fill_percent = fill_amount | times: 100 | round -%}
+        {%- else -%}
+          {%- assign fill_percent = 0 -%}
+        {%- endif -%}
+        
+        <svg class="product-rating__star" viewBox="0 0 24 24" width="{{ star_size }}" height="{{ star_size }}">
+          <defs>
+            <linearGradient id="star-fill-{{ section.id }}-{{ i }}">
+              <stop offset="{{ fill_percent }}%" stop-color="currentColor" />
+              <stop offset="{{ fill_percent }}%" stop-color="transparent" />
+            </linearGradient>
+          </defs>
+          <path 
+            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+            fill="url(#star-fill-{{ section.id }}-{{ i }})"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+          />
+        </svg>
+      {%- endfor -%}
+    </span>
+    
+    {%- if display_count -%}
+      <span class="product-rating__count">({{ review_count }})</span>
+    {%- endif -%}
+  </a>
+
+  <style>
+    .product-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      color: inherit;
+      text-decoration: none;
+      transition: opacity 150ms ease;
+    }
+
+    .product-rating:hover {
+      opacity: 0.8;
+    }
+
+    .product-rating__stars {
+      display: inline-flex;
+      gap: 0.1em;
+      color: #f5a623;
+    }
+
+    .product-rating__star {
+      width: var(--star-size, 16px);
+      height: var(--star-size, 16px);
+      flex-shrink: 0;
+    }
+
+    .product-rating__count {
+      font-size: 0.875em;
+      opacity: 0.7;
+    }
+  </style>
+
+  <script>
+    (function() {
+      const link = document.querySelector('[data-scroll-to="{{ target }}"]');
+      if (!link) return;
+      
+      link.addEventListener('click', function(e) {
+        const target = document.querySelector('{{ target }}');
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    })();
+  </script>
+{%- endif -%}

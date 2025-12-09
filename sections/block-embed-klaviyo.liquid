@@ -1,0 +1,153 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-EMBED-KLAVIYO
+  ============================================================================
+
+  Purpose:
+  Embed Klaviyo forms (popups, signup forms, etc) based on region or language.
+  Klaviyo handles its own display logic - this section just outputs the right embed.
+  
+  Usage:
+  Add to footer-group.json to include on all pages.
+  Each block contains a region code, language code, and embed code.
+
+  Matching Priority:
+  1. Region match (country_code matches localization.country.iso_code)
+  2. Language match (language_code matches localization.language.iso_code)
+  3. Fallback (region_code and language_code are empty or '*')
+
+  Features:
+  - Multiple Klaviyo embeds per region/language (using blocks)
+  - Region takes priority over language
+  - Fallback for unlisted regions/languages
+  - Zero UI - Klaviyo controls display
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign current_region = localization.country.iso_code | upcase
+  assign current_language = localization.language.iso_code | downcase
+  assign matched_form = nil
+  assign language_form = nil
+  assign fallback_form = nil
+  
+  for block in section.blocks
+    if block.type == 'embed'
+      assign block_region = block.settings.region_code | upcase | strip
+      assign block_language = block.settings.language_code | downcase | strip
+      
+      comment
+        Priority 1: Region match
+      endcomment
+      if block_region != blank and block_region != '*' and block_region == current_region
+        assign matched_form = block
+        break
+      endif
+      
+      comment
+        Priority 2: Language match (store for later if no region match)
+      endcomment
+      if language_form == nil and block_language != blank and block_language != '*' and block_language == current_language
+        if block_region == blank or block_region == '*'
+          assign language_form = block
+        endif
+      endif
+      
+      comment
+        Priority 3: Fallback (both empty or *)
+      endcomment
+      if fallback_form == nil
+        assign is_region_fallback = false
+        assign is_language_fallback = false
+        
+        if block_region == blank or block_region == '*'
+          assign is_region_fallback = true
+        endif
+        
+        if block_language == blank or block_language == '*'
+          assign is_language_fallback = true
+        endif
+        
+        if is_region_fallback and is_language_fallback
+          assign fallback_form = block
+        endif
+      endif
+    endif
+  endfor
+  
+  comment
+    Use matched form, or fall back to language match, or fallback
+  endcomment
+  unless matched_form
+    if language_form
+      assign matched_form = language_form
+    else
+      assign matched_form = fallback_form
+    endif
+  endunless
+-%}
+
+{%- if matched_form -%}
+  {%- assign embed_code = matched_form.settings.embed_code -%}
+  {%- if embed_code != blank -%}
+    <div class="block-embed-klaviyo" id="block-embed-klaviyo-{{ section.id }}" {{ matched_form.shopify_attributes }}>
+      {{ embed_code }}
+    </div>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.block-embed-klaviyo.name",
+  "tag": "section",
+  "class": "section-embed-klaviyo",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [],
+  "blocks": [
+    {
+      "type": "embed",
+      "name": "t:sections.block-embed-klaviyo.blocks.embed.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "region_code",
+          "label": "t:sections.block-embed-klaviyo.blocks.embed.settings.region_code.label",
+          "info": "t:sections.block-embed-klaviyo.blocks.embed.settings.region_code.info",
+          "placeholder": "NL"
+        },
+        {
+          "type": "text",
+          "id": "language_code",
+          "label": "t:sections.block-embed-klaviyo.blocks.embed.settings.language_code.label",
+          "info": "t:sections.block-embed-klaviyo.blocks.embed.settings.language_code.info",
+          "placeholder": "en"
+        },
+        {
+          "type": "html",
+          "id": "embed_code",
+          "label": "t:sections.block-embed-klaviyo.blocks.embed.settings.embed_code.label",
+          "info": "t:sections.block-embed-klaviyo.blocks.embed.settings.embed_code.info"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Klaviyo",
+      "category": "Embed",
+      "blocks": [
+        {
+          "type": "embed",
+          "settings": {
+            "region_code": "",
+            "language_code": ""
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

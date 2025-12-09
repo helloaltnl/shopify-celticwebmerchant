@@ -11,9 +11,31 @@
   "sections": {
     "main": {
       "type": "main-page",
+      "blocks": {
+        "featured_image_qUThkT": {
+          "type": "featured_image",
+          "settings": {
+            "image_height": "medium",
+            "focus_x": 50,
+            "focus_y": 45
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {}
+        },
+        "content": {
+          "type": "content",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "featured_image_qUThkT",
+        "title",
+        "content"
+      ],
       "settings": {
-        "padding_top": 28,
-        "padding_bottom": 28
+        "width": "align"
       }
     }
   },

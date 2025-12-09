@@ -95,7 +95,7 @@
       data-media-id="{{ media.id }}"
     >
       <span class="visually-hidden">
-        {{ 'products.product.media.open_media' | t: index: position }}
+        {{ 'product.media.open_media' | t: index: position }}
       </span>
     </button>
   </modal-opener>
@@ -109,12 +109,12 @@
     <button id="Deferred-Poster-Modal-{{ media.id }}" class="deferred-media__poster" type="button">
       <span class="deferred-media__poster-button motion-reduce">
         {%- if media.media_type == 'model' -%}
-          <span class="visually-hidden">{{ 'products.product.media.play_model' | t }}</span>
+          <span class="visually-hidden">{{ 'product.media.play_model' | t }}</span>
           <span class="svg-wrapper">
             {{- 'icon-3d-model.svg' | inline_asset_content -}}
           </span>
         {%- else -%}
-          <span class="visually-hidden">{{ 'products.product.media.play_video' | t }}</span>
+          <span class="visually-hidden">{{ 'product.media.play_video' | t }}</span>
           <span class="svg-wrapper">
             {{- 'icon-play.svg' | inline_asset_content -}}
           </span>
@@ -153,7 +153,7 @@
         <button
           class="button button--full-width product__xr-button"
           type="button"
-          aria-label="{{ 'products.product.xr_button_label' | t }}"
+          aria-label="{{ 'product.media.xr_button_label' | t }}"
           data-shopify-xr
           data-shopify-model3d-id="{{ media.id }}"
           data-shopify-title="{{ product.title | escape }}"
@@ -162,7 +162,7 @@
           <span class="svg-wrapper">
             {{- 'icon-3d-model.svg' | inline_asset_content -}}
           </span>
-          {{ 'products.product.xr_button' | t }}
+          {{ 'product.media.xr_button' | t }}
         </button>
       {%- endif -%}
     {%- else -%}

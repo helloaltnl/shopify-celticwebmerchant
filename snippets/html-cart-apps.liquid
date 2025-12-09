@@ -1,35 +1,21 @@
-{% comment %}
-  Renders cart app blocks
-  
-  Accepts:
+{%- comment -%}
+  ============================================================================
+  HTML-CART-APPS
+  ============================================================================
+  Renders cart app blocks placeholder.
+
+  PARAMETERS:
   - blocks: {Array} Section blocks array (required)
-  - location: {String} Location identifier for filtering apps - optional
-  
-  Usage:
-  {% render 'html-cart-apps', blocks: section.blocks, location: 'cart-items' %}
-{% endcomment %}
+  - location: {String} Location identifier for filtering apps (optional)
+
+  USAGE:
+  {% render 'html-cart-apps', blocks: section.blocks, location: 'before-items' %}
+  ============================================================================
+{%- endcomment -%}
 
 {%- liquid
   assign location = location | default: 'default'
 -%}
-
-<style>
-  .cart-apps {
-    margin: 1.5rem 0;
-  }
-
-  .cart-apps__block {
-    margin: 1rem 0;
-  }
-
-  .cart-apps__block:first-child {
-    margin-top: 0;
-  }
-
-  .cart-apps__block:last-child {
-    margin-bottom: 0;
-  }
-</style>
 
 <div class="cart-apps" data-cart-apps data-location="{{ location }}">
   {%- for block in blocks -%}
@@ -40,3 +26,26 @@
     {%- endif -%}
   {%- endfor -%}
 </div>
+
+<style>
+  .cart-apps {
+    margin: 1.5em 0;
+  }
+
+  .cart-apps__block {
+    margin: 1em 0;
+  }
+
+  .cart-apps__block:first-child {
+    margin-top: 0;
+  }
+
+  .cart-apps__block:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Client apps tweaks */
+  #ooTaxExemption {max-width: 100%;}
+  #oo-tax-exemption { padding:1em; background-color: #fff; border-radius:4px;  }
+  #oo-tax-exemption h3 { font-family: "Absara Sans Pro", system-ui, sans-serif; margin-bottom: 0.5em!important;}
+</style>

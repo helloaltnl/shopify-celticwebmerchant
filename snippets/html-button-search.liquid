@@ -1,0 +1,76 @@
+{%- comment -%}
+  ============================================================================
+  HTML-BUTTON-SEARCH
+  ============================================================================
+
+  Purpose:
+  Renders a search trigger link that opens the search overlay.
+  Falls back to search page if JavaScript is unavailable.
+  
+  Usage:
+  {% render 'html-button-search' %}
+  {% render 'html-button-search', show_label: true %}
+
+  Parameters:
+  - class: {String} Additional CSS classes (optional)
+  - show_label: {Boolean} Show "Search" text label (default: false)
+  - icon_size: {Number} Icon size in pixels (default: 24)
+
+  Dependencies:
+  - html-theme-icons snippet
+  - theme-search.js (optional - graceful degradation)
+  - block-search-overlay section (optional - graceful degradation)
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign additional_class = class | default: ''
+  assign show_label = show_label | default: false
+  assign icon_size = icon_size | default: 24
+-%}
+
+<a 
+  href="{{ routes.search_url }}"
+  class="button-search {{ additional_class }}"
+  data-search-trigger
+  aria-label="{{ 'general.search.search' | t }}"
+>
+  <span class="button-search__icon" aria-hidden="true">
+    {%- render 'html-theme-icons', icon: 'search', size: icon_size -%}
+  </span>
+  {%- if show_label -%}
+    <span class="button-search__label">{{ 'general.search.search' | t }}</span>
+  {%- endif -%}
+</a>
+
+<style>
+  .button-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 150ms ease;
+  }
+
+  .button-search:hover {
+    opacity: 0.7;
+  }
+
+  .button-search__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .button-search__label {
+    white-space: nowrap;
+  }
+</style>

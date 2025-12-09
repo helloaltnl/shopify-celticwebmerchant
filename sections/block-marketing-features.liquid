@@ -1,261 +1,278 @@
-<section class="block-marketing-features">
-  <div class="block-marketing-features__inner alignwide is-constrained">
-    {%- if section.settings.heading != blank -%}
-      {%- render 'html-marketing-headline',
-        heading: section.settings.heading,
-        subheading: section.settings.subheading,
-        alignment: 'center',
-        size: section.settings.heading_size
-      -%}
-    {%- endif -%}
-    
-    {%- if section.settings.text != blank -%}
-      {%- render 'html-marketing-text',
-        text: section.settings.text,
-        alignment: 'center',
-        width: 'medium'
-      -%}
-    {%- endif -%}
-    
-    {%- liquid
-      assign features_array = ''
-      assign features_array = features_array | split: ','
-      
-      for block in section.blocks
-        assign feature_obj = '{"icon":"' | append: block.settings.icon | append: '","title":"' | append: block.settings.title | append: '","description":"' | append: block.settings.description | append: '"}'
-        assign features_array = features_array | concat: feature_obj
-      endfor
-    -%}
-    
-    <div class="block-marketing-features__grid">
-      {%- for block in section.blocks -%}
-        <div class="block-marketing-features__item" {{ block.shopify_attributes }}>
-          <div class="feature-item">
-            {%- if block.settings.icon != blank -%}
-              <div class="feature-item__icon feature-item__icon--{{ section.settings.icon_style }}">
-                {{ block.settings.icon }}
-              </div>
-            {%- endif -%}
-            
-            <div class="feature-item__content">
-              {%- if block.settings.title != blank -%}
-                <h3 class="feature-item__title">{{ block.settings.title | escape }}</h3>
-              {%- endif -%}
-              
-              {%- if block.settings.description != blank -%}
-                <p class="feature-item__description">{{ block.settings.description }}</p>
-              {%- endif -%}
-            </div>
-          </div>
-        </div>
-      {%- endfor -%}
-    </div>
-  </div>
-</section>
+{%- liquid
+	assign has_heading = false
+	if section.settings.heading != blank or section.settings.subheading != blank or section.settings.text != blank
+		assign has_heading = true
+	endif
+-%}
 
-{%- style -%}
-  .block-marketing-features__grid {
-    display: grid;
-    gap: 2rem;
-    margin-top: 3rem;
-  }
-  
-  .block-marketing-features__grid {
-    grid-template-columns: repeat({{ section.settings.columns }}, 1fr);
-  }
-  
-  .feature-item {
-    text-align: {{ section.settings.alignment }};
-  }
-  
-  .feature-item__icon {
-    width: 64px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    {% if section.settings.alignment == 'center' %}
-      margin: 0 auto 1rem;
-    {% elsif section.settings.alignment == 'right' %}
-      margin: 0 0 1rem auto;
-    {% else %}
-      margin: 0 0 1rem 0;
-    {% endif %}
-  }
-  
-  .feature-item__icon svg,
-  .feature-item__icon img {
-    width: 100%;
-    height: 100%;
-  }
-  
-  .feature-item__icon--circle {
-    border-radius: 50%;
-    background-color: #f5f5f5;
-    padding: 1rem;
-  }
-  
-  .feature-item__icon--square {
-    border-radius: 8px;
-    background-color: #f5f5f5;
-    padding: 1rem;
-  }
-  
-  .feature-item__icon--none {
-    background-color: transparent;
-    padding: 0;
-  }
-  
-  .feature-item__title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0 0 0.75rem;
-  }
-  
-  .feature-item__description {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin: 0;
-    color: #666;
-  }
-  
-  @media (max-width: 989px) {
-    .block-marketing-features__grid {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-  }
-  
-  @media (max-width: 749px) {
-    .block-marketing-features__grid {
-      grid-template-columns: 1fr !important;
-    }
-  }
-{%- endstyle -%}
+<div class="block-marketing-features__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	{%- if section.settings.heading != blank -%}
+		{%- render 'html-marketing-headline',
+			heading: section.settings.heading,
+			subheading: section.settings.subheading,
+			alignment: 'center'
+		-%}
+	{%- endif -%}
+	
+	{%- if section.settings.text != blank -%}
+		{%- render 'html-marketing-text',
+			text: section.settings.text,
+			alignment: 'center',
+			width: 'medium'
+		-%}
+	{%- endif -%}
+	
+	{%- if section.blocks.size > 0 -%}
+		<ul class="block-marketing-features__grid{% if has_heading %} block-marketing-features__grid--has-heading{% endif %}" role="list">
+			{%- for block in section.blocks -%}
+				<li class="block-marketing-features__item" {{ block.shopify_attributes }}>
+					{%- if block.settings.icon != blank -%}
+						<div class="block-marketing-features__icon block-marketing-features__icon--{{ section.settings.icon_style }}">
+							{{ block.settings.icon }}
+						</div>
+					{%- endif -%}
+					
+					<div class="block-marketing-features__item-content">
+						{%- if block.settings.title != blank -%}
+							<h3 class="block-marketing-features__item-title">{{ block.settings.title | escape }}</h3>
+						{%- endif -%}
+						
+						{%- if block.settings.description != blank -%}
+							<p class="block-marketing-features__item-description">{{ block.settings.description }}</p>
+						{%- endif -%}
+					</div>
+				</li>
+			{%- endfor -%}
+		</ul>
+	{%- endif -%}
+</div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-features {
+		background-color: {{ section.settings.background_color | default: '#ffffff' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: 3em;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-features__grid {
+		display: grid;
+		grid-template-columns: repeat({{ section.settings.columns_desktop | default: 3 }}, 1fr);
+		gap: 2em;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.block-marketing-features__grid--has-heading {
+		margin-block-start: 2em;
+	}
+
+	.block-marketing-features__item {
+		text-align: {{ section.settings.alignment }};
+		margin: 0;
+	}
+
+	.block-marketing-features__icon {
+		width: 64px;
+		height: 64px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		margin-block-end: 1em;
+		{%- if section.settings.alignment == 'center' -%}
+			margin-inline: auto;
+		{%- elsif section.settings.alignment == 'right' -%}
+			margin-inline-start: auto;
+		{%- endif -%}
+	}
+
+	.block-marketing-features__icon svg,
+	.block-marketing-features__icon img {
+		width: 100%;
+		height: 100%;
+	}
+
+	.block-marketing-features__icon--circle {
+		border-radius: 50%;
+		background-color: rgba(0, 0, 0, 0.05);
+		padding: 1em;
+	}
+
+	.block-marketing-features__icon--square {
+		border-radius: 8px;
+		background-color: rgba(0, 0, 0, 0.05);
+		padding: 1em;
+	}
+
+	.block-marketing-features__icon--none {
+		background-color: transparent;
+		padding: 0;
+	}
+
+	.block-marketing-features__item-title {
+		font-family: var(--theme-font-family-serif);
+		font-size: 1.25em;
+		font-weight: 400;
+		margin: 0 0 0.5em;
+	}
+
+	.block-marketing-features__item-description {
+		font-size: 1em;
+		line-height: 1.6;
+		margin: 0;
+		opacity: 0.7;
+	}
+
+	@media (max-width: 989px) {
+		#shopify-section-{{ section.id }} .block-marketing-features__grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 749px) {
+		#shopify-section-{{ section.id }} .block-marketing-features__grid {
+			grid-template-columns: 1fr;
+		}
+	}
+{% endstyle %}
 
 {% schema %}
 {
-  "name": "Marketing Features",
-  "tag": "section",
-  "class": "block-marketing-features",
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  },
-  "settings": [
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Our Features"
-    },
-    {
-      "type": "text",
-      "id": "subheading",
-      "label": "Subheading"
-    },
-    {
-      "type": "select",
-      "id": "heading_size",
-      "label": "Heading Size",
-      "options": [
-        { "value": "small", "label": "Small" },
-        { "value": "medium", "label": "Medium" },
-        { "value": "large", "label": "Large" }
-      ],
-      "default": "medium"
-    },
-    {
-      "type": "richtext",
-      "id": "text",
-      "label": "Description"
-    },
-    {
-      "type": "range",
-      "id": "columns",
-      "label": "Columns",
-      "min": 2,
-      "max": 4,
-      "step": 1,
-      "default": 3
-    },
-    {
-      "type": "select",
-      "id": "alignment",
-      "label": "Text Alignment",
-      "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
-      ],
-      "default": "center"
-    },
-    {
-      "type": "select",
-      "id": "icon_style",
-      "label": "Icon Style",
-      "options": [
-        { "value": "circle", "label": "Circle" },
-        { "value": "square", "label": "Square" },
-        { "value": "none", "label": "None" }
-      ],
-      "default": "circle"
-    }
-  ],
-  "blocks": [
-    {
-      "type": "feature",
-      "name": "Feature",
-      "settings": [
-        {
-          "type": "html",
-          "id": "icon",
-          "label": "Icon SVG",
-          "info": "Paste SVG code here"
-        },
-        {
-          "type": "text",
-          "id": "title",
-          "label": "Title",
-          "default": "Feature Title"
-        },
-        {
-          "type": "textarea",
-          "id": "description",
-          "label": "Description",
-          "default": "Feature description goes here"
-        }
-      ]
-    }
-  ],
-  "max_blocks": 12,
-  "presets": [
-    {
-      "name": "Marketing Features",
-      "category": "Theme Marketing",
-      "blocks": [
-        {
-          "type": "feature",
-          "settings": {
-            "title": "Fast Shipping",
-            "description": "Get your order delivered quickly"
-          }
-        },
-        {
-          "type": "feature",
-          "settings": {
-            "title": "Quality Products",
-            "description": "Only the best for our customers"
-          }
-        },
-        {
-          "type": "feature",
-          "settings": {
-            "title": "Easy Returns",
-            "description": "Hassle-free return policy"
-          }
-        }
-      ]
-    }
-  ]
+	"name": "Marketing features",
+	"tag": "section",
+	"class": "block-marketing-features",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading"
+		},
+		{
+			"type": "text",
+			"id": "subheading",
+			"label": "Subheading"
+		},
+		{
+			"type": "richtext",
+			"id": "text",
+			"label": "Description"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "range",
+			"id": "columns_desktop",
+			"label": "Columns (desktop)",
+			"min": 2,
+			"max": 4,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "select",
+			"id": "alignment",
+			"label": "Text alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" },
+				{ "value": "right", "label": "Right" }
+			],
+			"default": "center"
+		},
+		{
+			"type": "select",
+			"id": "icon_style",
+			"label": "Icon style",
+			"options": [
+				{ "value": "none", "label": "None" },
+				{ "value": "circle", "label": "Circle" },
+				{ "value": "square", "label": "Square" }
+			],
+			"default": "circle"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"blocks": [
+		{
+			"type": "feature",
+			"name": "Feature",
+			"settings": [
+				{
+					"type": "html",
+					"id": "icon",
+					"label": "Icon (SVG)"
+				},
+				{
+					"type": "text",
+					"id": "title",
+					"label": "Title"
+				},
+				{
+					"type": "textarea",
+					"id": "description",
+					"label": "Description"
+				}
+			]
+		}
+	],
+	"max_blocks": 12,
+	"presets": [
+		{
+			"name": "Features",
+			"category": "Marketing",
+			"blocks": [
+				{ "type": "feature" },
+				{ "type": "feature" },
+				{ "type": "feature" }
+			]
+		}
+	]
 }
 {% endschema %}

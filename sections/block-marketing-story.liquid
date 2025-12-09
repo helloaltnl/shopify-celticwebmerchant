@@ -1,180 +1,227 @@
-<section class="block-marketing-story">
-  <div class="block-marketing-story__inner alignwide is-constrained">
-    {%- if section.settings.heading != blank -%}
-      {%- render 'html-marketing-headline',
-        heading: section.settings.heading,
-        subheading: section.settings.subheading,
-        alignment: 'center'
-      -%}
-    {%- endif -%}
-    
-    {%- for block in section.blocks -%}
-      {%- case block.type -%}
-        {%- when 'split' -%}
-          <div class="block-marketing-story__split" {{ block.shopify_attributes }}>
-            {%- liquid
-              assign image_position = 'left'
-              if forloop.index > 1
-                assign remainder = forloop.index | modulo: 2
-                if remainder == 0
-                  assign image_position = 'right'
-                endif
-              endif
-              
-              if section.settings.alternate == false
-                assign image_position = section.settings.default_position
-              endif
-            -%}
-            
-            {%- render 'html-marketing-split',
-              image: block.settings.image,
-              heading: block.settings.heading,
-              text: block.settings.text,
-              cta_text: block.settings.cta_text,
-              cta_url: block.settings.cta_url,
-              cta_style: block.settings.cta_style,
-              image_position: image_position,
-              vertical_alignment: section.settings.vertical_alignment,
-              background_color: block.settings.background_color
-            -%}
-          </div>
-      {%- endcase -%}
-    {%- endfor -%}
-  </div>
-</section>
+{%- liquid
+	assign has_heading = false
+	if section.settings.heading != blank or section.settings.subheading != blank
+		assign has_heading = true
+	endif
+-%}
 
-{%- style -%}
-  .block-marketing-story__split + .block-marketing-story__split {
-    margin-top: 4rem;
-  }
-  
-  @media (max-width: 749px) {
-    .block-marketing-story__split + .block-marketing-story__split {
-      margin-top: 2rem;
-    }
-  }
-{%- endstyle -%}
+<div class="block-marketing-story__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	{%- if section.settings.heading != blank -%}
+		{%- render 'html-marketing-headline',
+			heading: section.settings.heading,
+			subheading: section.settings.subheading,
+			alignment: 'center'
+		-%}
+	{%- endif -%}
+	
+	<div class="block-marketing-story__items{% if has_heading %} block-marketing-story__items--has-heading{% endif %}">
+		{%- for block in section.blocks -%}
+			{%- case block.type -%}
+				{%- when 'split' -%}
+					<div class="block-marketing-story__item" {{ block.shopify_attributes }}>
+						{%- liquid
+							assign image_position = 'left'
+							if section.settings.alternate
+								assign remainder = forloop.index | modulo: 2
+								if remainder == 0
+									assign image_position = 'right'
+								endif
+							else
+								assign image_position = section.settings.default_position
+							endif
+						-%}
+						
+						{%- render 'html-marketing-split',
+							image: block.settings.image,
+							heading: block.settings.heading,
+							text: block.settings.text,
+							cta_text: block.settings.cta_text,
+							cta_url: block.settings.cta_url,
+							cta_style: block.settings.cta_style,
+							image_position: image_position,
+							vertical_alignment: section.settings.vertical_alignment,
+							background_color: block.settings.background_color
+						-%}
+					</div>
+			{%- endcase -%}
+		{%- endfor -%}
+	</div>
+</div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-story {
+		background-color: {{ section.settings.background_color | default: '#ffffff' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: 3em;
+	}
+
+	.block-marketing-story__items--has-heading {
+		margin-block-start: 2em;
+	}
+
+	.block-marketing-story__item + .block-marketing-story__item {
+		margin-block-start: 3em;
+	}
+{% endstyle %}
 
 {% schema %}
 {
-  "name": "Marketing Story",
-  "tag": "section",
-  "class": "block-marketing-story",
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  },
-  "settings": [
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading"
-    },
-    {
-      "type": "text",
-      "id": "subheading",
-      "label": "Subheading"
-    },
-    {
-      "type": "checkbox",
-      "id": "alternate",
-      "label": "Alternate Image Position",
-      "default": true,
-      "info": "Automatically alternates image left/right for storytelling flow"
-    },
-    {
-      "type": "select",
-      "id": "default_position",
-      "label": "Default Image Position",
-      "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "right", "label": "Right" }
-      ],
-      "default": "left",
-      "info": "Used when alternate is disabled"
-    },
-    {
-      "type": "select",
-      "id": "vertical_alignment",
-      "label": "Vertical Alignment",
-      "options": [
-        { "value": "top", "label": "Top" },
-        { "value": "center", "label": "Center" },
-        { "value": "bottom", "label": "Bottom" }
-      ],
-      "default": "center"
-    }
-  ],
-  "blocks": [
-    {
-      "type": "split",
-      "name": "Story Block",
-      "settings": [
-        {
-          "type": "image_picker",
-          "id": "image",
-          "label": "Image"
-        },
-        {
-          "type": "text",
-          "id": "heading",
-          "label": "Heading",
-          "default": "Our Story"
-        },
-        {
-          "type": "richtext",
-          "id": "text",
-          "label": "Text",
-          "default": "<p>Share your brand story here...</p>"
-        },
-        {
-          "type": "text",
-          "id": "cta_text",
-          "label": "Button Text"
-        },
-        {
-          "type": "url",
-          "id": "cta_url",
-          "label": "Button URL"
-        },
-        {
-          "type": "select",
-          "id": "cta_style",
-          "label": "Button Style",
-          "options": [
-            { "value": "primary", "label": "Primary" },
-            { "value": "secondary", "label": "Secondary" },
-            { "value": "outline", "label": "Outline" }
-          ],
-          "default": "outline"
-        },
-        {
-          "type": "color",
-          "id": "background_color",
-          "label": "Background Color (Text Side)"
-        }
-      ]
-    }
-  ],
-  "max_blocks": 10,
-  "presets": [
-    {
-      "name": "Marketing Story",
-      "category": "Theme Marketing",
-      "blocks": [
-        {
-          "type": "split",
-          "settings": {
-            "heading": "Chapter One"
-          }
-        },
-        {
-          "type": "split",
-          "settings": {
-            "heading": "Chapter Two"
-          }
-        }
-      ]
-    }
-  ]
+	"name": "Marketing story",
+	"tag": "section",
+	"class": "block-marketing-story",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading"
+		},
+		{
+			"type": "text",
+			"id": "subheading",
+			"label": "Subheading"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "checkbox",
+			"id": "alternate",
+			"label": "Alternate image position",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "default_position",
+			"label": "Default image position",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "right", "label": "Right" }
+			],
+			"default": "left",
+			"info": "Used when alternating is disabled"
+		},
+		{
+			"type": "select",
+			"id": "vertical_alignment",
+			"label": "Vertical alignment",
+			"options": [
+				{ "value": "top", "label": "Top" },
+				{ "value": "center", "label": "Center" },
+				{ "value": "bottom", "label": "Bottom" }
+			],
+			"default": "center"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"blocks": [
+		{
+			"type": "split",
+			"name": "Story block",
+			"settings": [
+				{
+					"type": "image_picker",
+					"id": "image",
+					"label": "Image"
+				},
+				{
+					"type": "text",
+					"id": "heading",
+					"label": "Heading"
+				},
+				{
+					"type": "richtext",
+					"id": "text",
+					"label": "Text"
+				},
+				{
+					"type": "text",
+					"id": "cta_text",
+					"label": "Button text",
+					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "url",
+					"id": "cta_url",
+					"label": "Button link"
+				},
+				{
+					"type": "select",
+					"id": "cta_style",
+					"label": "Button style",
+					"options": [
+						{ "value": "primary", "label": "Primary" },
+						{ "value": "secondary", "label": "Secondary" },
+						{ "value": "outline", "label": "Outline" }
+					],
+					"default": "outline"
+				},
+				{
+					"type": "header",
+					"content": "Colors"
+				},
+				{
+					"type": "color",
+					"id": "background_color",
+					"label": "Text background"
+				}
+			]
+		}
+	],
+	"max_blocks": 10,
+	"presets": [
+		{
+			"name": "Story",
+			"category": "Marketing",
+			"blocks": [
+				{ "type": "split" },
+				{ "type": "split" }
+			]
+		}
+	]
 }
 {% endschema %}

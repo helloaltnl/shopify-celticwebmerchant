@@ -1,0 +1,222 @@
+{% if request.page_type == 'product' %}
+<div class="block-header-product__content alignwide" id="block-header-product-{{ section.id }}">
+	<div class="block-header-product__info">
+		<figure class="block-header-product__media">
+			{%- if product.featured_media -%}
+				{%- assign img = product.featured_media -%}
+				{%- assign img_alt = product.featured_media.alt | default: product.title | escape -%}
+				<img 
+				src="{{ img | image_url: width: 128 }}" 
+				alt="{{ img_alt }}"
+				width="64"
+				height="64"
+				loading="lazy"
+				>
+			{%- else -%}
+				<div class="block-header-product__placeholder" aria-hidden="true"></div>
+			{%- endif -%}
+		</figure>
+		<div class="block-header-product__details">
+			<h5 class="block-header-product__title">{{ product.title }}</h5>
+			{% render 'html-product-price', product: product, show: true, from: 'auto' %}
+		</div>
+	</div>
+	
+	<div class="block-header-product__action">
+		<button type="button" class="block-header-product__button" data-scroll-top>
+			{%- render 'html-theme-icons', icon: 'cart', size: 20 -%}
+			<span class="block-header-product__button-text">
+				{{ 'product.add_to_cart' | t }}
+			</span>
+		</button>
+	</div>
+</div>
+
+<script>
+	(function() {
+		function init() {
+			const content = document.getElementById('block-header-product-{{ section.id }}');
+			if (!content) return;
+			
+			const bar = content.closest('.block-header-product');
+			if (!bar) return;
+
+			const target = document.querySelector('.block-product-form__form');
+			if (!target) return;
+
+			const observer = new IntersectionObserver((entries) => {
+				entries.forEach(entry => {
+					bar.classList.toggle('is-visible', !entry.isIntersecting);
+				});
+			}, {
+				root: null,
+				rootMargin: '0px',
+				threshold: 0
+			});
+
+			observer.observe(target);
+
+			const scrollBtn = bar.querySelector('[data-scroll-top]');
+			if (scrollBtn) {
+				scrollBtn.addEventListener('click', () => {
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+				});
+			}
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', init);
+		} else {
+			init();
+		}
+	})();
+</script>
+{% endif %}
+
+{% style %}
+	#pageHeader {
+		overflow: visible;
+	}
+
+	.block-header-product {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		z-index: 1;
+		background-color: #fff;
+		border-top: 1px solid var(--theme-color-grey, #e5e5e5);
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 150ms ease, visibility 150ms ease;
+		pointer-events: none;
+	}
+
+	.block-header-product.is-visible {
+		opacity: 1;
+		visibility: visible;
+		pointer-events: all;
+	}
+
+	.block-header-product__content {
+		padding-block: 0.5em;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2em;
+	}
+
+	.block-header-product__info {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 1em;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.block-header-product__media {
+		display: block;
+		margin: 0;
+		padding: 0;
+		width: 3em;
+		height: 3em;
+		flex-shrink: 0;
+	}
+
+	.block-header-product__media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.block-header-product__placeholder {
+		width: 100%;
+		height: 100%;
+		background: var(--theme-color-grey, #e5e5e5);
+	}
+
+	.block-header-product__details {
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.block-header-product__title {
+		margin: 0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.block-header-product__details .product-price__current {
+		font-size: 1em;
+	}
+
+	.block-header-product__details .product-price__vat {
+		font-size: 0.75em;
+	}
+
+	.block-header-product__action {
+		flex-shrink: 0;
+	}
+
+	.block-header-product__button {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		padding: 0.5em 1em;
+		background-color: var(--theme-color-green, #28a745);
+		color: var(--theme-color-white, #fff);
+		border: none;
+		cursor: pointer;
+		font-family: inherit;
+		font-size: inherit;
+		font-weight: 600;
+		transition: opacity 150ms ease;
+	}
+
+	.block-header-product__button:hover {
+		opacity: 0.9;
+	}
+
+	@media (max-width: 960px) {
+		.block-header-product__button {
+			padding: 1em;
+		}
+
+		.block-header-product__button-text {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "Product bar",
+	"tag": "section",
+	"class": "block-header-product",
+	"limit": 1,
+	"enabled_on": {
+		"groups": ["header"]
+	},
+	"settings": [],
+	"presets": [
+		{
+			"name": "Product bar",
+			"category": "Header"
+		}
+	]
+}
+{% endschema %}

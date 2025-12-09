@@ -142,20 +142,20 @@
                   <dl>
                     {%- if line_item.original_price != line_item.final_price -%}
                       <dt>
-                        <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+                        <span class="visually-hidden">{{ 'product.price.regular' | t }}</span>
                       </dt>
                       <dd class="regular-price">
                         <s>{{ line_item.original_price | money }}</s>
                       </dd>
                       <dt>
-                        <span class="visually-hidden">{{ 'products.product.price.sale_price' | t }}</span>
+                        <span class="visually-hidden">{{ 'product.price.sale' | t }}</span>
                       </dt>
                       <dd>
                         <span>{{ line_item.final_price | money }}</span>
                       </dd>
                     {%- else -%}
                       <dt>
-                        <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+                        <span class="visually-hidden">{{ 'product.price.regular' | t }}</span>
                       </dt>
                       <dd>
                         {{ line_item.original_price | money }}
@@ -163,7 +163,7 @@
                     {%- endif -%}
                     {%- if line_item.unit_price_measurement -%}
                       <dt>
-                        <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
+                        <span class="visually-hidden">{{ 'product.price.unit' | t }}</span>
                       </dt>
                       <dd class="unit-price">
                         {% render 'unit-price', price: line_item.unit_price, measurement: line_item.unit_price_measurement, hide_accessibility_label: true %}
@@ -189,13 +189,13 @@
                 {%- if line_item.original_line_price != line_item.final_line_price -%}
                   <dl>
                     <dt>
-                      <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+                      <span class="visually-hidden">{{ 'product.price.regular' | t }}</span>
                     </dt>
                     <dd class="regular-price">
                       <s>{{ line_item.original_line_price | money }}</s>
                     </dd>
                     <dt>
-                      <span class="visually-hidden">{{ 'products.product.price.sale_price' | t }}</span>
+                      <span class="visually-hidden">{{ 'product.price.sale' | t }}</span>
                     </dt>
                     <dd>
                       <span>{{ line_item.final_line_price | money }}</span>

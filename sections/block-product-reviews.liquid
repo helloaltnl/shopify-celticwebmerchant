@@ -1,31 +1,117 @@
-<section id="product-reviews" class="product-reviews-content align">
-	Reviews here
-</section>
+{%- comment -%}
+  ============================================================================
+  BLOCK-PRODUCT-REVIEWS
+  ============================================================================
+  Container section for product review app blocks.
+
+  FEATURES:
+  - Renders review app blocks (e.g. Doran, Judge.me)
+  - Anchor link support for scroll-to-reviews
+  - Width alignment options
+  - Color customization
+  ============================================================================
+{%- endcomment -%}
+
+<div class="block-product-reviews__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+	{%- for block in section.blocks -%}
+		{%- case block.type -%}
+			{%- when '@app' -%}
+				<div class="block-product-reviews__app" {{ block.shopify_attributes }}>
+					{%- render block -%}
+				</div>
+		{%- endcase -%}
+	{%- endfor -%}
+</div>
 
 {% style %}
-.block-product-reviews {
-	background-color: var(--theme-color-grey);
-	padding-top: 4em; padding-bottom: 4em;
-}
-.product-reviews-content {
-	
-}
+	#shopify-section-{{ section.id }}.block-product-reviews {
+		background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: {% if section.blocks.size > 0 %}4em{% else %}0{% endif %};
+	}
+
+	#shopify-section-{{ section.id }} .block-product-reviews__content {
+		scroll-margin-top: 100px;
+	}
 {% endstyle %}
 
 {% schema %}
 {
-  "name": "Product reviews",
-  "tag": "section",
-  "class": "block-product-reviews",
-  "disabled_on": {
-	"groups": ["header", "footer"]
-  },
-  "settings": [],
-  "presets": [
-	{
-	  "name": "Product reviews",
-	  "category": "Theme Product",
-	}
-  ]
+	"name": "Product reviews",
+	"tag": "section",
+	"class": "block-product-reviews",
+	"enabled_on": {
+		"templates": ["product"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "align"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#f8f8f8"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"default": "reviews",
+			"info": "ID for anchor links (e.g. #reviews)"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		},
+		{
+			"type": "header",
+			"content": "How to use"
+		},
+		{
+			"type": "paragraph",
+			"content": "Add a reviews app block to display product reviews. The anchor ID is used as scroll target from the rating block in the product form."
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		}
+	],
+	"presets": [
+		{
+			"name": "Reviews",
+			"category": "Product"
+		}
+	]
 }
 {% endschema %}

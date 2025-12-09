@@ -1,0 +1,122 @@
+{%- comment -%}
+	============================================================================
+	BLOCK-SEARCH-FORM
+	============================================================================
+	Search form for search template.
+	
+	FEATURES:
+	- Uses html-form-search snippet (consistent with overlay)
+	- Results count display
+	- Responsive design
+	
+	DEPENDENCIES:
+	- html-form-search snippet
+	- Locale keys: search.*
+	============================================================================
+{%- endcomment -%}
+
+<div class="block-search-form__content {{ section.settings.width }}">
+	<h1 class="block-search-form__title">{{ 'search.title' | t }}</h1>
+
+	<div class="block-search-form__form">
+		{%- render 'html-form-search', 
+			input_id: 'search-page-input',
+			enable_predictive: false,
+			autofocus: true,
+			show_submit: true
+		-%}
+	</div>
+
+	{%- if search.performed -%}
+		<p class="block-search-form__count">
+			{%- if search.results_count == 0 -%}
+				{{ 'search.no_results' | t: terms: search.terms }}
+			{%- else -%}
+				{{ 'search.results_count' | t: terms: search.terms, count: search.results_count }}
+			{%- endif -%}
+		</p>
+	{%- endif -%}
+</div>
+
+<style>
+	#shopify-section-{{ section.id }}.block-search-form {
+		background-color: {{ section.settings.background_color | default: 'transparent' }};
+		color: {{ section.settings.text_color | default: 'inherit' }};
+		padding-block: 1.5em;
+	}
+
+	#shopify-section-{{ section.id }} .block-search-form__content {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	#shopify-section-{{ section.id }} .block-search-form__title {
+		font-family: var(--theme-font-family-serif);
+		font-size: 1.5em;
+		font-weight: 400;
+		margin: 0;
+		text-align: center;
+	}
+
+	#shopify-section-{{ section.id }} .block-search-form__form {
+		width: 100%;
+	}
+
+	#shopify-section-{{ section.id }} .block-search-form__count {
+		font-size: 0.9em;
+		opacity: 0.7;
+		margin: 0;
+		text-align: center;
+	}
+</style>
+
+{% schema %}
+{
+	"name": "Search form",
+	"tag": "section",
+	"class": "block-search-form",
+	"limit": 1,
+	"enabled_on": {
+		"templates": ["search"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "align"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text"
+		}
+	],
+	"presets": [
+		{
+			"name": "Form",
+			"category": "Search"
+		}
+	]
+}
+{% endschema %}

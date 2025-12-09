@@ -68,6 +68,11 @@ class CartUpdater {
    */
   getSectionsToUpdate(context = 'page', cartData = null) {
     const sections = [];
+    const sectionId = context === 'page' 
+      ? document.querySelector('[data-cart-main-section]')?.dataset.cartMainSection
+      : document.querySelector('[data-cart-preview-section]')?.dataset.cartPreviewSection;
+
+    if (!sectionId) return sections;
 
     if (context === 'page') {
       const mainSection = document.querySelector('[data-cart-main-section]');
@@ -75,12 +80,12 @@ class CartUpdater {
       // If cart is empty or becomes empty, update entire section to show/hide empty state
       if (cartData && cartData.item_count === 0 && mainSection) {
         sections.push({
-          id: mainSection.dataset.cartMainSection,
+          id: sectionId,
           selector: '[data-cart-main-section]',
           target: mainSection,
-          replaceWhole: true // Flag to replace entire element
+          replaceWhole: true
         });
-        return sections; // Return early, no need for subsections
+        return sections;
       }
       
       // Full cart page updates (when cart has items)
@@ -90,7 +95,7 @@ class CartUpdater {
 
       if (itemsSection) {
         sections.push({
-          id: itemsSection.dataset.cartItemsSection,
+          id: sectionId,
           selector: '[data-cart-items-section]',
           target: itemsSection
         });
@@ -98,7 +103,7 @@ class CartUpdater {
 
       if (subtotalSection) {
         sections.push({
-          id: subtotalSection.dataset.cartSubtotalSection,
+          id: sectionId,
           selector: '[data-cart-subtotal-section]',
           target: subtotalSection
         });
@@ -106,20 +111,41 @@ class CartUpdater {
 
       if (paymentsSection) {
         sections.push({
-          id: paymentsSection.dataset.cartPaymentsSection,
+          id: sectionId,
           selector: '[data-cart-payments-section]',
           target: paymentsSection
         });
       }
     } else if (context === 'drawer' || context === 'preview') {
-      // Drawer/preview updates
-      const previewSection = document.querySelector('[data-cart-preview-section]');
-      
-      if (previewSection) {
+      // Drawer/preview updates - update subsections within the drawer
+      const previewContainer = document.querySelector('[data-cart-preview-section]');
+      if (!previewContainer) return sections;
+
+      const itemsSection = previewContainer.querySelector('[data-cart-items-section]');
+      const subtotalSection = previewContainer.querySelector('[data-cart-subtotal-section]');
+      const paymentsSection = previewContainer.querySelector('[data-cart-payments-section]');
+
+      if (itemsSection) {
         sections.push({
-          id: previewSection.dataset.cartPreviewSection,
-          selector: '[data-cart-preview-section]',
-          target: previewSection
+          id: sectionId,
+          selector: '[data-cart-preview-section] [data-cart-items-section]',
+          target: itemsSection
+        });
+      }
+
+      if (subtotalSection) {
+        sections.push({
+          id: sectionId,
+          selector: '[data-cart-preview-section] [data-cart-subtotal-section]',
+          target: subtotalSection
+        });
+      }
+
+      if (paymentsSection) {
+        sections.push({
+          id: sectionId,
+          selector: '[data-cart-preview-section] [data-cart-payments-section]',
+          target: paymentsSection
         });
       }
     }
@@ -504,30 +530,25 @@ class CartQuantityInput extends HTMLElement {
     clearTimeout(this.debounceTimer);
     
     this.debounceTimer = setTimeout(async () => {
-      const newQuantity = parseInt(this.input.value);
+      let newQuantity = parseInt(this.input.value);
       const line = parseInt(this.input.dataset.line);
       const context = this.closest('[data-cart-context]')?.dataset.cartContext || 'page';
       
       // Validate quantity
-      const min = parseInt(this.input.dataset.min || 0);
+      const min = parseInt(this.input.dataset.min || 1);
       const max = this.input.max ? parseInt(this.input.max) : null;
       const step = parseInt(this.input.step || 1);
 
-      if (newQuantity < min) {
+      // If empty or invalid, default to min
+      if (isNaN(newQuantity) || newQuantity < min) {
+        newQuantity = min;
         this.input.value = min;
-        this.showError(`Minimum quantity is ${min}`);
-        return;
       }
 
       if (max && newQuantity > max) {
+        newQuantity = max;
         this.input.value = max;
         this.showError(`Maximum quantity is ${max}`);
-        return;
-      }
-
-      if (newQuantity % step !== 0) {
-        this.showError(`Quantity must be in multiples of ${step}`);
-        return;
       }
 
       this.enableLoading();
@@ -634,6 +655,55 @@ class CartNote extends HTMLElement {
 customElements.define('cart-note', CartNote);
 
 /**
+ * Cart Add Button Component
+ * Simple add-to-cart button for quick add scenarios (e.g., recommended products)
+ */
+class CartAddButton extends HTMLElement {
+  constructor() {
+    super();
+    this.button = this.querySelector('button');
+    
+    if (this.button) {
+      this.button.addEventListener('click', this.handleClick.bind(this));
+    }
+  }
+
+  async handleClick(event) {
+    event.preventDefault();
+    
+    const variantId = this.dataset.variantId;
+    const quantity = parseInt(this.dataset.quantity || 1);
+    
+    if (!variantId || this.classList.contains('loading')) return;
+    
+    this.enableLoading();
+
+    try {
+      await window.CartAPI.add({
+        id: parseInt(variantId),
+        quantity: quantity
+      });
+    } catch (error) {
+      console.error('Add to cart failed:', error);
+    } finally {
+      this.disableLoading();
+    }
+  }
+
+  enableLoading() {
+    this.classList.add('loading');
+    if (this.button) this.button.disabled = true;
+  }
+
+  disableLoading() {
+    this.classList.remove('loading');
+    if (this.button) this.button.disabled = false;
+  }
+}
+
+customElements.define('cart-add-button', CartAddButton);
+
+/**
  * Initialize cart system on DOM ready
  */
 if (document.readyState === 'loading') {
@@ -645,14 +715,53 @@ if (document.readyState === 'loading') {
 function initializeCart() {
   console.log('Cart system initialized');
   
-  // Example: Listen to cart updates globally
-  // Other scripts can use this pattern:
-  /*
-  window.CartEvents.subscribe('cart:update', (data) => {
+  // Auto-update cart sections on any cart update
+  window.CartEvents.subscribe('cart:update', async (data) => {
     console.log('Cart updated:', data);
-    // Update cart counter badge
-    // Update mini cart preview
-    // etc.
+    
+    // Check which cart contexts exist on the page
+    const cartPage = document.querySelector('[data-cart-main-section]');
+    const cartPreview = document.querySelector('[data-cart-preview-section]');
+    
+    // Update cart page if present
+    if (cartPage) {
+      await window.CartUpdater.update({ 
+        context: 'page', 
+        cartData: data.cart 
+      });
+    }
+    
+    // Update cart preview/drawer if present
+    if (cartPreview) {
+      await window.CartUpdater.update({ 
+        context: 'preview', 
+        cartData: data.cart 
+      });
+    }
+    
+    // Update cart counter badge if exists
+    updateCartCount(data.cart.item_count);
   });
-  */
+
+  // Auto-open cart preview when item is added (outside cart page)
+  window.CartEvents.subscribe('cart:add', (data) => {
+    const isCartPage = window.location.pathname === '/cart' || window.location.pathname.includes('/cart');
+    
+    // Open cart preview if not on cart page and CartPreview is available
+    if (!isCartPage && window.CartPreview && typeof window.CartPreview.open === 'function') {
+      // Small delay to ensure cart has updated
+      setTimeout(() => {
+        window.CartPreview.open();
+      }, 300);
+    }
+  });
+  
+  // Helper function to update cart count badges
+  function updateCartCount(count) {
+    const badges = document.querySelectorAll('[data-cart-count]');
+    badges.forEach(badge => {
+      badge.textContent = count;
+      badge.style.display = count > 0 ? '' : 'none';
+    });
+  }
 }

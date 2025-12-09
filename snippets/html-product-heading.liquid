@@ -1,4 +1,46 @@
-<heading>
-	{{product.vendor}}
-	<h1>{{product.title}}</h1>
-</heading>
+{%- comment -%}
+  ============================================================================
+  HTML-PRODUCT-HEADING
+  ============================================================================
+  Product title with optional vendor display.
+  
+  PARAMETERS:
+  - product: {Object} Product object (required)
+  - show_vendor: {Boolean} Show vendor above title (default: true)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign p = product
+  assign display_vendor = show_vendor | default: true
+-%}
+
+<div class="product-heading">
+  {%- if display_vendor and p.vendor != blank -%}
+    <p class="product-heading__vendor">{{ p.vendor }}</p>
+  {%- endif -%}
+  <h1 class="product-heading__title">{{ p.title }}</h1>
+</div>
+
+<style>
+  .product-heading {
+    /* margins controlled by parent */
+  }
+
+  .product-heading__vendor {
+    font-size: 0.875em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+    margin: 0 0 0.25em;
+  }
+
+  .product-heading__title {
+    font-family: var(--theme-font-family-serif);
+    font-size: 2.6em;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: var(--theme-letter-spacing);
+    margin: 0;
+  }
+</style>

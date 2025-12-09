@@ -1,0 +1,473 @@
+{% comment %}
+  ============================================================================
+  BLOCK-COLLECTION-INFO
+  ============================================================================
+  Related articles and knowledge base references for collections.
+
+  FEATURES:
+  - Blog post references from collection metafield
+  - Knowledge base references from collection metafield
+  - Card layout with images
+  - Width alignment options
+  - Color customization
+
+  DEPENDENCIES:
+  - html-theme-icons snippet
+  - Collection metafields:
+    - custom.collection-blogpost-references
+    - custom.collection-knowledgebase-references
+  ============================================================================
+{% endcomment %}
+
+{%- assign blogpost_references = collection.metafields.custom['collection-blogpost-references'] -%}
+{%- assign knowledge_references = collection.metafields.custom['collection-knowledgebase-references'] -%}
+
+{%- liquid
+	assign title_text = section.settings.title
+	if title_text == blank
+		assign title_text = 'collection.related_articles' | t
+	endif
+	assign read_more_text = section.settings.read_more_text
+	if read_more_text == blank
+		assign read_more_text = 'general.read_more' | t
+	endif
+-%}
+
+{%- if blogpost_references or knowledge_references -%}
+<div class="block-collection-info__content {{ section.settings.width }}">
+	<header class="block-collection-info__header">
+		<h2 class="block-collection-info__title">{{ title_text }}</h2>
+	</header>
+
+	<div class="block-collection-info__grid">
+		{%- if blogpost_references -%}
+			<div class="block-collection-info__articles-wrapper">
+				{%- for article_reference in blogpost_references.value -%}
+					{%- if forloop.first -%}
+						<article class="block-collection-info__card block-collection-info__card--featured">
+							<a href="{{ article_reference.link.value.url }}" class="block-collection-info__card-link" target="_blank" rel="noopener"></a>
+							{%- if article_reference.thumb -%}
+								<figure class="block-collection-info__card-image">
+									<img
+										src="{{ article_reference.thumb | image_url: width: 600 }}"
+										alt="{{ article_reference.title | escape }}"
+										loading="lazy"
+										width="300"
+										height="400"
+									>
+								</figure>
+							{%- endif -%}
+							<div class="block-collection-info__card-content">
+								<h3 class="block-collection-info__card-title">{{ article_reference.title }}</h3>
+								{%- if article_reference.excerpt -%}
+									<p class="block-collection-info__card-excerpt">{{ article_reference.excerpt }}</p>
+								{%- endif -%}
+								{%- if article_reference.link -%}
+									<span class="block-collection-info__card-cta">
+										<span>{{ read_more_text }}</span>
+										<i>{% render 'html-theme-icons', icon: 'arrow', size: 14 %}</i>
+									</span>
+								{%- endif -%}
+							</div>
+						</article>
+					{%- endif -%}
+				{%- endfor -%}
+
+				<ul class="block-collection-info__articles">
+					{%- for article_reference in blogpost_references.value offset: 1 -%}
+						<li class="block-collection-info__item">
+						<article class="block-collection-info__card block-collection-info__card--article">
+							<a href="{{ article_reference.link.value.url }}" class="block-collection-info__card-link" target="_blank" rel="noopener"></a>
+							{%- if article_reference.thumb -%}
+								<figure class="block-collection-info__card-image">
+									<img
+										src="{{ article_reference.thumb | image_url: width: 400 }}"
+										alt="{{ article_reference.title | escape }}"
+										loading="lazy"
+										width="200"
+										height="300"
+									>
+								</figure>
+							{%- endif -%}
+							<div class="block-collection-info__card-content">
+								<h3 class="block-collection-info__card-title">{{ article_reference.title }}</h3>
+								{%- if article_reference.excerpt -%}
+									<p class="block-collection-info__card-excerpt">{{ article_reference.excerpt }}</p>
+								{%- endif -%}
+								{%- if article_reference.link -%}
+									<span class="block-collection-info__card-cta">
+										<span>{{ read_more_text }}</span>
+										<i>{% render 'html-theme-icons', icon: 'arrow', size: 14 %}</i>
+									</span>
+								{%- endif -%}
+							</div>
+						</article>
+					</li>
+					{%- endfor -%}
+				</ul>
+			</div>
+		{%- endif -%}
+
+		{%- if knowledge_references -%}
+			<ul class="block-collection-info__knowledge">
+				{%- for article_reference in knowledge_references.value -%}
+					<li class="block-collection-info__item">
+						<article class="block-collection-info__card block-collection-info__card--knowledge">
+							<a href="{{ article_reference.link.value.url }}" class="block-collection-info__card-link" target="_blank" rel="noopener"></a>
+							<div class="block-collection-info__card-content">
+								<h4 class="block-collection-info__card-title">{{ article_reference.title }}</h4>
+								{%- if article_reference.excerpt -%}
+									<p class="block-collection-info__card-excerpt">{{ article_reference.excerpt }}</p>
+								{%- endif -%}
+								{%- if article_reference.link -%}
+									<span class="block-collection-info__card-cta">
+										<span>{{ read_more_text }}</span>
+										<i>{% render 'html-theme-icons', icon: 'arrow', size: 14 %}</i>
+									</span>
+								{%- endif -%}
+							</div>
+						</article>
+					</li>
+				{%- endfor -%}
+			</ul>
+		{%- endif -%}
+	</div>
+</div>
+{%- endif -%}
+
+{% style %}
+	.block-collection-info {
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-top: 3em;
+		padding-bottom: 3em;
+	}
+
+	.block-collection-info__content {
+		/* Container handled by width class */
+	}
+
+	.block-collection-info__header {
+		margin-bottom: 2em;
+		text-align: center;
+	}
+
+	.block-collection-info__title {
+		font-family: var(--theme-font-family-serif);
+		font-size: clamp(1.6em, 4vw, 2em);
+		font-weight: 400;
+		margin: 0;
+	}
+
+	/* Grid - stacked rows */
+	.block-collection-info__grid {
+		display: flex;
+		flex-direction: column;
+		gap: 2em;
+	}
+
+	/* Articles wrapper - featured + grid side by side */
+	.block-collection-info__articles-wrapper {
+		display: flex;
+		gap: 1em;
+		align-items: flex-start;
+	}
+
+	/* Featured card (first article) - 33% */
+	.block-collection-info__card--featured {
+		flex: 0 0 33%;
+		flex-direction: column !important;
+		background-color: var(--theme-color-white);
+		color: var(--theme-color-blue);
+	}
+
+	.block-collection-info__card--featured .block-collection-info__card-image {
+		flex: 0 0 auto;
+		aspect-ratio: 3 / 4;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+	}
+
+	.block-collection-info__card--featured .block-collection-info__card-image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 200ms ease;
+	}
+
+	.block-collection-info__card--featured:hover .block-collection-info__card-image img {
+		transform: scale(1.05);
+	}
+
+	.block-collection-info__card--featured .block-collection-info__card-title {
+		font-size: 1.4em;
+	}
+
+	/* Article list (cards 2+) - 66%, 2 columns */
+	.block-collection-info__articles {
+		flex: 0 0 66%;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 0.5em;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		align-items: stretch;
+	}
+
+	.block-collection-info__articles .block-collection-info__item {
+		height: 100%;
+	}
+
+	/* Article card (cards 2+) - horizontal layout */
+	.block-collection-info__card--article {
+		flex-direction: row;
+		height: 100%;
+		background-color: var(--theme-color-white);
+		color: var(--theme-color-blue);
+	}
+
+	.block-collection-info__card--article .block-collection-info__card-image {
+		flex: 0 0 80px;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+	}
+
+	.block-collection-info__card--article .block-collection-info__card-image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 200ms ease;
+	}
+
+	.block-collection-info__card--article:hover .block-collection-info__card-image img {
+		transform: scale(1.05);
+	}
+
+	.block-collection-info__card--article .block-collection-info__card-title {
+		font-size: 1em;
+	}
+
+	.block-collection-info__card--article .block-collection-info__card-excerpt {
+		display: none;
+	}
+
+	/* Knowledge list - separate row */
+	.block-collection-info__knowledge {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 0.5em;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	/* Card base */
+	.block-collection-info__card {
+		position: relative;
+		display: flex;
+		flex-direction: row;
+		height: 100%;
+		overflow: hidden;
+	}
+
+	.block-collection-info__card-link {
+		position: absolute;
+		inset: 0;
+		z-index: 5;
+	}
+
+	/* Article card */
+	.block-collection-info__card--article {
+		background-color: var(--theme-color-white);
+		color: var(--theme-color-blue);
+	}
+
+	.block-collection-info__card--article .block-collection-info__card-image {
+		flex: 0 0 100px;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+	}
+
+	.block-collection-info__card--article .block-collection-info__card-image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 200ms ease;
+	}
+
+	.block-collection-info__card--article:hover .block-collection-info__card-image img {
+		transform: scale(1.05);
+	}
+
+	/* Knowledge card */
+	.block-collection-info__card--knowledge {
+		background-color: {{ section.settings.knowledge_background_color }};
+		color: {{ section.settings.knowledge_text_color }};
+	}
+
+	/* Card content */
+	.block-collection-info__card-content {
+		flex: 1 1 auto;
+		padding: 1em;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.block-collection-info__card-title {
+		font-family: var(--theme-font-family-serif);
+		font-weight: 400;
+		line-height: 1.2;
+		margin: 0 0 0.25em 0;
+	}
+
+	.block-collection-info__card--article .block-collection-info__card-title {
+		font-size: 1.2em;
+	}
+
+	.block-collection-info__card--knowledge .block-collection-info__card-title {
+		font-size: 1em;
+	}
+
+	.block-collection-info__card-excerpt {
+		font-size: 0.85em;
+		line-height: 1.4;
+		margin: 0 0 0.5em 0;
+		opacity: 0.9;
+	}
+
+	.block-collection-info__card-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+		margin-top: auto;
+		font-size: 0.9em;
+		color: inherit;
+	}
+
+	.block-collection-info__card-cta i {
+		display: inline-flex;
+		transition: transform 150ms ease;
+	}
+
+	.block-collection-info__card:hover .block-collection-info__card-cta i {
+		transform: translateX(0.25em);
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.block-collection-info__articles-wrapper {
+			flex-direction: column;
+		}
+
+		.block-collection-info__card--featured {
+			flex: 0 0 auto;
+			width: 100%;
+			flex-direction: column !important;
+		}
+
+		.block-collection-info__card--featured .block-collection-info__card-image {
+			aspect-ratio: 16 / 9;
+		}
+
+		.block-collection-info__articles {
+			flex: 0 0 auto;
+			width: 100%;
+			grid-template-columns: 1fr;
+		}
+
+		.block-collection-info__knowledge {
+			grid-template-columns: 1fr;
+		}
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "Collection info",
+	"tag": "section",
+	"class": "block-collection-info",
+	"enabled_on": {
+		"templates": ["collection"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "title",
+			"label": "Title",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "text",
+			"id": "read_more_text",
+			"label": "Read more text",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "align"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#f8f8f8"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "color",
+			"id": "knowledge_background_color",
+			"label": "Knowledge card background",
+			"default": "#0f1f38"
+		},
+		{
+			"type": "color",
+			"id": "knowledge_text_color",
+			"label": "Knowledge card text",
+			"default": "#ffffff"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Displays blog posts and knowledge base articles linked via collection metafields: custom.collection-blogpost-references and custom.collection-knowledgebase-references."
+		}
+	],
+	"presets": [
+		{
+			"name": "Info",
+			"category": "Collection"
+		}
+	]
+}
+{% endschema %}

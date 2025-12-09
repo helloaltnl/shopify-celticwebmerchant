@@ -1,0 +1,785 @@
+// ============================================================================
+// THEME-UX.SCSS
+// ============================================================================
+// 
+// Base styling for modal and drawer components.
+// Compile: sass theme-ux.scss theme-ux.min.css --style=compressed
+//
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// Variables
+// ----------------------------------------------------------------------------
+
+$ux-overlay-color: rgba(0, 0, 0, 0.6);
+$ux-background: #fff;
+$ux-text: #111;
+$ux-border: rgba(0, 0, 0, 0.1);
+$ux-z-index-modal: 9999999995;
+$ux-z-index-drawer: 9999999995;
+$ux-transition-duration: 300ms;
+$ux-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+$ux-drawer-width: 400px;
+$ux-drawer-width-mobile: 85vw;
+$ux-modal-max-width: 600px;
+
+// ----------------------------------------------------------------------------
+// Body States
+// ----------------------------------------------------------------------------
+
+.has-modal-open,
+.has-drawer-open {
+  overflow: hidden;
+}
+
+// ----------------------------------------------------------------------------
+// MODAL
+// ----------------------------------------------------------------------------
+
+[data-modal] {
+  position: fixed;
+  inset: 0;
+  z-index: $ux-z-index-modal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: 
+    opacity $ux-transition-duration $ux-transition-easing,
+    visibility $ux-transition-duration $ux-transition-easing;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+// Overlay
+[data-modal-overlay] {
+  position: absolute;
+  inset: 0;
+  background: $ux-overlay-color;
+  cursor: pointer;
+}
+
+// Content container
+.theme-modal__content {
+  position: relative;
+  background: $ux-background;
+  color: $ux-text;
+  width: 100%;
+  max-width: $ux-modal-max-width;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  transform: scale(0.95) translateY(10px);
+  transition: transform $ux-transition-duration $ux-transition-easing;
+
+  [data-modal].is-open & {
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Header
+.theme-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $ux-border;
+  flex-shrink: 0;
+}
+
+.theme-modal__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+// Close button
+.theme-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: -0.5rem -0.5rem -0.5rem 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 150ms ease;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+// Body
+.theme-modal__body {
+  flex: 1 1 auto;
+  padding: 1.5rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+// Footer
+.theme-modal__footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid $ux-border;
+  flex-shrink: 0;
+}
+
+// Mobile: bottom sheet style
+@media (max-width: 749px) {
+  [data-modal] {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .theme-modal__content {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 1rem 1rem 0 0;
+    transform: translateY(100%);
+
+    [data-modal].is-open & {
+      transform: translateY(0);
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// DRAWER
+// ----------------------------------------------------------------------------
+
+[data-drawer] {
+  position: fixed;
+  inset: 0;
+  z-index: $ux-z-index-drawer;
+  visibility: hidden;
+  transition: visibility $ux-transition-duration $ux-transition-easing;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &.is-open {
+    visibility: visible;
+  }
+}
+
+// Overlay
+[data-drawer-overlay] {
+  position: absolute;
+  inset: 0;
+  background: $ux-overlay-color;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity $ux-transition-duration $ux-transition-easing;
+
+  [data-drawer].is-open & {
+    opacity: 1;
+  }
+}
+
+// Content container
+.theme-drawer__content {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: $ux-drawer-width;
+  max-width: $ux-drawer-width-mobile;
+  background: $ux-background;
+  color: $ux-text;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  transition: transform $ux-transition-duration $ux-transition-easing;
+
+  // Left position (default)
+  [data-drawer].theme-drawer--left & {
+    left: 0;
+    transform: translateX(-100%);
+  }
+
+  [data-drawer].theme-drawer--left.is-open & {
+    transform: translateX(0);
+  }
+
+  // Right position
+  [data-drawer].theme-drawer--right & {
+    right: 0;
+    transform: translateX(100%);
+  }
+
+  [data-drawer].theme-drawer--right.is-open & {
+    transform: translateX(0);
+  }
+}
+
+// Header
+.theme-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $ux-border;
+  flex-shrink: 0;
+}
+
+.theme-drawer__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+// Close button
+.theme-drawer__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: -0.5rem -0.5rem -0.5rem 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 150ms ease;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+// Body
+.theme-drawer__body {
+  flex: 1 1 auto;
+  padding: 1.5rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+// Footer
+.theme-drawer__footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid $ux-border;
+  flex-shrink: 0;
+}
+
+// Mobile: full width
+@media (max-width: 749px) {
+  .theme-drawer__content {
+    max-width: 90vw;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Scrollbar styling
+// ----------------------------------------------------------------------------
+
+.theme-modal__body,
+.theme-drawer__body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// SEARCH OVERLAY
+// ----------------------------------------------------------------------------
+
+.has-search-open {
+  overflow: hidden;
+}
+
+[data-search-overlay] {
+  position: fixed;
+  inset: 0;
+  z-index: $ux-z-index-modal;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transition: 
+    opacity $ux-transition-duration $ux-transition-easing,
+    visibility $ux-transition-duration $ux-transition-easing;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.block-search-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+}
+
+.block-search-overlay__container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  background: $ux-background;
+  transform: translateY(-20px);
+  transition: transform $ux-transition-duration $ux-transition-easing;
+
+  [data-search-overlay].is-open & {
+    transform: translateY(0);
+  }
+}
+
+.block-search-overlay__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid $ux-border;
+}
+
+.block-search-overlay__form {
+  flex: 1;
+}
+
+.block-search-overlay__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 150ms ease;
+  flex-shrink: 0;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.block-search-overlay__results {
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+// Search Results
+.search-results__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1px;
+  background: $ux-border;
+}
+
+.search-results__section {
+  padding: 1.25rem 1.5rem;
+  background: $ux-background;
+}
+
+.search-results__heading {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.search-results__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.search-results__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  color: inherit;
+  text-decoration: none;
+  transition: background 150ms ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  svg {
+    opacity: 0.5;
+  }
+}
+
+.search-results__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.search-results__item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  margin: -0.75rem;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 150ms ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+}
+
+.search-results__item--compact {
+  padding: 0.5rem 0;
+  margin: 0;
+}
+
+.search-results__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.search-results__vendor {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.search-results__title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-results__price {
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+.search-results__placeholder {
+  width: 50px;
+  height: 50px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.search-results__footer {
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  background: $ux-background;
+}
+
+.search-results__view-all {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background: $ux-text;
+  color: $ux-background;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: opacity 150ms ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.search-results__empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  opacity: 0.6;
+}
+
+.search-results__loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+
+  &::after {
+    content: '';
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: search-spin 600ms linear infinite;
+  }
+}
+
+@keyframes search-spin {
+  to { transform: rotate(360deg); }
+}
+
+// Mobile
+@media (max-width: 749px) {
+  .block-search-overlay__container {
+    max-width: 100%;
+  }
+
+  .search-results__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// SHOPIFY COOKIE/PRIVACY BANNER
+// ----------------------------------------------------------------------------
+
+// Main banner container
+.shopify-pc-banner,
+.shopify-pc__banner,
+#shopify-pc__banner {
+  // Override Shopify defaults
+  font-family: var(--theme-font-family-sans, inherit) !important;
+  background: $ux-background !important;
+  color: $ux-text !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  max-width: $ux-modal-max-width !important;
+  padding: 0 !important;
+  
+  // Position like modal on desktop
+  @media (min-width: 750px) {
+    position: fixed !important;
+    bottom: 1rem !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+  }
+  
+  // Mobile: bottom sheet style
+  @media (max-width: 749px) {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    max-width: 100% !important;
+    border-radius: 1rem 1rem 0 0 !important;
+  }
+
+  // Inner wrapper
+  > div {
+    padding: 1.5rem !important;
+  }
+}
+
+// Title
+.shopify-pc-banner-title,
+.shopify-pc__banner-title,
+[class*="shopify-pc"] h2,
+[class*="shopify-pc"] h3 {
+  margin: 0 0 0.75rem !important;
+  font-family: var(--theme-font-family-serif, inherit) !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  color: $ux-text !important;
+}
+
+// Description text
+.shopify-pc-banner-text,
+.shopify-pc__banner-text,
+.shopify-pc-banner p,
+.shopify-pc__banner p,
+[class*="shopify-pc-banner"] p {
+  margin: 0 0 1.25rem !important;
+  font-size: 0.9375rem !important;
+  line-height: 1.6 !important;
+  color: $ux-text !important;
+  opacity: 0.8;
+}
+
+// Links in banner
+.shopify-pc-banner a,
+.shopify-pc__banner a,
+[class*="shopify-pc-banner"] a {
+  color: $ux-text !important;
+  text-decoration: underline !important;
+  
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+// "Voorkeuren beheren" link
+.shopify-pc-banner-manage-preferences,
+[class*="manage-preferences"],
+[class*="shopify-pc"] a[href*="preferences"],
+.shopify-pc-banner > div > a {
+  display: block !important;
+  text-align: center !important;
+  margin-bottom: 1rem !important;
+  font-size: 0.875rem !important;
+  color: $ux-text !important;
+  opacity: 0.7 !important;
+  
+  &:hover {
+    opacity: 1 !important;
+  }
+}
+
+// Button container
+.shopify-pc-banner-buttons,
+.shopify-pc__banner-btns,
+[class*="shopify-pc-banner"] > div > div:last-child {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+// All buttons base
+.shopify-pc-banner button,
+.shopify-pc__banner button,
+[class*="shopify-pc-banner"] button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 0.875rem 1.5rem !important;
+  font-family: var(--theme-font-family-sans, inherit) !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  text-decoration: none !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  transition: opacity 150ms ease, background 150ms ease !important;
+  
+  &:hover {
+    opacity: 0.9 !important;
+  }
+}
+
+// Primary button (Accept) - first button
+.shopify-pc-banner button:first-of-type,
+.shopify-pc__banner button:first-of-type,
+[class*="shopify-pc-banner"] button:first-of-type,
+.shopify-pc-banner-accept-button,
+button[class*="accept"] {
+  background: var(--theme-color-blue, #0f1f38) !important;
+  color: var(--theme-color-white, #fff) !important;
+  border: none !important;
+}
+
+// Secondary button (Decline) - second button
+.shopify-pc-banner button:last-of-type,
+.shopify-pc__banner button:last-of-type,
+[class*="shopify-pc-banner"] button:last-of-type,
+.shopify-pc-banner-decline-button,
+button[class*="decline"] {
+  background: transparent !important;
+  color: $ux-text !important;
+  border: 1px solid $ux-text !important;
+}
+
+// If there's only one button, make it primary
+.shopify-pc-banner button:only-of-type,
+.shopify-pc__banner button:only-of-type {
+  background: var(--theme-color-blue, #0f1f38) !important;
+  color: var(--theme-color-white, #fff) !important;
+  border: none !important;
+}
+
+// Preferences modal styling
+.shopify-pc-prefs,
+.shopify-pc__prefs,
+[class*="shopify-pc-prefs"] {
+  font-family: var(--theme-font-family-sans, inherit) !important;
+  background: $ux-background !important;
+  color: $ux-text !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  max-width: $ux-modal-max-width !important;
+  
+  @media (max-width: 749px) {
+    max-width: 100% !important;
+    max-height: 90vh !important;
+    border-radius: 1rem 1rem 0 0 !important;
+  }
+}
+
+// Cookie consent overlay/backdrop
+.shopify-pc-overlay,
+.shopify-pc__overlay,
+[class*="shopify-pc-overlay"] {
+  background: $ux-overlay-color !important;
+}

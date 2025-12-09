@@ -1,0 +1,88 @@
+{%- comment -%}
+  ============================================================================
+  HTML-BUTTON-KLAVIYO
+  ============================================================================
+
+  Purpose:
+  Renders a trigger button for the Klaviyo modal (newsletter signup, etc).
+  Use in header, footer, or anywhere you want to open the Klaviyo modal.
+  
+  Usage:
+  {% render 'html-button-klaviyo' %}
+  {% render 'html-button-klaviyo', text: 'Get 10% off' %}
+  {% render 'html-button-klaviyo', show_icon: false, style: 'link' %}
+
+  Parameters:
+  - class: {String} Additional CSS classes (optional)
+  - text: {String} Button text (default: 'Newsletter')
+  - show_icon: {Boolean} Show envelope icon (default: true)
+  - style: {String} Button style: 'button' or 'link' (default: 'button')
+  - modal_id: {String} ID of modal to trigger (default: 'klaviyo-modal')
+
+  Dependencies:
+  - html-theme-icons snippet
+  - theme-modal.js
+  - Requires block-modal-klaviyo section to be present on the page
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign additional_class = class | default: ''
+  assign button_text = text | default: 'Newsletter'
+  assign show_icon = show_icon | default: true
+  assign button_style = style | default: 'button'
+  assign target_modal = modal_id | default: 'klaviyo-modal'
+-%}
+
+<button 
+  type="button" 
+  class="button-klaviyo button-klaviyo--{{ button_style }} {{ additional_class }}"
+  aria-haspopup="dialog"
+  data-modal-trigger="{{ target_modal }}"
+>
+  {%- if show_icon -%}
+    <span class="button-klaviyo__icon" aria-hidden="true">
+      {%- render 'html-theme-icons', icon: 'email', size: 20 -%}
+    </span>
+  {%- endif -%}
+  
+  <span class="button-klaviyo__text">{{ button_text }}</span>
+</button>
+
+<style>
+  .button-klaviyo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    font-family: inherit;
+    font-size: 0.875em;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 200ms ease;
+  }
+
+  .button-klaviyo:hover {
+    opacity: 0.7;
+  }
+
+  .button-klaviyo--button {
+    padding: 0.5em 0.75em;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+  }
+
+  .button-klaviyo--link {
+    padding: 0;
+    background: transparent;
+    border: none;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .button-klaviyo__icon {
+    display: flex;
+    flex-shrink: 0;
+  }
+</style>

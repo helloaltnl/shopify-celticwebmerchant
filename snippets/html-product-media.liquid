@@ -1,5 +1,5 @@
 {%- comment -%}
-  Snippet: media-figure
+  Snippet: html-product-media
   Params:
     product : Product object (voor alt-fallback)
     media   : Product media object (verplicht-ish; we vangen ontbrekend netjes af)
@@ -48,20 +48,20 @@
     {%- when 'image' -%}
       <picture class="product-media__picture">
         <source
-          data-srcset="
+          srcset="
             {{ media | image_url: width: w1, height: h1, format: 'webp', crop: 'center' }} {{ w1 }}w,
             {{ media | image_url: width: w2, height: h2, format: 'webp', crop: 'center' }} {{ w2 }}w,
             {{ media | image_url: width: w3, height: h3, format: 'webp', crop: 'center' }} {{ w3 }}w"
           type="image/webp"
-          data-sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw" />
+          sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw" />
         <img
-          class="product-media__img lazy"
-          data-src="{{ media | image_url: width: w1, height: h1, crop: 'center' }}"
-          data-srcset="
+          class="product-media__img"
+          src="{{ media | image_url: width: w1, height: h1, crop: 'center' }}"
+          srcset="
             {{ media | image_url: width: w1, height: h1, crop: 'center' }} {{ w1 }}w,
             {{ media | image_url: width: w2, height: h2, crop: 'center' }} {{ w2 }}w,
             {{ media | image_url: width: w3, height: h3, crop: 'center' }} {{ w3 }}w"
-          data-sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw"
+          sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw"
           alt="{{ alt | escape }}"
           loading="{{ loading }}"
           width="{{ w1 }}"
@@ -80,13 +80,13 @@
               type="image/webp"
               sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw" />
             <img
-              class="product-media__img lazy"
-              data-src="{{ media.preview_image | image_url: width: w1, height: h1, crop: 'center' }}"
-              data-srcset="
+              class="product-media__img"
+              src="{{ media.preview_image | image_url: width: w1, height: h1, crop: 'center' }}"
+              srcset="
                 {{ media.preview_image | image_url: width: w1, height: h1, crop: 'center' }} {{ w1 }}w,
                 {{ media.preview_image | image_url: width: w2, height: h2, crop: 'center' }} {{ w2 }}w,
                 {{ media.preview_image | image_url: width: w3, height: h3, crop: 'center' }} {{ w3 }}w"
-              data-sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw"
+              sizes="(min-width: 1200px) {{ w1 }}px, (min-width: 768px) {{ w1 | times: 0.8 | round }}px, 100vw"
               alt="{{ alt | escape }}"
               loading="{{ loading }}"
               width="{{ w1 }}"
@@ -96,7 +96,7 @@
           <div class="product-media__fallback">Video</div>
         {%- endif -%}
       {%- else -%}
-        <button class="product-media__play" type="button" aria-label="{{ 'media.play' | t | default: 'Play video' }}"><span aria-hidden="true">▶</span></button>
+        <button class="product-media__play" type="button" aria-label="{{ 'product.media.play_video' | t }}"><span aria-hidden="true">▶</span></button>
         <video
           class="product-media__video"
           preload="metadata"

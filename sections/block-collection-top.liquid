@@ -1,39 +1,192 @@
-<section class="block-collection-top-content alignsmall">
-	<h1>{{- collection.title | escape -}}</h1>
-	{% if collection.metafields.global.description_tag != blank %}
-		<p>{{ collection.metafields.global.description_tag }}</p>
-	{% endif %}
-</section>
+{% comment %}
+  ============================================================================
+  BLOCK-COLLECTION-TOP
+  ============================================================================
+  Collection header with title and description.
 
-{%- style -%}
+  FEATURES:
+  - Collection title (h1)
+  - Meta description or collection description
+  - Optional collection image
+  - Width alignment options
+  - Color customization
+
+  DEPENDENCIES:
+  - Shopify global: page_description (SEO meta description, auto-translated)
+  - Collection metafield: custom.collection_excerpt (fallback excerpt)
+  ============================================================================
+{% endcomment %}
+
+<div class="block-collection-top__content {{ section.settings.width }}">
+	{%- if section.settings.show_image and collection.image -%}
+		<figure class="block-collection-top__image">
+			{%- assign image_alt = collection.image.alt | default: collection.title | escape -%}
+			<img 
+				class="block-collection-top__img"
+				src="{{ collection.image | image_url: width: 1200 }}"
+				alt="{{ image_alt }}"
+				loading="eager"
+				fetchpriority="high"
+				width="{{ collection.image.width }}"
+				height="{{ collection.image.height }}"
+			>
+		</figure>
+	{%- endif -%}
+
+	<h1 class="block-collection-top__title">{{ collection.title | escape }}</h1>
+
+	{%- if section.settings.show_meta_description and page_description != blank -%}
+		<p class="block-collection-top__description">{{ page_description }}</p>
+	{%- elsif section.settings.show_excerpt and collection.metafields.custom.collection_excerpt != blank -%}
+		<p class="block-collection-top__description">{{ collection.metafields.custom.collection_excerpt.value }}</p>
+	{%- endif -%}
+
+	{%- if section.settings.show_count -%}
+		<p class="block-collection-top__count">
+			{{ collection.products_count }} {{ collection.products_count | pluralize: 'product', 'products' }}
+		</p>
+	{%- endif -%}
+</div>
+
+{% style %}
 	.block-collection-top {
-		& .block-collection-top-content {
-			text-align: center; padding-bottom: 2em;
-			& h1 {
-				font-family: 'Absara Pro'; font-weight: 400; margin-bottom: 0;
-			}
-			& p {
-				 margin-bottom: 0; letter-spacing: -0.02em;
-			}
-		}
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
 	}
-{%- endstyle -%}
+
+	.block-collection-top__content {
+		text-align: {{ section.settings.text_align }};
+		padding-top: 1.5em;
+		padding-bottom: 1.5em;
+	}
+
+	.block-collection-top__image {
+		margin: 0 0 1.5em 0;
+		padding: 0;
+	}
+
+	.block-collection-top__img {
+		width: 100%;
+		max-height: 300px;
+		object-fit: cover;
+	}
+
+	.block-collection-top__title {
+		font-family: var(--theme-font-family-serif);
+		font-weight: 400;
+		font-size: clamp(1.8em, 4vw, 2.5em);
+		line-height: 1.1;
+		letter-spacing: var(--theme-letter-spacing);
+		margin: 0;
+	}
+
+	.block-collection-top__description {
+		margin: 0.75em 0 0 0;
+		letter-spacing: var(--theme-letter-spacing);
+		line-height: 1.5;
+	}
+
+	.block-collection-top__count {
+		margin: 0.5em 0 0 0;
+		font-size: 0.9em;
+		opacity: 0.7;
+	}
+{% endstyle %}
 
 {% schema %}
 {
-  "name": "Collection top",
-  "tag": "section",
-  "class": "block-collection-top",
-  "disabled_on": {
-	"groups": ["header", "footer"]
-  },
-  "settings": [],
-  "presets": [
-	{
-	  "name": "Collection top",
-	  "category": "Theme Collection",
-	  "blocks": []
-	}
-  ]
+	"name": "Collection top",
+	"tag": "section",
+	"class": "block-collection-top",
+	"enabled_on": {
+		"templates": ["collection"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_image",
+			"label": "Show collection image",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "show_meta_description",
+			"label": "Use meta description",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_excerpt",
+			"label": "Use collection excerpt",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_count",
+			"label": "Show product count",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignsmall"
+		},
+		{
+			"type": "select",
+			"id": "text_align",
+			"label": "Text alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" },
+				{ "value": "right", "label": "Right" }
+			],
+			"default": "center"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "When meta description is enabled, it shows first. When only excerpt is enabled, or meta is empty, the collection excerpt is shown."
+		}
+	],
+	"presets": [
+		{
+			"name": "Top",
+			"category": "Collection"
+		}
+	]
 }
 {% endschema %}

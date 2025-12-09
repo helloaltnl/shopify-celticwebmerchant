@@ -1,0 +1,113 @@
+{% comment %}
+  ============================================================================
+  HTML-FORM-REGION
+  ============================================================================
+
+  Purpose:
+  Combined language and currency selector.
+  Simple combination of html-form-languages and html-form-currencies.
+
+  Usage:
+  {% render 'html-form-region' %}
+  {% render 'html-form-region', show_language: true, show_country: true %}
+
+  Parameters:
+  - show_language: {Boolean} Show language selector (default: true)
+  - show_country: {Boolean} Show country/currency selector (default: true)
+  - show_search: {Boolean} Show search for countries (default: auto based on count)
+  - class: {String} Additional CSS classes (optional)
+
+  Dependencies:
+  - Must be wrapped in a <form method="post" action="{{ routes.root_url }}localization">
+  - Requires Shopify Markets and/or multiple languages enabled
+
+  ============================================================================
+{% endcomment %}
+
+{%- liquid
+  assign show_language = show_language | default: true
+  assign show_country = show_country | default: true
+  assign additional_class = class | default: ''
+  
+  assign has_multiple_languages = false
+  if localization.available_languages.size > 1
+    assign has_multiple_languages = true
+  endif
+  
+  assign has_multiple_countries = false
+  if localization.available_countries.size > 1
+    assign has_multiple_countries = true
+  endif
+-%}
+
+<style>
+  .form-region {
+    width: 100%;
+  }
+
+  .form-region__group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-region__group:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-region__label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(var(--color-foreground), 0.75);
+  }
+
+  .form-region__empty {
+    padding: 2rem 1.25rem;
+    text-align: center;
+    background: rgba(var(--color-foreground), 0.05);
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+    border-radius: var(--border-radius, 0);
+    color: rgba(var(--color-foreground), 0.75);
+    font-size: 0.875rem;
+  }
+
+  .form-region__empty strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
+</style>
+
+{%- if has_multiple_languages or has_multiple_countries -%}
+  <div class="form-region {{ additional_class }}">
+    {%- if show_language and has_multiple_languages -%}
+      <div class="form-region__group">
+        <label class="form-region__label">
+          {{ 'localization.language' | t }}
+        </label>
+        {% render 'html-form-languages' %}
+      </div>
+    {%- endif -%}
+
+    {%- if show_country and has_multiple_countries -%}
+      <div class="form-region__group">
+        <label class="form-region__label">
+          {{ 'localization.country' | t }}
+        </label>
+        {% render 'html-form-currencies', show_search: show_search %}
+      </div>
+    {%- endif -%}
+  </div>
+{%- else -%}
+  <div class="form-region__empty">
+    <strong>No localization options available</strong>
+    <p>To enable region selection:</p>
+    <ul style="text-align: left; margin: 1rem auto 0; max-width: 300px;">
+      <li>Enable multiple languages: Settings → Markets → Domains and languages</li>
+      <li>Enable multiple countries: Settings → Markets</li>
+    </ul>
+    <p style="margin-top: 1rem;">Current: {{ localization.language.endonym_name | capitalize }} | {{ localization.country.name }}</p>
+  </div>
+{%- endif -%}

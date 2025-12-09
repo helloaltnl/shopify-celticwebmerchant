@@ -1,0 +1,181 @@
+{%- comment -%}
+  ============================================================================
+  HTML-BUTTON-CART
+  ============================================================================
+
+  Purpose:
+  Renders a cart button/link with icon and dynamic item count.
+  Automatically updates count when cart changes via CartEvents.
+  Can optionally open cart drawer instead of navigating to cart page.
+  
+  Usage:
+  {% render 'html-button-cart' %}
+  {% render 'html-button-cart', open_drawer: true %}
+  {% render 'html-button-cart', show_count: true, show_label: false %}
+
+  Parameters:
+  - class: {String} Additional CSS classes (optional)
+  - show_count: {Boolean} Show cart item count bubble (default: true)
+  - show_label: {Boolean} Show "Cart" label text (default: false)
+  - icon_size: {Number} Icon size in pixels (default: 24)
+  - open_drawer: {Boolean} Open cart drawer instead of navigating (default: false)
+  - drawer_id: {String} ID of drawer to open (default: 'cart-drawer')
+
+  Dependencies:
+  - html-theme-icons snippet
+  - theme-drawer.js (for drawer functionality)
+  - CartEvents for dynamic count updates
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign additional_class = class | default: ''
+  assign show_count = show_count | default: true
+  assign show_label = show_label | default: false
+  assign icon_size = icon_size | default: 24
+  assign open_drawer = open_drawer | default: false
+  assign drawer_id = drawer_id | default: 'cart-drawer'
+-%}
+
+{%- if open_drawer -%}
+<button 
+  type="button"
+  class="button-cart {{ additional_class }}"
+  data-cart-button
+  data-drawer-trigger="{{ drawer_id }}"
+  aria-haspopup="dialog"
+>
+{%- else -%}
+<a 
+  href="{{ routes.cart_url }}" 
+  class="button-cart {{ additional_class }}"
+  data-cart-button
+>
+{%- endif -%}
+
+  <span class="button-cart__icon" aria-hidden="true">
+    {%- render 'html-theme-icons', icon: 'cart', size: icon_size -%}
+    
+    {%- if show_count -%}
+      <span 
+        class="button-cart__count{% if cart.item_count == 0 %} button-cart__count--hidden{% endif %}"
+        data-cart-count
+      >
+        {%- if cart.item_count < 100 -%}
+          {{ cart.item_count }}
+        {%- else -%}
+          99+
+        {%- endif -%}
+      </span>
+    {%- endif -%}
+  </span>
+  
+  {%- if show_label -%}
+    <span class="button-cart__label">{{ 'cart.title' | t }}</span>
+  {%- endif -%}
+  
+  <span class="visually-hidden">
+    {{ 'cart.title' | t }}
+    {%- if cart.item_count > 0 -%}
+      ({{ cart.item_count }})
+    {%- endif -%}
+  </span>
+
+{%- if open_drawer -%}
+</button>
+{%- else -%}
+</a>
+{%- endif -%}
+
+<style>
+  .button-cart {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 150ms ease;
+  }
+
+  .button-cart:hover {
+    opacity: 0.7;
+  }
+
+  .button-cart__icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .button-cart__count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    background-color: var(--theme-color-red, #e53935);
+    color: var(--theme-color-white, #fff);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 9px;
+    transition: transform 200ms ease, opacity 200ms ease;
+  }
+
+  .button-cart__count--hidden {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  .button-cart__count--updating {
+    animation: cart-count-bounce 300ms ease;
+  }
+
+  @keyframes cart-count-bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+</style>
+
+<script>
+  (function() {
+    function updateCartButtons(cart) {
+      var countElements = document.querySelectorAll('[data-cart-count]');
+      
+      countElements.forEach(function(el) {
+        var count = cart.item_count;
+        
+        el.textContent = count >= 100 ? '99+' : count;
+        
+        if (count === 0) {
+          el.classList.add('button-cart__count--hidden');
+        } else {
+          el.classList.remove('button-cart__count--hidden');
+        }
+        
+        el.classList.add('button-cart__count--updating');
+        setTimeout(function() {
+          el.classList.remove('button-cart__count--updating');
+        }, 300);
+      });
+    }
+
+    // Subscribe to cart updates
+    if (window.CartEvents) {
+      window.CartEvents.subscribe('cart:update', function(data) {
+        updateCartButtons(data.cart);
+      });
+    }
+  })();
+</script>

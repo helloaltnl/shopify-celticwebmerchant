@@ -1,114 +1,195 @@
 {%- comment -%}
-  Accepts:
-  - product: Product (required unless `variant` is passed)
-  - variant: Variant (optional, overrides selection)
-  - show: Boolean (default true) — whether to render
-  - from: String (auto|first|first_available|cheapest_available, default: first_available)
-  - show_backorder: Boolean (default true)
-  - show_low_stock: Boolean (default false)
-  - low_stock_threshold: Number (default 3)
-  - show_stock_count: Boolean (default false)
+  ============================================================================
+  HTML-PRODUCT-STOCK
+  ============================================================================
+  Renders product stock status with color-coded indicator.
 
-  Examples:
-  render 'html-product-stock', product: product, from: 'first_available', show_low_stock: true 
-  render 'html-product-stock', variant: some_variant, show_backorder: false 
+  PARAMETERS:
+  - product: {Object} Product object (required if no variant)
+  - variant: {Object} Product variant (optional, overrides product)
+  - from: {String} 'auto' | 'first' | 'first_available' | 'cheapest_available' (default: 'auto')
+  - show_stock_count: {Boolean} Show exact count when low stock (default: true)
+
+  LOGIC:
+  - Low stock threshold is set in Theme Settings → Product
+  - Backorder products always show "In stock" without count
+  - Non-backorder products show count when show_stock_count is true
+
+  STOCK TYPES & CLASSES (x = low_stock_threshold):
+  | Type                   | Class                                  | Color  |
+  |------------------------|----------------------------------------|--------|
+  | in-stock               | .product-stock--in-stock               | groen  |
+  | in-stock-backorder     | .product-stock--in-stock-backorder     | groen  |
+  | low-in-stock (qty <= x)| .product-stock--low-in-stock           | oranje |
+  | low-in-stock-backorder | .product-stock--low-in-stock-backorder | groen  |
+  | out-of-stock           | .product-stock--out-of-stock           | rood   |
+  | out-of-stock-backorder | .product-stock--out-of-stock-backorder | groen  |
+
+  USAGE:
+  {% render 'html-product-stock', product: product %}
+  {% render 'html-product-stock', product: product, show_stock_count: false %}
+  ============================================================================
 {%- endcomment -%}
 
-{%- assign show = show | default: true -%}
-{%- if show == true -%}
+{%- liquid
+  assign from = from | default: 'auto'
+  
+  # Always use theme setting for threshold
+  assign low_stock_threshold = settings.stock_low_threshold | default: 3
+  
+  # Handle show_stock_count - can't use default because false would be overwritten
+  if show_stock_count == nil
+    assign show_stock_count = true
+  endif
 
-	{%- assign show_backorder = show_backorder | default: true -%}
-	{%- assign show_low_stock = show_low_stock | default: false -%}
-	{%- assign low_stock_threshold = low_stock_threshold | default: 3 -%}
-	{%- assign show_stock_count = show_stock_count | default: false -%}
+  # Determine which variant to use
+  if variant
+    assign v = variant
+  elsif product
+    case from
+      when 'first'
+        assign v = product.variants.first
+      when 'first_available'
+        assign v = product.selected_or_first_available_variant
+      when 'cheapest_available'
+        assign v = product.selected_or_first_available_variant
+        for var in product.variants
+          if var.available and var.price < v.price
+            assign v = var
+          endif
+        endfor
+      else
+        assign v = product.selected_or_first_available_variant
+    endcase
+  endif
 
-	{%- assign v = variant -%}
-	{%- if v == blank and product -%}
-		{%- assign mode = from | default: 'first_available' -%}
-		{%- case mode -%}
-			{%- when 'auto' -%}
-				{%- assign v = product.selected_or_first_available_variant | default: product.variants.first -%}
-			{%- when 'first' -%}
-				{%- assign v = product.variants.first -%}
-			{%- when 'first_available' -%}
-				{%- for vv in product.variants -%}
-					{%- if vv.available -%}{%- assign v = vv -%}{%- break -%}{%- endif -%}
-				{%- endfor -%}
-				{%- if v == nil -%}{%- assign v = product.variants.first -%}{%- endif -%}
-			{%- when 'cheapest_available' -%}
-				{%- assign min_price = nil -%}
-				{%- for vv in product.variants -%}
-					{%- if vv.available -%}
-					{%- if min_price == nil or vv.price < min_price -%}
-						{%- assign min_price = vv.price -%}
-						{%- assign v = vv -%}
-					{%- endif -%}
-					{%- endif -%}
-				{%- endfor -%}
-				{%- if v == nil -%}{%- assign v = product.variants.first -%}{%- endif -%}
-			{%- else -%}
-				{%- assign v = product.selected_or_first_available_variant | default: product.variants.first -%}
-			{%- endcase -%}
-		{%- endif -%}	
-		
-		{%- assign stock_status = '' -%}
-		{%- if product and product.available == false -%}
-			{%- assign stock_status = 'out' -%}
-		{%- else -%}
-		{%- if v and v.inventory_management -%}
-			{%- if v.inventory_quantity > 0 -%}
-				{%- if show_low_stock and v.inventory_quantity <= low_stock_threshold -%}
-					{%- assign stock_status = 'low' -%}
-				{%- else -%}
-					{%- assign stock_status = 'in' -%}
-				{%- endif -%}
-			{%- else -%}
-				{%- if show_backorder and v.inventory_policy == 'continue' -%}
-					{%- assign stock_status = 'backorder' -%}
-				{%- else -%}
-					{%- assign stock_status = 'out' -%}
-				{%- endif -%}
-			{%- endif -%}
-		{%- else -%}
-			{%- comment -%} Niet getrackt → ga uit van beschikbaar (dus niet in, maar backorder, geen telling mogelijk) {%- endcomment -%}
-			{%- assign stock_status = 'backorder' -%}
-		{%- endif -%}
-	{%- endif -%}
+  # Exit if no variant
+  unless v
+    break
+  endunless
 
-	<div class="product-card__stock" data-stock="{{ stock_status }}">
-	{%- case stock_status -%}
-		{%- when 'in' -%}
-		<span class="stock-tag stock-tag--in">
-			{% if show_stock_count %}
-				{{ 'products.product.inventory_in_stock_show_count' | t: quantity: v.inventory_quantity}}
-			{% else %}
-				{{ 'products.product.inventory_in_stock' | t }}
-			{%- endif -%}
-		</span>
-		{%- when 'low' -%}
-		<span class="stock-tag stock-tag--low">
-			{% if show_stock_count %}
-				{{ 'products.product.inventory_low_stock_show_count' | t: quantity: v.inventory_quantity}}
-			{% else %}
-				{{ 'products.product.inventory_low_stock' | t }}
-			{%- endif -%}
-		</span>
-		{%- when 'backorder' -%}
-		<span class="stock-tag stock-tag--backorder">
-			{% if show_stock_count %}
-				{{ 'products.product.inventory_out_of_stock_continue_selling' | t }}
-			{% else %}
-				{{ 'products.product.inventory_out_of_stock_continue_selling' | t }}
-			{%- endif -%}
-		</span>
-		{%- else -%}
-		<span class="stock-tag stock-tag--out">
-			{% if show_stock_count %}
-				{{ 'products.product.inventory_out_of_stock' | t }}
-			{% else %}
-				{{ 'products.product.inventory_out_of_stock' | t }}
-			{%- endif -%}
-		</span>
-	{%- endcase -%}
-	</div>
-{%- endif -%}
+  # Determine stock status
+  assign has_inventory = false
+  if v.inventory_management != blank
+    assign has_inventory = true
+  endif
+  
+  assign allows_backorder = false
+  if v.inventory_policy == 'continue'
+    assign allows_backorder = true
+  endif
+  
+  assign quantity = v.inventory_quantity | default: 0
+  
+  assign is_low_stock = false
+  if quantity <= low_stock_threshold and quantity > 0
+    assign is_low_stock = true
+  endif
+
+  # Determine type based on actual stock status
+  # Types: in-stock, in-stock-backorder, low-in-stock, low-in-stock-backorder, out-of-stock, out-of-stock-backorder
+  
+  if has_inventory == false
+    # No inventory tracking - treat as always in stock
+    assign stock_type = 'in-stock'
+  elsif quantity <= 0
+    # Out of stock
+    if allows_backorder
+      assign stock_type = 'out-of-stock-backorder'
+    else
+      assign stock_type = 'out-of-stock'
+    endif
+  elsif is_low_stock
+    # Low stock (quantity <= threshold)
+    if allows_backorder
+      assign stock_type = 'low-in-stock-backorder'
+    else
+      assign stock_type = 'low-in-stock'
+    endif
+  else
+    # In stock (quantity > threshold)
+    if allows_backorder
+      assign stock_type = 'in-stock-backorder'
+    else
+      assign stock_type = 'in-stock'
+    endif
+  endif
+
+  # Determine message based on type
+  # IMPORTANT: stock_type determines the CSS class (actual status)
+  # The message may differ (e.g. backorder shows "In stock" but keeps its class)
+  # This allows CSS targeting of specific states even when messages are identical
+  case stock_type
+    when 'in-stock'
+      if show_stock_count and has_inventory
+        assign stock_message = 'product.inventory.in_stock_count' | t: quantity: quantity
+      else
+        assign stock_message = 'product.inventory.in_stock' | t
+      endif
+    when 'in-stock-backorder'
+      if show_stock_count
+        assign stock_message = 'product.inventory.in_stock_count' | t: quantity: quantity
+      else
+        assign stock_message = 'product.inventory.in_stock' | t
+      endif
+    when 'low-in-stock'
+      if show_stock_count and has_inventory
+        assign stock_message = 'product.inventory.low_stock_count' | t: quantity: quantity
+      else
+        assign stock_message = 'product.inventory.low_stock' | t
+      endif
+    when 'low-in-stock-backorder'
+      if show_stock_count
+        assign stock_message = 'product.inventory.low_stock_count' | t: quantity: quantity
+      else
+        assign stock_message = 'product.inventory.low_stock' | t
+      endif
+    when 'out-of-stock'
+      assign stock_message = 'product.inventory.out_of_stock' | t
+    when 'out-of-stock-backorder'
+      assign stock_message = 'product.inventory.in_stock' | t
+  endcase
+-%}
+
+<span class="product-stock product-stock--{{ stock_type }}" data-stock-status="{{ stock_type }}">
+  <!-- <span class="product-stock__indicator"></span> -->
+  <span class="product-stock__message">{{ stock_message }}</span>
+</span>
+
+<style>
+  .product-stock {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.4em 0.8em;
+    font-size: 0.85em;
+    border: 1px solid currentColor;
+    border-radius: 0;
+  }
+
+  .product-stock__indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background-color: currentColor;
+  }
+
+  /* Green: in-stock, all backorder variants */
+  .product-stock--in-stock,
+  .product-stock--in-stock-backorder,
+  .product-stock--low-in-stock-backorder,
+  .product-stock--out-of-stock-backorder {
+    color: #009922;
+  }
+
+  /* Orange: low stock without backorder */
+  .product-stock--low-in-stock {
+    color: #f05a22;
+  }
+
+  /* Red: out of stock without backorder */
+  .product-stock--out-of-stock {
+    color: #FF0000;
+  }
+</style>

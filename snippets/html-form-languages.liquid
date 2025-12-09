@@ -1,0 +1,118 @@
+{% comment %}
+  ============================================================================
+  HTML-FORM-LANGUAGES
+  ============================================================================
+
+  Purpose:
+  Simple language selector using Shopify's native localization.
+  Shows all available languages configured in Shopify.
+
+  Usage:
+  {% render 'html-form-languages' %}
+
+  Parameters:
+  - class: {String} Additional CSS classes (optional)
+
+  Dependencies:
+  - Must be wrapped in a <form method="post" action="{{ routes.root_url }}localization">
+  - Requires multiple languages enabled in Shopify
+
+  ============================================================================
+{% endcomment %}
+
+{%- liquid
+  assign additional_class = class | default: ''
+-%}
+
+<style>
+  .form-languages {
+    width: 100%;
+  }
+
+  .form-languages__select-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .form-languages__select {
+    appearance: none;
+    width: 100%;
+    padding: 1rem 3rem 1rem 1.25rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: inherit;
+    background: rgb(var(--color-background));
+    border: 1px solid rgba(var(--color-foreground), 0.2);
+    border-radius: var(--border-radius, 0);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-languages__select:hover,
+  .form-languages__select:focus {
+    border-color: rgba(var(--color-foreground), 0.4);
+  }
+
+  .form-languages__select:focus {
+    outline: none;
+    border-color: rgb(var(--color-foreground));
+  }
+
+  .form-languages__icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+  }
+
+  .form-languages__icon svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .form-languages__notice {
+    padding: 1rem 1.25rem;
+    background: rgba(var(--color-foreground), 0.05);
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+    border-radius: var(--border-radius, 0);
+    font-size: 0.875rem;
+    color: rgba(var(--color-foreground), 0.75);
+  }
+</style>
+
+{%- if localization.available_languages.size > 0 -%}
+  <div class="form-languages {{ additional_class }}">
+    <div class="form-languages__select-wrapper">
+      <select 
+        class="form-languages__select"
+        name="locale_code"
+        aria-label="{{ 'localization.language' | t }}"
+      >
+        {%- for language in localization.available_languages -%}
+          <option 
+            value="{{ language.iso_code }}"
+            hreflang="{{ language.iso_code }}"
+            lang="{{ language.iso_code }}"
+            {% if language.iso_code == localization.language.iso_code %}selected{% endif %}
+          >
+            {{ language.endonym_name | capitalize }}
+          </option>
+        {%- endfor -%}
+      </select>
+      
+      <span class="form-languages__icon" aria-hidden="true">
+        <svg viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+{%- else -%}
+  <div class="form-languages__notice">
+    <strong>No languages configured</strong><br>
+    Enable multiple languages in: Settings → Markets → Domains and languages
+  </div>
+{%- endif -%}

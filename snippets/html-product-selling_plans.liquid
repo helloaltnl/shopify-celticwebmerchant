@@ -1,16 +1,65 @@
+{%- comment -%}
+  ============================================================================
+  HTML-PRODUCT-SELLING_PLANS
+  ============================================================================
+  Subscription/selling plan selector dropdown.
+
+  PARAMETERS:
+  - product: {Object} Product object (required)
+
+  FEATURES:
+  - Shows dropdown for each selling plan group
+  - "One-time purchase" option included by default
+  ============================================================================
+{%- endcomment -%}
+
 {%- if product.selling_plan_groups.size > 0 -%}
-  <div class="pform-selling" data-selling-plans>
-	{%- for spg in product.selling_plan_groups -%}
-	  <label class="pform__label" for="Selling-{{ product.id }}-{{ forloop.index0 }}">{{ spg.name }}</label>
-	  <select id="Selling-{{ product.id }}-{{ forloop.index0 }}"
-			  name="selling_plan"
-			  class="pform__select"
-			  data-selling-plan-select>
-		<option value="">{{ 'products.product.onetime_purchase' | t | default: 'Eenmalige aankoop' }}</option>
-		{%- for sp in spg.selling_plans -%}
-		  <option value="{{ sp.id }}">{{ sp.name }}</option>
-		{%- endfor -%}
-	  </select>
-	{%- endfor -%}
+  <div class="product-selling-plans" data-selling-plans data-product-selling-plans>
+    {%- for spg in product.selling_plan_groups -%}
+      <div class="product-selling-plans__group">
+        <label class="product-selling-plans__label" for="selling-plan-{{ product.id }}-{{ forloop.index0 }}">
+          {{ spg.name }}
+        </label>
+        
+        <select 
+          id="selling-plan-{{ product.id }}-{{ forloop.index0 }}"
+          name="selling_plan"
+          class="product-selling-plans__select"
+          data-selling-plan-select
+        >
+          <option value="">
+            {{ 'product.onetime_purchase' | t }}
+          </option>
+          {%- for sp in spg.selling_plans -%}
+            <option value="{{ sp.id }}">{{ sp.name }}</option>
+          {%- endfor -%}
+        </select>
+      </div>
+    {%- endfor -%}
   </div>
 {%- endif -%}
+
+<style>
+  .product-selling-plans {
+    /* margins controlled by parent */
+  }
+
+  .product-selling-plans__group {
+    margin-bottom: 1em;
+  }
+
+  .product-selling-plans__group:last-child {
+    margin-bottom: 0;
+  }
+
+  .product-selling-plans__label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5em;
+  }
+
+  .product-selling-plans__select {
+    width: 100%;
+    max-width: 20em;
+  }
+</style>

@@ -1,0 +1,123 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-FOOTER-LINKS
+  ============================================================================
+  Horizontal menu links for footer navigation.
+
+  FEATURES:
+  - Displays links from selected Shopify menu
+  - Centered horizontal layout with wrapping
+  - Color customization
+
+  DEPENDENCIES:
+  - None
+  ============================================================================
+{%- endcomment -%}
+
+<div class="block-footer-links__content {{ section.settings.width }}">
+	{%- assign footer_menu = section.settings.footer_menu -%}
+	{%- if footer_menu != blank and linklists[footer_menu].links.size > 0 -%}
+		<ul class="block-footer-links__list">
+			{%- for link in linklists[footer_menu].links -%}
+				<li class="block-footer-links__item">
+					<a href="{{ link.url }}" class="block-footer-links__link">
+						{{ link.title }}
+					</a>
+				</li>
+			{%- endfor -%}
+		</ul>
+	{%- endif -%}
+</div>
+
+{% style %}
+	.block-footer-links {
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding: 1.5em 0;
+	}
+
+	.block-footer-links__list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5em 1.5em;
+	}
+
+	.block-footer-links__link {
+		color: inherit;
+		text-decoration: none;
+		font-size: 0.85em;
+		letter-spacing: var(--theme-letter-spacing);
+		transition: opacity 150ms ease;
+	}
+
+	.block-footer-links__link:hover {
+		opacity: 0.7;
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "Footer links",
+	"tag": "section",
+	"class": "block-footer-links",
+	"limit": 1,
+	"enabled_on": {
+		"groups": ["footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "link_list",
+			"id": "footer_menu",
+			"label": "Menu"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "align"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#0f1f38"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#ffffff"
+		}
+	],
+	"presets": [
+		{
+			"name": "Links",
+			"category": "Footer"
+		}
+	]
+}
+{% endschema %}

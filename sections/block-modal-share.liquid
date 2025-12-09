@@ -1,0 +1,405 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-MODAL-SHARE
+  ============================================================================
+
+  Purpose:
+  Global share modal for sharing products/pages on social platforms.
+  Can be triggered from anywhere using data-modal-trigger="share-modal".
+
+  Usage:
+  Add to footer-group.json. Trigger with:
+  <button data-modal-trigger="share-modal" data-share-url="{{ product.url | prepend: shop.url }}" data-share-title="{{ product.title }}">Share</button>
+
+  Features:
+  - Facebook, X (Twitter), Pinterest, WhatsApp sharing
+  - Email sharing via mailto
+  - Copy link to clipboard
+  - Dynamic URL/title from trigger's data attributes
+
+  Dependencies:
+  - theme-modal.js
+  - theme-ux.css
+  - html-theme-icons snippet
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign modal_id = section.settings.modal_id | default: 'share-modal'
+-%}
+
+{%- comment -%} Modal {%- endcomment -%}
+<div 
+  data-modal="{{ modal_id }}"
+  id="{{ modal_id }}"
+  class="block-modal-share"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="{{ modal_id }}-title"
+  hidden
+>
+  <div data-modal-overlay></div>
+  
+  <div class="theme-modal__content block-modal-share__content">
+    <header class="theme-modal__header">
+      <h2 class="theme-modal__title" id="{{ modal_id }}-title">
+        {{ section.settings.heading | default: 'product.share' | t | default: 'Share' }}
+      </h2>
+      <button 
+        type="button" 
+        class="theme-modal__close"
+        data-modal-close
+        aria-label="{{ 'accessibility.close' | t }}"
+      >
+        {%- render 'html-theme-icons', icon: 'close', size: 20 -%}
+      </button>
+    </header>
+
+    <div class="theme-modal__body">
+      <ul class="block-modal-share__options">
+        {%- if section.settings.show_facebook -%}
+          <li>
+            <a 
+              class="block-modal-share__option" 
+              data-share-platform="facebook"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="{{ 'general.share' | t | default: 'Share' }} Facebook"
+            >
+              {%- render 'html-theme-icons', icon: 'facebook', size: 24 -%}
+              <span>Facebook</span>
+            </a>
+          </li>
+        {%- endif -%}
+
+        {%- if section.settings.show_twitter -%}
+          <li>
+            <a 
+              class="block-modal-share__option" 
+              data-share-platform="twitter"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="{{ 'general.share' | t | default: 'Share' }} X"
+            >
+              {%- render 'html-theme-icons', icon: 'twitter', size: 24 -%}
+              <span>X</span>
+            </a>
+          </li>
+        {%- endif -%}
+
+        {%- if section.settings.show_pinterest -%}
+          <li>
+            <a 
+              class="block-modal-share__option" 
+              data-share-platform="pinterest"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="{{ 'general.share' | t | default: 'Share' }} Pinterest"
+            >
+              {%- render 'html-theme-icons', icon: 'pinterest', size: 24 -%}
+              <span>Pinterest</span>
+            </a>
+          </li>
+        {%- endif -%}
+
+        {%- if section.settings.show_whatsapp -%}
+          <li>
+            <a 
+              class="block-modal-share__option" 
+              data-share-platform="whatsapp"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="{{ 'general.share' | t | default: 'Share' }} WhatsApp"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              <span>WhatsApp</span>
+            </a>
+          </li>
+        {%- endif -%}
+
+        {%- if section.settings.show_email -%}
+          <li>
+            <a 
+              class="block-modal-share__option" 
+              data-share-platform="email"
+              href="#"
+              aria-label="{{ 'general.share' | t | default: 'Share' }} Email"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <span>Email</span>
+            </a>
+          </li>
+        {%- endif -%}
+      </ul>
+
+      {%- if section.settings.show_copy_link -%}
+        <div class="block-modal-share__copy">
+          <input 
+            type="text" 
+            class="block-modal-share__input" 
+            data-share-url-input
+            value="" 
+            readonly 
+            aria-label="{{ 'general.copy_link' | t | default: 'Copy link' }}"
+          />
+          <button 
+            class="block-modal-share__copy-btn" 
+            type="button" 
+            data-share-copy
+            aria-label="{{ 'general.copy_link' | t | default: 'Copy link' }}"
+          >
+            <span data-copy-label>{{ 'general.copy_link' | t | default: 'Copy' }}</span>
+            <span data-copied-label hidden>{{ 'general.link_copied' | t | default: 'Copied!' }}</span>
+          </button>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const modalId = '{{ modal_id }}';
+  const modal = document.querySelector('[data-modal="' + modalId + '"]');
+  if (!modal) return;
+
+  let currentUrl = window.location.href;
+  let currentTitle = document.title;
+  let currentImage = '';
+
+  // Listen for modal triggers to capture share data
+  document.addEventListener('click', function(e) {
+    const trigger = e.target.closest('[data-modal-trigger="' + modalId + '"]');
+    if (!trigger) return;
+
+    // Get share data from trigger attributes or use defaults
+    currentUrl = trigger.dataset.shareUrl || window.location.href;
+    currentTitle = trigger.dataset.shareTitle || document.title;
+    currentImage = trigger.dataset.shareImage || '';
+
+    // Update share links
+    updateShareLinks();
+  });
+
+  function updateShareLinks() {
+    const encodedUrl = encodeURIComponent(currentUrl);
+    const encodedTitle = encodeURIComponent(currentTitle);
+    const encodedImage = encodeURIComponent(currentImage);
+
+    // Facebook
+    const facebook = modal.querySelector('[data-share-platform="facebook"]');
+    if (facebook) {
+      facebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl;
+    }
+
+    // Twitter/X
+    const twitter = modal.querySelector('[data-share-platform="twitter"]');
+    if (twitter) {
+      twitter.href = 'https://twitter.com/intent/tweet?url=' + encodedUrl + '&text=' + encodedTitle;
+    }
+
+    // Pinterest
+    const pinterest = modal.querySelector('[data-share-platform="pinterest"]');
+    if (pinterest) {
+      pinterest.href = 'https://pinterest.com/pin/create/button/?url=' + encodedUrl + '&media=' + encodedImage + '&description=' + encodedTitle;
+    }
+
+    // WhatsApp
+    const whatsapp = modal.querySelector('[data-share-platform="whatsapp"]');
+    if (whatsapp) {
+      whatsapp.href = 'https://api.whatsapp.com/send?text=' + encodedTitle + '%20' + encodedUrl;
+    }
+
+    // Email
+    const email = modal.querySelector('[data-share-platform="email"]');
+    if (email) {
+      email.href = 'mailto:?subject=' + encodedTitle + '&body=' + encodedUrl;
+    }
+
+    // URL input
+    const urlInput = modal.querySelector('[data-share-url-input]');
+    if (urlInput) {
+      urlInput.value = currentUrl;
+    }
+  }
+
+  // Copy to clipboard
+  const copyBtn = modal.querySelector('[data-share-copy]');
+  const urlInput = modal.querySelector('[data-share-url-input]');
+
+  if (copyBtn && urlInput) {
+    copyBtn.addEventListener('click', function() {
+      const copyLabel = copyBtn.querySelector('[data-copy-label]');
+      const copiedLabel = copyBtn.querySelector('[data-copied-label]');
+
+      navigator.clipboard.writeText(urlInput.value).then(function() {
+        if (copyLabel) copyLabel.hidden = true;
+        if (copiedLabel) copiedLabel.hidden = false;
+
+        setTimeout(function() {
+          if (copyLabel) copyLabel.hidden = false;
+          if (copiedLabel) copiedLabel.hidden = true;
+        }, 2000);
+      }).catch(function() {
+        urlInput.select();
+        document.execCommand('copy');
+      });
+    });
+  }
+
+  // Initialize with current page on load
+  updateShareLinks();
+})();
+</script>
+
+<style>
+  .block-modal-share__content {
+    max-width: 400px;
+  }
+
+  .block-modal-share__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    list-style: none;
+    margin: 0 0 1.5em;
+    padding: 0;
+  }
+
+  .block-modal-share__option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5em;
+    padding: 1em;
+    min-width: 72px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.2s;
+  }
+
+  .block-modal-share__option:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .block-modal-share__option span {
+    font-size: 0.75em;
+  }
+
+  .block-modal-share__copy {
+    display: flex;
+    gap: 0.5em;
+  }
+
+  .block-modal-share__input {
+    flex: 1;
+    padding: 0.75em 1em;
+    border: 1px solid var(--theme-color-grey, #ddd);
+    border-radius: 4px;
+    font-size: 0.875em;
+    color: #666;
+    background: #f9f9f9;
+  }
+
+  .block-modal-share__copy-btn {
+    padding: 0.75em 1em;
+    background: var(--theme-color-primary, #111);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875em;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+
+  .block-modal-share__copy-btn:hover {
+    opacity: 0.9;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Share modal",
+  "tag": "div",
+  "class": "block-modal-share-wrapper",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "modal_id",
+      "label": "Modal ID",
+      "default": "share-modal",
+      "info": "Use data-modal-trigger=\"share-modal\" to open"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "placeholder": "Share"
+    },
+    {
+      "type": "header",
+      "content": "Platforms"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_facebook",
+      "label": "Facebook",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_twitter",
+      "label": "X (Twitter)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pinterest",
+      "label": "Pinterest",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_whatsapp",
+      "label": "WhatsApp",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_email",
+      "label": "Email",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_copy_link",
+      "label": "Copy link",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "How to use"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add to footer group. Trigger with: data-modal-trigger=\"share-modal\" data-share-url=\"URL\" data-share-title=\"Title\" data-share-image=\"Image URL\""
+    }
+  ],
+  "presets": [
+    {
+      "name": "Share",
+      "category": "Modal"
+    }
+  ]
+}
+{% endschema %}

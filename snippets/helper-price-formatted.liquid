@@ -8,7 +8,7 @@
   {% render 'price-formatted', amount: product.price %}
 {%- endcomment -%}
 
-{%- assign symbol = currency_symbol | default: cart.currency.symbol -%}
+{%- assign symbol = currency_symbol | default: cart.currency.symbol | default: localization.country.currency.symbol | default: '€' -%}
 {%- assign formatted = amount | money_without_currency -%}
 
 {%- comment -%}
@@ -34,7 +34,7 @@
 {%- else -%}
   {%- assign before = formatted -%}
   {%- assign after = '00' -%}
-  {%- assign dec_sep = ',' -%} {# fallback visueel #}
+  {%- assign dec_sep = ',' -%}
 {%- endif -%}
 
 <span class="price">

@@ -1,0 +1,367 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-PRODUCT-DISCOVERY
+  ============================================================================
+
+  Purpose:
+  Shows product recommendations using Shopify's recommendations API.
+  Lazy loads when section enters viewport.
+
+  Features:
+  - Server-side rendering support
+  - Client-side fetch with retry/backoff
+  - IntersectionObserver for lazy loading
+  - Responsive grid layout
+
+  Dependencies:
+  - html-product-card snippet
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign heading_text = section.settings.heading
+  if heading_text == blank
+    assign heading_text = 'product.similar_heading' | t
+  endif
+-%}
+
+<div class="block-product-discovery__content {{ section.settings.width }}" id="product-discovery-{{ section.id }}">
+  <h2 class="block-product-discovery__heading">{{ heading_text }}</h2>
+  
+  <div class="block-product-discovery__list" data-list>
+    {%- comment -%} Server render path (used by section_id fetch) {%- endcomment -%}
+    {%- if recommendations and recommendations.performed and recommendations.products_count > 0 -%}
+      <ul class="block-product-discovery__grid js-recos" role="list" style="--grid-columns: {{ section.settings.grid_columns }}; --grid-columns-tablet: {{ section.settings.grid_columns_tablet }}; --grid-columns-mobile: {{ section.settings.grid_columns_mobile }};">
+        {%- for p in recommendations.products limit: section.settings.limit -%}
+          <li class="block-product-discovery__item">
+            {%- render 'html-product-card', 
+              product: p,
+              image_ratio: section.settings.image_ratio,
+              show_secondary_image: section.settings.show_secondary_image,
+              show_rating: section.settings.show_rating,
+              show_vendor: section.settings.show_vendor, 
+              show_price: true,
+              show_stock: true,
+              show_delivery: true,
+              show_badges: section.settings.show_badges, 
+              quick_add: section.settings.quick_add
+            -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+(function(){
+  var root = document.getElementById('product-discovery-{{ section.id }}');
+  if (!root || root.dataset.recosInit === '1') return;
+  root.dataset.recosInit = '1';
+
+  var host = root.querySelector('[data-list]');
+  if (!host) return;
+
+  // If SSR already rendered, use that
+  var ssr = root.querySelector('.js-recos');
+  if (ssr) { safeLazyUpdate(host); return; }
+
+  var productId = {{ product.id | default: 0 }};
+  if (!productId) return;
+  
+  var limit = {{ section.settings.limit | default: 4 }};
+  var inflight = null;
+  var loaded = false;
+
+  function getPreviewThemeId() {
+    try { return new URL(location.href).searchParams.get('preview_theme_id') || ''; }
+    catch(_) { return ''; }
+  }
+
+  function buildURL() {
+    var url = new URL('/recommendations/products', location.origin);
+    url.searchParams.set('product_id', productId);
+    url.searchParams.set('limit', limit);
+    url.searchParams.set('section_id', '{{ section.id }}');
+    var pt = getPreviewThemeId();
+    if (pt) url.searchParams.set('preview_theme_id', pt);
+    url.searchParams.set('_cb', Date.now().toString());
+    return url.toString();
+  }
+
+  function safeLazyUpdate(ctx) {
+    // Trigger scan for any background images with data-bg
+    if (window.themeLazy && typeof window.themeLazy.scan === 'function') {
+      try { window.themeLazy.scan(ctx); } catch(_) {}
+    }
+  }
+
+  function fetchWithRetry(url, opts, tries) {
+    return fetch(url, opts).then(function(r) {
+      if (r.status === 429 && tries > 0) {
+        var delay = Math.min(1500, (2 ** (3 - tries)) * 250) + Math.random() * 150;
+        return new Promise(function(res) { setTimeout(res, delay); }).then(function() {
+          return fetchWithRetry(url, opts, tries - 1);
+        });
+      }
+      if (!r.ok) return Promise.reject(r);
+      return r.text();
+    });
+  }
+
+  function load() {
+    if (loaded) return;
+    if (inflight && inflight.abort) inflight.abort();
+    inflight = new AbortController();
+
+    fetchWithRetry(buildURL(), {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Cache-Control': 'no-cache, no-store'
+      },
+      cache: 'no-store',
+      signal: inflight.signal,
+      credentials: 'same-origin'
+    }, 3)
+    .then(function(html) {
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      var sec = doc.getElementById('product-discovery-{{ section.id }}');
+      if (!sec) return;
+      var ul = sec.querySelector('.js-recos');
+      if (!ul) return;
+      host.innerHTML = '';
+      host.appendChild(ul);
+      loaded = true;
+      safeLazyUpdate(host);
+    })
+    .catch(function() {});
+  }
+
+  // Lazy load when in viewport
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) { io.disconnect(); load(); }
+      });
+    }, { rootMargin: '200px 0px' });
+    io.observe(root);
+  } else {
+    load();
+  }
+
+  // Cleanup on section unload
+  document.addEventListener('shopify:section:unload', function(e) {
+    if (e && e.detail && e.detail.sectionId === '{{ section.id }}') {
+      try { inflight && inflight.abort(); } catch(_) {}
+    }
+  });
+})();
+</script>
+
+<style>
+  .block-product-discovery {
+    background-color: {{ section.settings.background_color }};
+    color: {{ section.settings.text_color }};
+  }
+
+  .block-product-discovery__content {
+    padding-block: 4em 2em;
+  }
+
+  .block-product-discovery__heading {
+    font-family: var(--theme-font-family-serif);
+    font-size: 2em;
+    font-weight: 400;
+    margin: 0 0 1em;
+    text-align: center;
+  }
+
+  .block-product-discovery__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+    gap: 0.2em;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .block-product-discovery__item {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .block-product-discovery__item > .product-card {
+    height: 100%;
+  }
+
+  @media (max-width: 64em) {
+    .block-product-discovery__grid {
+      grid-template-columns: repeat(var(--grid-columns-tablet, 3), 1fr);
+    }
+  }
+
+  @media (max-width: 47.5em) {
+    .block-product-discovery__grid {
+      grid-template-columns: repeat(var(--grid-columns-mobile, 2), 1fr);
+    }
+
+    .block-product-discovery__heading {
+      font-size: 1.5em;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Product discovery",
+  "tag": "section",
+  "class": "block-product-discovery",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Leave empty to use locale default"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4,
+      "label": "Products to show"
+    },
+    {
+      "type": "header",
+      "content": "Product card"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "adapt", "label": "Adapt" },
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "portrait", "label": "Portrait (2:3)" },
+        { "value": "landscape", "label": "Landscape (3:2)" }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show secondary image on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show rating",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badges",
+      "label": "Show badges",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "quick_add",
+      "label": "Show quick add button",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Width",
+      "options": [
+        { "value": "alignsmall", "label": "Narrow" },
+        { "value": "align", "label": "Regular" },
+        { "value": "alignwide", "label": "Wide" },
+        { "value": "alignfull", "label": "Full" }
+      ],
+      "default": "alignwide"
+    },
+    {
+      "type": "range",
+      "id": "grid_columns",
+      "label": "Columns (desktop)",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "grid_columns_tablet",
+      "label": "Columns (tablet)",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "grid_columns_mobile",
+      "label": "Columns (mobile)",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#f8f8f8"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#111111"
+    },
+    {
+      "type": "header",
+      "content": "How to use"
+    },
+    {
+      "type": "paragraph",
+      "content": "Displays product recommendations using Shopify's AI-powered recommendations API. Products are lazy loaded when the section enters the viewport."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Discovery",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

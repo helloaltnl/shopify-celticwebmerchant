@@ -1,250 +1,139 @@
-{{ 'component-price.css' | asset_url | stylesheet_tag }}
-{{ 'quantity-popover.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  ============================================================================
+  BLOCK-CART-PREVIEW
+  ============================================================================
+
+  Purpose:
+  Cart preview drawer that slides in from the right.
+  Shows cart items, subtotal, and checkout options.
+  
+  Usage:
+  Add to footer-group.json or header-group.json.
+  Triggered by html-button-cart with open_drawer: true.
+
+  Dependencies:
+  - theme-drawer.js
+  - theme-cart.js
+  - html-cart-items snippet
+  - html-cart-subtotal snippet
+  - html-cart-payments snippet
+  - html-theme-icons snippet
+
+  ============================================================================
+{%- endcomment -%}
 
 <script src="{{ 'theme-cart.js' | asset_url }}" defer="defer"></script>
-<script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
-
-{%- liquid
-  assign display_type = section.settings.display_type | default: 'drawer'
--%}
-
-<style>
-  .cart-preview-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    z-index: 999;
-  }
-
-  .cart-preview-overlay.active {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .cart-preview {
-    position: fixed;
-    top: 0;
-    background: rgb(var(--color-background));
-    color: rgb(var(--color-foreground));
-    z-index: 1000;
-    overflow: hidden;
-    transition: transform 0.3s ease;
-  }
-
-  {% if display_type == 'drawer' %}
-  /* Drawer styles */
-  .cart-preview {
-    right: 0;
-    width: 100%;
-    max-width: 420px;
-    height: 100%;
-    transform: translateX(100%);
-  }
-
-  .cart-preview.active {
-    transform: translateX(0);
-  }
-  {% else %}
-  /* Popup/Modal styles */
-  .cart-preview {
-    top: 50%;
-    left: 50%;
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
-    transform: translate(-50%, -50%) scale(0.9);
-    opacity: 0;
-    border-radius: var(--border-radius);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  }
-
-  .cart-preview.active {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-  {% endif %}
-
-  .cart-preview__inner {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  .cart-preview__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid rgba(var(--color-foreground), 0.08);
-  }
-
-  .cart-preview__title {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-
-  .cart-preview__close {
-    padding: 0.5rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: rgb(var(--color-foreground));
-    transition: opacity 0.2s ease;
-  }
-
-  .cart-preview__close:hover {
-    opacity: 0.7;
-  }
-
-  .cart-preview__close svg {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
-
-  .cart-preview__content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
-  }
-
-  .cart-preview__footer {
-    padding: 1.5rem;
-    border-top: 1px solid rgba(var(--color-foreground), 0.08);
-    background: rgb(var(--color-background));
-  }
-
-  .cart-preview__empty {
-    padding: 3rem 1.5rem;
-    text-align: center;
-  }
-
-  .cart-preview__empty-text {
-    margin: 0 0 1.5rem;
-    font-size: 1.125rem;
-  }
-
-  /* Scrollbar styling */
-  .cart-preview__content::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .cart-preview__content::-webkit-scrollbar-track {
-    background: rgba(var(--color-foreground), 0.05);
-  }
-
-  .cart-preview__content::-webkit-scrollbar-thumb {
-    background: rgba(var(--color-foreground), 0.2);
-    border-radius: 4px;
-  }
-
-  .cart-preview__content::-webkit-scrollbar-thumb:hover {
-    background: rgba(var(--color-foreground), 0.3);
-  }
-
-  /* Mobile adjustments */
-  @media screen and (max-width: 749px) {
-    .cart-preview {
-      {% if display_type == 'drawer' %}
-      max-width: 100%;
-      {% else %}
-      width: 95%;
-      max-height: 90vh;
-      {% endif %}
-    }
-
-    .cart-preview__header,
-    .cart-preview__content,
-    .cart-preview__footer {
-      padding: 1rem;
-    }
-  }
-</style>
 
 <div 
-  class="cart-preview"
+  class="block-cart-preview"
   id="cart-preview"
+  data-drawer="cart-drawer"
+  data-drawer-position="right"
   data-cart-preview-section="{{ section.id }}"
-  data-cart-context="{{ display_type }}"
-  aria-hidden="true"
+  data-cart-context="preview"
+  data-disable-on-cart="{{ section.settings.disable_on_cart }}"
   role="dialog"
-  aria-label="{{ 'sections.cart.title' | t }}"
+  aria-modal="true"
+  aria-label="{{ 'cart.title' | t }}"
+  hidden
 >
-  <div class="cart-preview__inner">
+  <div class="block-cart-preview__overlay" data-drawer-overlay></div>
+  
+  <div class="block-cart-preview__content theme-drawer__content">
     {%- comment -%} Header {%- endcomment -%}
-    <div class="cart-preview__header">
-      <h2 class="cart-preview__title">
-        {{ section.settings.heading | default: 'sections.cart.title' | t }}
-        <span class="cart-preview__count" data-cart-count>({{ cart.item_count }})</span>
+    <div class="block-cart-preview__header theme-drawer__header">
+      <h2 class="block-cart-preview__title theme-drawer__title">
+        {{ 'cart.title' | t }}
+        <span class="block-cart-preview__count" data-cart-count>({{ cart.item_count }})</span>
       </h2>
       <button 
-        class="cart-preview__close" 
+        class="block-cart-preview__close theme-drawer__close" 
         type="button" 
         aria-label="{{ 'accessibility.close' | t }}"
-        data-cart-preview-close
+        data-drawer-close
       >
-        <span class="svg-wrapper">
-          {{- 'icon-close.svg' | inline_asset_content -}}
-        </span>
+        {%- render 'html-theme-icons', icon: 'close', size: 24 -%}
       </button>
     </div>
 
     {%- if cart.item_count > 0 -%}
-      {%- comment -%} Content {%- endcomment -%}
-      <div class="cart-preview__content">
-        {% render 'html-cart-order-items', 
-          cart: cart,
-          context: display_type,
-          show_vendor: section.settings.show_vendor,
-          compact: true
-        %}
+      {%- comment -%} Content - Cart Items {%- endcomment -%}
+      <div class="block-cart-preview__body theme-drawer__body">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'cart_items' -%}
+              <div 
+                class="block-cart-preview__block" 
+                {{ block.shopify_attributes }}
+                data-cart-items-section="{{ section.id }}"
+              >
+                {% render 'html-cart-items', 
+                  cart: cart,
+                  show_vendor: block.settings.show_vendor,
+                  show_recommended: block.settings.show_recommended,
+                  max_recommended: block.settings.max_recommended,
+                  hide_out_of_stock: block.settings.hide_out_of_stock,
+                  compact: true
+                %}
+              </div>
 
-        {%- comment -%} App blocks after items {%- endcomment -%}
-        {% render 'html-cart-apps', blocks: section.blocks, location: 'preview-items' %}
+            {%- when '@app' -%}
+              <div class="block-cart-preview__block" {{ block.shopify_attributes }}>
+                {% render block %}
+              </div>
+          {%- endcase -%}
+        {%- endfor -%}
       </div>
 
-      {%- comment -%} Footer with Subtotal & Payments {%- endcomment -%}
-      <div class="cart-preview__footer">
-        {% render 'html-cart-subtotal', 
-          cart: cart,
-          show_cart_note: section.settings.show_cart_note,
-          context: display_type
-        %}
+      {%- comment -%} Footer - Subtotal, Payments, View Cart {%- endcomment -%}
+      <div class="block-cart-preview__footer theme-drawer__footer">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'cart_subtotal' -%}
+              <div 
+                class="block-cart-preview__block" 
+                {{ block.shopify_attributes }}
+                data-cart-subtotal-section="{{ section.id }}"
+              >
+                {% render 'html-cart-subtotal', 
+                  cart: cart,
+                  show_cart_note: block.settings.show_cart_note,
+                  context: 'drawer'
+                %}
+              </div>
 
-        {% render 'html-cart-payments', 
-          cart: cart,
-          show_terms: section.settings.show_terms,
-          terms_text: section.settings.terms_text,
-          terms_link: section.settings.terms_link,
-          terms_link_text: section.settings.terms_link_text,
-          show_additional_buttons: section.settings.show_additional_buttons,
-          button_text: section.settings.checkout_button_text,
-          context: display_type
-        %}
+            {%- when 'cart_payments' -%}
+              <div 
+                class="block-cart-preview__block" 
+                {{ block.shopify_attributes }}
+                data-cart-payments-section="{{ section.id }}"
+              >
+                {% render 'html-cart-payments', 
+                  cart: cart,
+                  show_terms: block.settings.show_terms,
+                  terms_text: block.settings.terms_text,
+                  show_additional_buttons: block.settings.show_additional_buttons,
+                  button_text: block.settings.button_text,
+                  context: 'drawer'
+                %}
+              </div>
+          {%- endcase -%}
+        {%- endfor -%}
 
         {%- if section.settings.show_view_cart -%}
-          <a href="{{ routes.cart_url }}" class="button button--secondary" style="margin-top: 1rem; width: 100%; text-align: center;">
-            {{ 'sections.cart.view_cart' | t }}
+          <a href="{{ routes.cart_url }}" class="block-cart-preview__view-cart">
+            {{ 'cart.view_cart' | t }}
           </a>
         {%- endif -%}
-
-        {%- comment -%} App blocks in footer {%- endcomment -%}
-        {% render 'html-cart-apps', blocks: section.blocks, location: 'preview-footer' %}
       </div>
     {%- else -%}
       {%- comment -%} Empty State {%- endcomment -%}
-      <div class="cart-preview__empty">
-        <p class="cart-preview__empty-text">{{ 'sections.cart.empty' | t }}</p>
+      <div class="block-cart-preview__empty">
+        <p class="block-cart-preview__empty-text">{{ 'cart.empty' | t }}</p>
         <button 
           class="button" 
           type="button"
-          data-cart-preview-close
+          data-drawer-close
         >
           {{ 'general.continue_shopping' | t }}
         </button>
@@ -253,198 +142,275 @@
   </div>
 </div>
 
-{%- comment -%} Overlay {%- endcomment -%}
-<div class="cart-preview-overlay" data-cart-preview-overlay></div>
+<style>
+  .block-cart-preview__content {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .block-cart-preview__count {
+    font-weight: 400;
+    opacity: 0.7;
+  }
+
+  .block-cart-preview__body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .block-cart-preview__footer {
+    flex-direction: column;
+  }
+
+  .block-cart-preview__block {
+    margin-bottom: 0;
+  }
+
+  .block-cart-preview__block:last-child {
+    margin-bottom: 0;
+  }
+
+  .block-cart-preview__view-cart {
+    display: block;
+    margin-top: 0;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: 1px solid currentColor;
+    color: inherit;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+
+  .block-cart-preview__view-cart:hover {
+    background: var(--theme-color-foreground, #111);
+    color: var(--theme-color-background, #fff);
+  }
+
+  .block-cart-preview__empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  .block-cart-preview__empty-text {
+    margin: 0 0 1.5rem;
+    font-size: 1.125rem;
+  }
+
+  @media screen and (max-width: 749px) {
+    .block-cart-preview__content {
+      max-width: 100%;
+    }
+  }
+</style>
 
 <script>
-  class CartPreview {
-    constructor() {
-      this.preview = document.getElementById('cart-preview');
-      this.overlay = document.querySelector('[data-cart-preview-overlay]');
-      this.closeButtons = document.querySelectorAll('[data-cart-preview-close]');
-      
-      if (!this.preview || !this.overlay) return;
-      
-      this.init();
-    }
+  (function() {
+    const preview = document.querySelector('[data-cart-preview-section]');
+    if (!preview) return;
 
-    init() {
-      // Close button handlers
-      this.closeButtons.forEach(button => {
-        button.addEventListener('click', () => this.close());
-      });
+    const disableOnCart = preview.dataset.disableOnCart === 'true';
+    const isCartPage = window.location.pathname === '/cart' || window.location.pathname.includes('/cart');
 
-      // Close on overlay click
-      this.overlay.addEventListener('click', () => this.close());
-
-      // Close on escape key
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && this.isOpen()) {
-          this.close();
+    // Prevent opening on cart page if disabled
+    if (disableOnCart && isCartPage) {
+      document.addEventListener('drawer:open', function(e) {
+        if (e.detail.id === 'cart-drawer') {
+          e.preventDefault();
+          window.themeDrawer.close('cart-drawer');
         }
       });
+    }
 
-      // Listen to cart updates to refresh preview
-      if (window.CartEvents) {
-        window.CartEvents.subscribe('cart:update', (data) => {
-          this.updateCount(data.cart.item_count);
-        });
+    // Update count on cart changes
+    if (window.CartEvents) {
+      window.CartEvents.subscribe('cart:update', function(data) {
+        const countEl = preview.querySelector('[data-cart-count]');
+        if (countEl) {
+          countEl.textContent = '(' + data.cart.item_count + ')';
+        }
+      });
+    }
+
+    // Legacy API compatibility
+    window.CartPreview = {
+      open: function() {
+        if (window.themeDrawer) window.themeDrawer.open('cart-drawer');
+      },
+      close: function() {
+        if (window.themeDrawer) window.themeDrawer.close('cart-drawer');
+      },
+      toggle: function() {
+        if (window.themeDrawer) {
+          if (window.themeDrawer.isOpen('cart-drawer')) {
+            window.themeDrawer.close('cart-drawer');
+          } else {
+            window.themeDrawer.open('cart-drawer');
+          }
+        }
       }
-
-      // Expose methods globally for triggering from other scripts
-      window.CartPreview = {
-        open: () => this.open(),
-        close: () => this.close(),
-        toggle: () => this.toggle()
-      };
-    }
-
-    open() {
-      this.preview.classList.add('active');
-      this.overlay.classList.add('active');
-      this.preview.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-      
-      // Trap focus
-      const focusableElements = this.preview.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusableElements.length > 0) {
-        focusableElements[0].focus();
-      }
-    }
-
-    close() {
-      this.preview.classList.remove('active');
-      this.overlay.classList.remove('active');
-      this.preview.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-    }
-
-    toggle() {
-      if (this.isOpen()) {
-        this.close();
-      } else {
-        this.open();
-      }
-    }
-
-    isOpen() {
-      return this.preview.classList.contains('active');
-    }
-
-    updateCount(count) {
-      const countElement = this.preview.querySelector('[data-cart-count]');
-      if (countElement) {
-        countElement.textContent = `(${count})`;
-      }
-    }
-  }
-
-  // Initialize on DOM ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => new CartPreview());
-  } else {
-    new CartPreview();
-  }
+    };
+  })();
 </script>
 
 {% schema %}
 {
-  "name": "Cart Preview",
+  "name": "Cart preview",
   "tag": "section",
   "class": "section-cart-preview",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
   "settings": [
-    {
-      "type": "select",
-      "id": "display_type",
-      "label": "Display type",
-      "options": [
-        {
-          "value": "drawer",
-          "label": "Drawer (slides from right)"
-        },
-        {
-          "value": "popup",
-          "label": "Popup (centered modal)"
-        }
-      ],
-      "default": "drawer"
-    },
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Your Cart"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_vendor",
-      "label": "Show vendor",
-      "default": false
-    },
-    {
-      "type": "checkbox",
-      "id": "show_cart_note",
-      "label": "Show cart note",
-      "default": false
-    },
     {
       "type": "checkbox",
       "id": "show_view_cart",
-      "label": "Show 'View Cart' button",
+      "label": "Show view cart link",
       "default": true
     },
     {
       "type": "header",
-      "content": "Checkout Settings"
-    },
-    {
-      "type": "text",
-      "id": "checkout_button_text",
-      "label": "Checkout button text",
-      "default": "Checkout"
+      "content": "Layout"
     },
     {
       "type": "checkbox",
-      "id": "show_terms",
-      "label": "Show terms checkbox",
-      "default": false
+      "id": "disable_on_cart",
+      "label": "Disable on cart page",
+      "default": true
     },
     {
-      "type": "text",
-      "id": "terms_text",
-      "label": "Terms text",
-      "default": "I agree to the"
+      "type": "header",
+      "content": "Howto"
     },
     {
-      "type": "url",
-      "id": "terms_link",
-      "label": "Terms link"
-    },
-    {
-      "type": "text",
-      "id": "terms_link_text",
-      "label": "Terms link text",
-      "default": "terms and conditions"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_additional_buttons",
-      "label": "Show additional checkout buttons",
-      "default": true,
-      "info": "Apple Pay, Google Pay, etc."
+      "type": "paragraph",
+      "content": "This drawer opens when customers click the cart icon. Add it to a header or footer group."
     }
   ],
   "blocks": [
+    {
+      "type": "cart_items",
+      "name": "Cart items",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Product"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_vendor",
+          "label": "Show vendor",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Recommended products"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_recommended",
+          "label": "Show recommended products",
+          "info": "Display products from metafield custom.recommended-products under each cart item.",
+          "default": true
+        },
+        {
+          "type": "range",
+          "id": "max_recommended",
+          "label": "Max recommended products",
+          "min": 1,
+          "max": 6,
+          "step": 1,
+          "default": 4
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_out_of_stock",
+          "label": "Hide out of stock products",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "cart_subtotal",
+      "name": "Cart subtotal",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_cart_note",
+          "label": "Show cart note field",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "cart_payments",
+      "name": "Cart payments",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "placeholder": "Checkout"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_additional_buttons",
+          "label": "Show dynamic checkout buttons",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_terms",
+          "label": "Show terms",
+          "default": false
+        },
+        {
+          "type": "textarea",
+          "id": "terms_text",
+          "label": "Terms text",
+          "default": "By creating an account, you agree to our <a href=\"/policies/terms-of-service\">Terms of Service</a>."
+        },
+        {
+          "type": "header",
+          "content": "Howto"
+        },
+        {
+          "type": "paragraph",
+          "content": "Dynamic checkout buttons (Apple Pay, Google Pay, etc.) are configured in your Shopify payment settings."
+        }
+      ]
+    },
     {
       "type": "@app"
     }
   ],
   "presets": [
     {
-      "name": "Cart Preview",
-      "category": "Theme Cart"
+      "name": "Preview",
+      "category": "Cart",
+      "blocks": [
+        { "type": "cart_items" },
+        { "type": "cart_subtotal" },
+        { "type": "cart_payments" }
+      ]
     }
   ]
 }

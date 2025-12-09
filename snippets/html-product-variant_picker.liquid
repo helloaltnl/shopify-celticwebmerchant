@@ -1,74 +1,208 @@
-{%- assign threshold = threshold_dropdown | default: 10 -%}
+{%- comment -%}
+  ============================================================================
+  HTML-PRODUCT-VARIANT_PICKER
+  ============================================================================
+  Variant selection UI with swatches or dropdown based on option count.
 
-{%- comment %} Is er überhaupt iets te kiezen? {% endcomment -%}
-{%- assign show_picker = false -%}
-{%- for opt in product.options_with_values -%}
-  {%- if opt.values.size > 1 -%}
-	{%- assign show_picker = true -%}{%- break -%}
-  {%- endif -%}
-{%- endfor -%}
+  PARAMETERS:
+  - product: {Object} Product object (required)
+  - threshold_dropdown: {Number} Show dropdown when options exceed this (default: 10)
+
+  FEATURES:
+  - Swatches for small option sets, dropdown for large
+  - Sold-out state detection for single-option products
+  - Hidden inputs for single-value options
+  - Accessible radio buttons with labels
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign threshold = threshold_dropdown | default: 10
+  
+  # Check if there's anything to pick
+  assign show_picker = false
+  for opt in product.options_with_values
+    if opt.values.size > 1
+      assign show_picker = true
+      break
+    endif
+  endfor
+  
+  # Check if single option product
+  assign is_single_option = false
+  if product.options_with_values.size == 1
+    unless product.has_only_default_variant
+      assign is_single_option = true
+    endunless
+  endif
+-%}
 
 {%- if show_picker -%}
-{%- comment %} Is dit een enkelzijdige variant? {% endcomment -%}
-{%- assign is_single_option = false -%}
-{%- if product.options_with_values.size == 1 -%}
-  {%- unless product.has_only_default_variant -%}
-    {%- assign is_single_option = true -%}
-  {%- endunless -%}
+  <fieldset class="product-variants" data-variant-picker>
+    {%- for option in product.options_with_values -%}
+      {%- if option.values.size > 1 -%}
+        <div class="product-variants__group">
+          <legend class="product-variants__label">{{ option.name }}</legend>
+
+          {%- if option.values.size > threshold -%}
+            {%- comment -%} Dropdown for many options {%- endcomment -%}
+            <select 
+              class="product-variants__select" 
+              data-option-select 
+              data-option-index="{{ forloop.index0 }}"
+            >
+              {%- for v in option.values -%}
+                <option 
+                  value="{{ v | escape }}" 
+                  {% if option.selected_value == v %}selected{% endif %}
+                >
+                  {{ v }}
+                </option>
+              {%- endfor -%}
+            </select>
+
+          {%- else -%}
+            {%- comment -%} Swatches for few options {%- endcomment -%}
+            <div class="product-variants__swatches">
+              {%- for v in option.values -%}
+                {%- liquid
+                  assign variant_available = true
+                  
+                  # For single-option products, check variant availability
+                  if is_single_option
+                    for variant in product.variants
+                      if variant.option1 == v or variant.option2 == v or variant.option3 == v
+                        unless variant.available
+                          if variant.inventory_policy != 'continue'
+                            assign variant_available = false
+                          endif
+                        endunless
+                        break
+                      endif
+                    endfor
+                  endif
+                  
+                  assign input_id = 'opt-' | append: product.id | append: '-' | append: forloop.parentloop.index0 | append: '-' | append: forloop.index0
+                -%}
+
+                <span class="product-variants__swatch{% unless variant_available %} is-sold-out{% endunless %}">
+                  <input 
+                    class="product-variants__input" 
+                    type="radio"
+                    id="{{ input_id }}"
+                    name="options[{{ option.name }}]"
+                    value="{{ v | escape }}"
+                    {% if option.selected_value == v %}checked{% endif %}
+                  >
+                  <label class="product-variants__swatch-label" for="{{ input_id }}">
+                    {{ v }}
+                  </label>
+                </span>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        </div>
+
+      {%- else -%}
+        {%- comment -%} Hidden input for single-value options {%- endcomment -%}
+        <input 
+          type="hidden" 
+          name="options[{{ option.name }}]" 
+          value="{{ option.selected_value | escape }}"
+        >
+      {%- endif -%}
+    {%- endfor -%}
+  </fieldset>
 {%- endif -%}
 
-<fieldset class="pform-variants" data-variant-picker>
-  {%- for option in product.options_with_values -%}
-	{%- if option.values.size > 1 -%}
-	  <div class="pform-variants__group">
-		<legend class="pform__label">{{ option.name }}</legend>
+<style>
+  .product-variants {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
 
-		{%- if option.values.size > threshold -%}
-		  <select class="pform__select" data-option-select data-option-index="{{ forloop.index0 }}">
-			{%- for v in option.values -%}
-			  <option value="{{ v | escape }}" {% if option.selected_value == v %}selected{% endif %}>{{ v }}</option>
-			{%- endfor -%}
-		  </select>
-		{%- else -%}
-		  <div class="pform__swatchgroup">
-			{%- for v in option.values -%}
-			  {%- assign variant_available = true -%}
-			  
-			  {%- if is_single_option -%}
-				{%- for variant in product.variants -%}
-				  {%- if variant.option1 == v or variant.option2 == v or variant.option3 == v -%}
-					{%- unless variant.available -%}
-					  {%- if variant.inventory_policy != 'continue' -%}
-					    {%- assign variant_available = false -%}
-					  {%- endif -%}
-					{%- endunless -%}
-					{%- break -%}
-				  {%- endif -%}
-				{%- endfor -%}
-			  {%- endif -%}
+  .product-variants__group {
+    margin-bottom: 1em;
+  }
 
-			  <span class="pform__swatchgroup-item{% unless variant_available %} is-sold-out{% endunless %}">
-			  {%- assign id = 'opt-' | append: product.id | append: '-' | append: forloop.parentloop.index0 | append: '-' | append: forloop.index0 -%}
-			  <input class="sr-only"
-					 type="radio"
-					 id="{{ id }}"
-					 name="options[{{ option.name }}]"
-					 value="{{ v | escape }}"
-					 {% if option.selected_value == v %}checked{% endif %}>
-			  <label class="pform__swatch" for="{{ id }}">{{ v }}</label>
-			  </span>
-			{%- endfor -%}
-		  </div>
-		{%- endif -%}
-	  </div>
-	{%- else -%}
-	  {# Geen UI nodig; stuur de enige waarde mee als hidden voor consistentie #}
-	  <input type="hidden" name="options[{{ option.name }}]" value="{{ option.selected_value | escape }}">
-	{%- endif -%}
-  {%- endfor -%}
-</fieldset>
-{%- else -%}
-	{%- comment %}
-  {# Alles single-value → niets tonen. Desgewenst kun je hier ook hidden inputs renderen, maar je hebt al de hidden variant id. #}
-  {% endcomment -%}
-{%- endif -%}
+  .product-variants__group:last-child {
+    margin-bottom: 0;
+  }
+
+  .product-variants__label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5em;
+  }
+
+  /* Dropdown */
+  .product-variants__select {
+    width: 100%;
+    max-width: 20em;
+  }
+
+  /* Swatches */
+  .product-variants__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+  }
+
+  .product-variants__swatch {
+    position: relative;
+  }
+
+  .product-variants__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .product-variants__swatch-label {
+    display: block;
+    padding: 0.5em 1em;
+    font-weight: 500;
+    color: var(--theme-color-blue);
+    background-color: var(--theme-color-grey);
+    border: 2px solid var(--theme-color-grey);
+    cursor: pointer;
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+
+  .product-variants__swatch-label:hover {
+    border-color: var(--theme-color-blue);
+  }
+
+  .product-variants__input:checked + .product-variants__swatch-label {
+    border-color: var(--theme-color-blue);
+  }
+
+  .product-variants__input:focus-visible + .product-variants__swatch-label {
+    outline: 2px solid var(--theme-color-blue);
+    outline-offset: 2px;
+  }
+
+  /* Sold out state */
+  .product-variants__swatch.is-sold-out {
+    opacity: 0.5;
+  }
+
+  .product-variants__swatch.is-sold-out::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(100% - 1em);
+    height: 2px;
+    background-color: var(--theme-color-blue);
+    transform: translate(-50%, -50%) rotate(-12deg);
+    pointer-events: none;
+  }
+</style>

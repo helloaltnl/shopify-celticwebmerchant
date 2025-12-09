@@ -1,0 +1,354 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-FOOTER-USPS
+  ============================================================================
+  Footer USP/trust badges section.
+
+  FEATURES:
+  - Block-based USPs with text and optional link
+  - Always a Swiper slider with centered slides
+  - Arrows appear only when overflow detected
+  - Icon customization per USP
+  - Color customization
+
+  DEPENDENCIES:
+  - html-theme-icons snippet
+  - SwiperJS (vendor-swiper.min.js, vendor-swiper.min.css)
+  ============================================================================
+{%- endcomment -%}
+
+<footer-usps class="block-footer-usps__content {{ section.settings.width }}">
+	{%- if section.blocks.size > 0 -%}
+		<div class="block-footer-usps__slider swiper" data-footer-usps-slider>
+			<ul class="block-footer-usps__list swiper-wrapper">
+				{%- for block in section.blocks -%}
+					{%- if block.type == 'usp' -%}
+						<li class="block-footer-usps__item swiper-slide" {{ block.shopify_attributes }}>
+							{%- if block.settings.link != blank -%}
+								<a href="{{ block.settings.link }}" class="block-footer-usps__link" title="{{ block.settings.text | escape }}">
+							{%- else -%}
+								<span class="block-footer-usps__link">
+							{%- endif -%}
+								<i class="block-footer-usps__icon">
+									{%- if block.settings.icon != 'none' -%}
+										{% render 'html-theme-icons', icon: block.settings.icon, size: 20 %}
+									{%- else -%}
+										{% render 'html-theme-icons', icon: 'check-mark', size: 20 %}
+									{%- endif -%}
+								</i>
+								<span class="block-footer-usps__text">{{ block.settings.text }}</span>
+							{%- if block.settings.link != blank -%}
+								</a>
+							{%- else -%}
+								</span>
+							{%- endif -%}
+						</li>
+					{%- endif -%}
+				{%- endfor -%}
+			</ul>
+
+			<button type="button" class="block-footer-usps__nav block-footer-usps__nav--prev" data-nav-prev aria-label="{{ 'accessibility.slider.previous' | t }}">
+				{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+			</button>
+			<button type="button" class="block-footer-usps__nav block-footer-usps__nav--next" data-nav-next aria-label="{{ 'accessibility.slider.next' | t }}">
+				{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+			</button>
+		</div>
+	{%- endif -%}
+</footer-usps>
+
+{% style %}
+	.block-footer-usps {
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding: 1.5em 0;
+	}
+
+	.block-footer-usps__content {
+		display: block;
+	}
+
+	.block-footer-usps__slider {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.block-footer-usps__list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.block-footer-usps__item {
+		flex: 0 0 auto;
+		width: auto !important;
+		padding:0.5em;
+	}
+
+	.block-footer-usps__link {
+		display: inline-flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.5em;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.block-footer-usps__link:hover {
+		opacity: 0.8;
+	}
+
+	.block-footer-usps__icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.25em;
+		height: 1.25em;
+	}
+
+	.block-footer-usps__icon svg {
+		width: 100%;
+		height: 100%;
+	}
+
+	.block-footer-usps__text {
+		font-size: 0.8em;
+		letter-spacing: -0.02em;
+		line-height: 1.3;
+		white-space: nowrap;
+	}
+
+	/* Navigation arrows */
+	.block-footer-usps__nav {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 10;
+		display: none;
+		align-items: center;
+		justify-content: center;
+		width: 2em;
+		height: 2em;
+		padding: 0;
+		background-color: transparent;
+		color: inherit;
+		border: none;
+		cursor: pointer;
+		opacity: 0.7;
+		transition: opacity 150ms ease;
+	}
+
+	.block-footer-usps__nav:hover {
+		opacity: 1;
+	}
+
+	.block-footer-usps__nav--prev {
+		left: 0;
+	}
+
+	.block-footer-usps__nav--prev svg {
+		transform: rotate(90deg);
+	}
+
+	.block-footer-usps__nav--next {
+		right: 0;
+	}
+
+	.block-footer-usps__nav--next svg {
+		transform: rotate(-90deg);
+	}
+
+	/* Show arrows only when overflow */
+	.block-footer-usps__slider.has-overflow .block-footer-usps__nav {
+		display: flex;
+	}
+
+	.block-footer-usps__slider.has-overflow .block-footer-usps__list {
+		justify-content: flex-start;
+	}
+
+	/* Add padding for arrows when visible */
+	.block-footer-usps__slider.has-overflow {
+		padding-left: 2.5em;
+		padding-right: 2.5em;
+	}
+{% endstyle %}
+
+<script>
+	class FooterUsps extends HTMLElement {
+		connectedCallback() {
+			this.swiperEl = this.querySelector('[data-footer-usps-slider]');
+			this.prevBtn = this.querySelector('[data-nav-prev]');
+			this.nextBtn = this.querySelector('[data-nav-next]');
+			
+			if (!this.swiperEl) return;
+			this.initSwiper();
+		}
+
+		disconnectedCallback() {
+			if (this.slider) {
+				this.slider.destroy(true, true);
+				this.slider = null;
+			}
+		}
+
+		areAllSlidesInView(swiper) {
+			const slidesWidth = Array.from(swiper.slides).reduce((total, slide, index) => {
+				return total + slide.offsetWidth + (index < swiper.slides.length - 1 ? swiper.params.spaceBetween : 0);
+			}, 0);
+			return slidesWidth <= swiper.width;
+		}
+
+		updateLayout(swiper) {
+			const wrapper = swiper.el.querySelector('.swiper-wrapper');
+			if (!wrapper) return;
+
+			if (this.areAllSlidesInView(swiper)) {
+				wrapper.style.justifyContent = 'center';
+				swiper.el.classList.remove('has-overflow');
+			} else {
+				wrapper.style.justifyContent = '';
+				swiper.el.classList.add('has-overflow');
+			}
+		}
+
+		initSwiper() {
+			const self = this;
+
+			this.slider = new Swiper(this.swiperEl, {
+				direction: 'horizontal',
+				centeredSlides: false,
+				slidesPerView: 'auto',
+				slidesPerGroup: 1,
+				spaceBetween: 32,
+				loop: false,
+				autoplay: false,
+				mousewheel: {
+					forceToAxis: true,
+					releaseOnEdges: true
+				},
+				navigation: {
+					prevEl: this.prevBtn,
+					nextEl: this.nextBtn
+				},
+				on: {
+					init: function(swiper) {
+						self.updateLayout(swiper);
+					},
+					resize: function(swiper) {
+						self.updateLayout(swiper);
+					}
+				}
+			});
+		}
+	}
+
+	customElements.define('footer-usps', FooterUsps);
+</script>
+
+{% schema %}
+{
+	"name": "Footer USPs",
+	"tag": "section",
+	"class": "block-footer-usps",
+	"limit": 1,
+	"enabled_on": {
+		"groups": ["footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#0f1f38"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#ffffff"
+		}
+	],
+	"blocks": [
+		{
+			"type": "usp",
+			"name": "USP",
+			"settings": [
+				{
+					"type": "header",
+					"content": "Content"
+				},
+				{
+					"type": "text",
+					"id": "text",
+					"label": "Text",
+					"placeholder": "Free shipping"
+				},
+				{
+					"type": "url",
+					"id": "link",
+					"label": "Link"
+				},
+				{
+					"type": "select",
+					"id": "icon",
+					"label": "Icon",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "check-mark", "label": "Check mark" },
+						{ "value": "truck", "label": "Truck" },
+						{ "value": "cart", "label": "Cart" },
+						{ "value": "star", "label": "Star" },
+						{ "value": "heart", "label": "Heart" },
+						{ "value": "lock", "label": "Lock" },
+						{ "value": "return", "label": "Return" },
+						{ "value": "stopwatch", "label": "Stopwatch" },
+						{ "value": "price-tag", "label": "Price tag" },
+						{ "value": "question-mark", "label": "Question mark" },
+						{ "value": "chat-bubble", "label": "Chat bubble" },
+						{ "value": "map-pin", "label": "Map pin" }
+					],
+					"default": "none"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "USPs",
+			"category": "Footer",
+			"blocks": [
+				{ "type": "usp", "settings": { "icon": "check-mark" } },
+				{ "type": "usp", "settings": { "icon": "truck" } },
+				{ "type": "usp", "settings": { "icon": "map-pin" } },
+				{ "type": "usp", "settings": { "icon": "return" } }
+			]
+		}
+	]
+}
+{% endschema %}

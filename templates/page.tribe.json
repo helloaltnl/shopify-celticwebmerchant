@@ -9,32 +9,292 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "main-page",
-      "settings": {
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
     "block_marketing_cover_yk8iXx": {
       "type": "block-marketing-cover",
       "name": "Marketing Cover",
       "settings": {
-        "subheading": "Welcome",
-        "heading": "Your Amazing Store",
-        "text": "<p>Discover our collection</p>",
+        "subheading": "",
+        "heading": "Discover The Tribe",
+        "text": "<p>Word nu lid!</p>",
+        "image": "shopify://shop_images/Banner_Tribe_5.webp",
+        "focus_x": 60,
+        "focus_y": 50,
+        "overlay": "medium",
+        "width": "alignfull",
         "height": "medium",
-        "overlay_opacity": "medium",
         "text_position": "center",
         "text_alignment": "center",
-        "cta_text": "Shop Now",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_promo_pdcXtQ": {
+      "type": "block-marketing-promo",
+      "custom_css": [],
+      "name": "Promo: Spaar",
+      "settings": {
+        "heading": "Spaar voor exclusieve kortingen, elke keer dat je winkelt",
+        "subheading": "",
+        "text": "",
+        "cta_text": "Wordt nu gratis lid!",
+        "cta_url": "shopify://pages/the-tribe",
+        "cta_style": "primary",
+        "show_countdown": false,
+        "countdown_end_date": "",
+        "countdown_heading": "",
+        "countdown_message": "",
+        "countdown_style": "highlight",
+        "countdown_size": "large",
+        "show_usp": false,
+        "width": "alignwide",
+        "layout": "boxed",
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff",
+        "button_color": "#ffffff",
+        "button_text_color": "#0f1f38",
+        "custom_class": "promo-spaar"
+      }
+    },
+    "block_marketing_media_usps_zVfPNR": {
+      "type": "block-marketing-media-usps",
+      "blocks": {
+        "usp_UFLhbW": {
+          "type": "usp",
+          "settings": {
+            "icon": "",
+            "heading": "Spaar punten voor extra kortingen",
+            "text": "Ontvang 500 punten voor je aanmelding. Voor elke euro dat je bij ons uitgeeft, ontvang je een punt. Daarnaast ontvang je 250 punten voor je aanmeldjubileum. Verzilver uiteindelijk jouw punten voor kortingen tot wel €150!"
+          }
+        },
+        "usp_ygaD6f": {
+          "type": "usp",
+          "settings": {
+            "icon": "",
+            "heading": "Profiteer van lagere verzendkosten",
+            "text": "Als Tribe lid krijg je goedkopere verzendopties."
+          }
+        },
+        "usp_BQGWLg": {
+          "type": "usp",
+          "settings": {
+            "icon": "",
+            "heading": "Ontvang wekelijks exclusieve kortingen",
+            "text": "Voor Tribe leden hebben we wekelijks exclusieve Thematische aanbiedingen. Deze vallen buiten de aanbiedingen die voor andere klanten geldig zijn."
+          }
+        },
+        "usp_D3xyML": {
+          "type": "usp",
+          "settings": {
+            "icon": "",
+            "heading": "Ontvang onze e-books",
+            "text": "Vol met inspiratie en kunst"
+          }
+        },
+        "usp_FzTEVf": {
+          "type": "usp",
+          "settings": {
+            "icon": "",
+            "heading": "Deel je foto, ontvang een cadeautje & doe mee aan de wedstrijd",
+            "text": "Stuur jouw foto in en ontvang direct 10% korting. Daarnaast maak je kans op €150 shoptegoed!"
+          }
+        }
+      },
+      "block_order": [
+        "usp_UFLhbW",
+        "usp_ygaD6f",
+        "usp_BQGWLg",
+        "usp_D3xyML",
+        "usp_FzTEVf"
+      ],
+      "name": "Media + USPs: Voordelen",
+      "settings": {
+        "heading": "Voordelen",
+        "text": "",
+        "cta_text": "",
         "cta_url": "",
-        "cta_style": "primary"
+        "cta_style": "primary",
+        "image": "shopify://shop_images/voordelen-img.jpg",
+        "media_height": "fill",
+        "focus_x": 50,
+        "focus_y": 20,
+        "width": "align",
+        "media_position": "left",
+        "media_width": "40",
+        "vertical_alignment": "center",
+        "background_color": "#f8f8f8",
+        "text_color": "#111111",
+        "icon_background": "#ffffff",
+        "icon_color": "#243406",
+        "button_color": "",
+        "button_text_color": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_testimonials_attenQ": {
+      "type": "block-marketing-testimonials",
+      "blocks": {
+        "testimonial_jyjHqK": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "",
+            "author": "",
+            "author_title": "",
+            "rating": 5
+          }
+        },
+        "testimonial_k3Uyxb": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "",
+            "author": "",
+            "author_title": "",
+            "rating": 5
+          }
+        }
+      },
+      "block_order": [
+        "testimonial_jyjHqK",
+        "testimonial_k3Uyxb"
+      ],
+      "name": "Testimonials",
+      "settings": {
+        "heading": "",
+        "subheading": "",
+        "width": "alignwide",
+        "layout": "two-column",
+        "alignment": "center",
+        "quote_style": "boxed",
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "custom_class": ""
+      }
+    },
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "width": "align"
+      }
+    },
+    "block_marketing_promo_mAALrK": {
+      "type": "block-marketing-promo",
+      "custom_css": [],
+      "name": "Promo: Tribe lid",
+      "settings": {
+        "heading": "Join the Tribe, wees een #HistoryRebel",
+        "subheading": "",
+        "text": "",
+        "cta_text": "Word Tribe-lid",
+        "cta_url": "shopify://pages/the-tribe",
+        "cta_style": "primary",
+        "show_countdown": false,
+        "countdown_end_date": "",
+        "countdown_heading": "",
+        "countdown_message": "",
+        "countdown_style": "highlight",
+        "countdown_size": "large",
+        "show_usp": false,
+        "width": "alignwide",
+        "layout": "default",
+        "background_color": "#243406",
+        "text_color": "#ffffff",
+        "button_color": "#ffffff",
+        "button_text_color": "#243406",
+        "custom_class": "promo-join-tribe"
+      }
+    },
+    "block_marketing_media_text_HtFd6L": {
+      "type": "block-marketing-media-text",
+      "blocks": {
+        "image_text_4RCR9H": {
+          "type": "image_text",
+          "name": "Image + text #1",
+          "settings": {
+            "image": "shopify://shop_images/tribe-media1.jpg",
+            "image_height": "square",
+            "focus_x": 50,
+            "focus_y": 15,
+            "heading": "Voordeel 1",
+            "text": "<p>Dit is een link naar een pagina (vergelijkbaar met een blogpost) dat onze klanten informeert over het voordeel. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>",
+            "cta_text": "Lees meer",
+            "cta_url": "shopify://blogs/vroeg-modern/de-backsword",
+            "cta_style": "primary",
+            "image_position": "left",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "background_color": "rgba(0,0,0,0)",
+            "text_color": "",
+            "button_color": "#f05a22",
+            "button_text_color": ""
+          }
+        },
+        "image_text_jLUgxx": {
+          "type": "image_text",
+          "name": "Image + text #2",
+          "settings": {
+            "image": "shopify://shop_images/0216696018i_scheibenknaufdolch_regulaere_ausfuehrung_scheide_mittelalterHn3kGa4sDMnFr_e81718ec-7028-47ed-ab9f-d19ce6a2aabc.jpg",
+            "image_height": "square",
+            "focus_x": 50,
+            "focus_y": 15,
+            "heading": "Voordeel 2",
+            "text": "<p>Dit is een link naar een pagina (vergelijkbaar met een blogpost) dat onze klanten informeert over het voordeel. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>",
+            "cta_text": "",
+            "cta_url": "",
+            "cta_style": "primary",
+            "image_position": "right",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "background_color": "",
+            "text_color": "",
+            "button_color": "",
+            "button_text_color": ""
+          }
+        },
+        "image_text_hGqQrk": {
+          "type": "image_text",
+          "name": "Image + text #3",
+          "settings": {
+            "image": "shopify://shop_images/tribe-media1.jpg",
+            "image_height": "square",
+            "focus_x": 50,
+            "focus_y": 15,
+            "heading": "Voordeel 3",
+            "text": "<p>Dit is een link naar een pagina (vergelijkbaar met een blogpost) dat onze klanten informeert over het voordeel. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>",
+            "cta_text": "Lees meer",
+            "cta_url": "shopify://blogs/oudheid-romeinen",
+            "cta_style": "primary",
+            "image_position": "left",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "background_color": "",
+            "text_color": "",
+            "button_color": "#f05a22",
+            "button_text_color": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_text_4RCR9H",
+        "image_text_jLUgxx",
+        "image_text_hGqQrk"
+      ],
+      "custom_css": [],
+      "name": "Media & text",
+      "settings": {
+        "heading": "",
+        "subheading": "",
+        "width": "alignwide",
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff",
+        "custom_class": ""
       }
     }
   },
   "order": [
     "block_marketing_cover_yk8iXx",
-    "main"
+    "block_marketing_promo_pdcXtQ",
+    "block_marketing_media_usps_zVfPNR",
+    "block_marketing_testimonials_attenQ",
+    "main",
+    "block_marketing_promo_mAALrK",
+    "block_marketing_media_text_HtFd6L"
   ]
 }

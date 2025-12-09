@@ -8,23 +8,89 @@
  * ------------------------------------------------------------
  */
 {
-  "name": "t:sections.header.name",
+  "name": "Header",
   "type": "header",
   "sections": {
     "header-top": {
       "type": "block-header-top",
-      "settings": {}
+      "blocks": {
+        "usp-1": {
+          "type": "usp",
+          "settings": {
+            "text": "Gratis boven € 75 (NL/BE)",
+            "link": "shopify://pages/wereldwijde-verzending",
+            "title": "Gratis boven € 75 (NL/BE)",
+            "icon": "truck"
+          }
+        },
+        "usp-2": {
+          "type": "usp",
+          "settings": {
+            "text": "Voor 20:30 verzonden (PostNL, DPD, GLS)",
+            "link": "shopify://pages/wereldwijde-verzending",
+            "title": "Voor 20:30 verzonden (PostNL, DPD, GLS)",
+            "icon": "stopwatch"
+          }
+        },
+        "usp-3": {
+          "type": "usp",
+          "settings": {
+            "text": "17.000 items op voorraad",
+            "link": "shopify://collections/all",
+            "title": "17.000 items op voorraad",
+            "icon": "cart"
+          }
+        },
+        "usp-4": {
+          "type": "usp",
+          "settings": {
+            "text": "Laagste prijs garantie",
+            "link": "https://celticwebmerchant.zendesk.com/hc/en-us/articles/4422423278866-Lowest-price-guarantee-and-best-service-guarantee",
+            "title": "Laagste prijs garantie",
+            "icon": "price-tag"
+          }
+        }
+      },
+      "block_order": [
+        "usp-1",
+        "usp-2",
+        "usp-3",
+        "usp-4"
+      ],
+      "settings": {
+        "show_region_selector": true,
+        "width": "alignwide",
+        "background_color": "#2e130d",
+        "text_color": "#ffffff"
+      }
     },
     "header-middle": {
       "type": "block-header-middle",
-      "settings": {}
+      "settings": {
+        "logo_width": 160,
+        "menu_primary": "tribe-menu",
+        "menu_secondary": "sale-menu",
+        "show_search": true,
+        "show_account": true,
+        "show_wishlist": true,
+        "wishlist_url": "/apps/wishlist",
+        "show_cart": true,
+        "width": "alignwide",
+        "background_color": "#2e130d",
+        "text_color": "#ffffff"
+      }
     },
     "header-bottom": {
       "type": "block-header-bottom",
-      "settings": {}
+      "settings": {
+        "menu": "product-menu",
+        "assist_link_text": "Lees meer",
+        "background_color": "#ffffff",
+        "text_color": "#2e130d"
+      }
     },
     "header-product": {
-      "type": "block-product-bar",
+      "type": "block-header-product",
       "settings": {}
     }
   },
@@ -32,6 +98,6 @@
     "header-top",
     "header-middle",
     "header-bottom",
-    "header-product",
+    "header-product"
   ]
 }

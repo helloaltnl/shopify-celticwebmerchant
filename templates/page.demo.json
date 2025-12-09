@@ -1,0 +1,381 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "block_marketing_cover_yk8iXx": {
+      "type": "block-marketing-cover",
+      "name": "Marketing Cover (afbeelding)",
+      "settings": {
+        "image": "shopify://shop_images/bundhaube-zum-gambeson-eckwin-schwarz_5.jpg",
+        "subheading": "subheading",
+        "heading": "Dit is de heading (kop)",
+        "text": "<p>Hier de verdere tekst.</p>",
+        "width": "alignfull",
+        "height": "medium",
+        "overlay_opacity": "medium",
+        "text_position": "center",
+        "text_alignment": "center",
+        "cta_text": "Shop Now",
+        "cta_url": "shopify://collections/viking-bont-kraag",
+        "cta_style": "primary"
+      }
+    },
+    "block_marketing_cover_KgQqbT": {
+      "type": "block-marketing-cover",
+      "name": "Marketing Cover (video)",
+      "settings": {
+        "image": "shopify://shop_images/bundhaube-zum-gambeson-eckwin-schwarz_5.jpg",
+        "video": "shopify://files/videos/Home Banner.mp4",
+        "subheading": "Marketing Cover (video)",
+        "heading": "Hier de pakkende titel",
+        "text": "<p>Voeg hier de tekst in</p>",
+        "width": "alignfull",
+        "height": "medium",
+        "overlay_opacity": "medium",
+        "text_position": "center",
+        "text_alignment": "center",
+        "cta_text": "Shop Now",
+        "cta_url": "shopify://products/middeleeuwse-jurk-elisa-naturel",
+        "cta_style": "primary"
+      }
+    },
+    "block_marketing_banners_BPCHck": {
+      "type": "block-marketing-banners",
+      "blocks": {
+        "banner_LdCUHV": {
+          "type": "banner",
+          "name": "Marketing Banner - Info",
+          "settings": {
+            "text": "Marketing banner tekst",
+            "cta_text": "Knoptekst",
+            "cta_url": "shopify://policies/privacy-policy",
+            "style": "info",
+            "dismissible": false
+          }
+        }
+      },
+      "block_order": [
+        "banner_LdCUHV"
+      ],
+      "name": "Marketing Banner - Info",
+      "settings": {
+        "heading": "Dit is de heading van de marketing banner",
+        "subheading": "Subheading",
+        "layout": "stacked"
+      }
+    },
+    "block_marketing_banners_rTahpG": {
+      "type": "block-marketing-banners",
+      "blocks": {
+        "banner_d8U8Xn": {
+          "type": "banner",
+          "settings": {
+            "text": "Dit is een marketing banner voorbeeld",
+            "cta_text": "Knoptekst",
+            "cta_url": "shopify://pages/algemene-voorwaarden",
+            "style": "success",
+            "dismissible": true
+          }
+        }
+      },
+      "block_order": [
+        "banner_d8U8Xn"
+      ],
+      "name": "Marketing Banner - Success",
+      "settings": {
+        "heading": "",
+        "subheading": "",
+        "layout": "stacked"
+      }
+    },
+    "block_marketing_banners_eCAFa4": {
+      "type": "block-marketing-banners",
+      "blocks": {
+        "banner_FdRHUR": {
+          "type": "banner",
+          "settings": {
+            "text": "Dit is een voorbeeld van een marketing banner",
+            "cta_text": "Knoptekst",
+            "cta_url": "shopify://collections/levende-geschiedenis",
+            "style": "warning",
+            "dismissible": true
+          }
+        }
+      },
+      "block_order": [
+        "banner_FdRHUR"
+      ],
+      "name": "Marketing Banner - Warning",
+      "settings": {
+        "heading": "",
+        "subheading": "",
+        "layout": "stacked"
+      }
+    },
+    "block_marketing_banners_FDnnW6": {
+      "type": "block-marketing-banners",
+      "blocks": {
+        "banner_Gd3G9c": {
+          "type": "banner",
+          "settings": {
+            "text": "Dit is een voorbeeld van een marketing banner",
+            "cta_text": "Knoptekst",
+            "cta_url": "shopify://collections/levende-geschiedenis",
+            "style": "error",
+            "dismissible": true
+          }
+        }
+      },
+      "block_order": [
+        "banner_Gd3G9c"
+      ],
+      "name": "Marketing Banner - Error",
+      "settings": {
+        "heading": "",
+        "subheading": "",
+        "layout": "stacked"
+      }
+    },
+    "block_marketing_banners_w6YEx7": {
+      "type": "block-marketing-banners",
+      "blocks": {
+        "banner_x4khPU": {
+          "type": "banner",
+          "settings": {
+            "text": "Dit is een marketing banner \"Promo\" voorbeeld",
+            "cta_text": "Knop met link naar bestemming",
+            "cta_url": "shopify://collections/baardkralen",
+            "style": "promo",
+            "dismissible": true
+          }
+        }
+      },
+      "block_order": [
+        "banner_x4khPU"
+      ],
+      "custom_css": [
+        "section {margin-bottom: 2em;}"
+      ],
+      "name": "Marketing Banner - Promo",
+      "settings": {
+        "heading": "Dit is de promo heading",
+        "subheading": "Dit is de promo subheading",
+        "layout": "stacked"
+      }
+    },
+    "block_marketing_brands_small_hcBWAT": {
+      "type": "block-marketing-brands-small",
+      "blocks": {
+        "collection_NibbE6": {
+          "type": "collection",
+          "settings": {
+            "collection": "epic-armoury"
+          }
+        },
+        "collection_6jjGVT": {
+          "type": "collection",
+          "settings": {
+            "collection": "ballistol-1"
+          }
+        },
+        "collection_f6cWyh": {
+          "type": "collection",
+          "settings": {
+            "collection": "burgschneider"
+          }
+        }
+      },
+      "block_order": [
+        "collection_NibbE6",
+        "collection_6jjGVT",
+        "collection_f6cWyh"
+      ],
+      "name": "Marketing Brands Small",
+      "settings": {
+        "heading": "Marketing Brands Small",
+        "button_text": "Bekijk alle merken",
+        "button_url": "shopify://pages/onze-merken",
+        "button_background": "#000000",
+        "button_color": "#ffffff",
+        "button_border_radius": 0,
+        "columns_mobile": 2,
+        "columns_tablet": 4,
+        "columns_desktop": 4,
+        "gap": 20,
+        "image_ratio": "1 / 1",
+        "image_fit": "contain",
+        "border_radius": 8,
+        "container_width": 1400,
+        "padding_top": 60,
+        "padding_bottom": 60
+      }
+    },
+    "block_marketing_brands_VrePbW": {
+      "type": "block-marketing-brands",
+      "name": "Marketing Brands",
+      "settings": {
+        "heading": "Marketing Brands",
+        "columns_mobile": 3,
+        "columns_tablet": 4,
+        "columns_desktop": 6,
+        "gap": 20,
+        "image_ratio": "1 / 1",
+        "image_fit": "contain",
+        "border_radius": 0,
+        "container_width": 1400,
+        "padding_top": 60,
+        "padding_bottom": 60
+      }
+    },
+    "block_marketing_story_9cHJJT": {
+      "type": "block-marketing-story",
+      "blocks": {
+        "split_iYMbmi": {
+          "type": "split",
+          "settings": {
+            "image": "shopify://shop_images/bundhaube-zum-gambeson-eckwin-schwarz_5.jpg",
+            "heading": "Chapter One",
+            "text": "<p>Share your brand story here...</p>",
+            "cta_text": "Knoptekst",
+            "cta_url": "shopify://blogs/middeleeuwen",
+            "cta_style": "outline",
+            "background_color": ""
+          }
+        },
+        "split_4EQQp4": {
+          "type": "split",
+          "settings": {
+            "image": "shopify://shop_images/Renaissance_Tudor_kleding.webp",
+            "heading": "Chapter Two",
+            "text": "<p>Share your brand story here...</p>",
+            "cta_text": "Knoptekst",
+            "cta_url": "shopify://pages/duurzaamheid",
+            "cta_style": "outline",
+            "background_color": "#fce4e4"
+          }
+        }
+      },
+      "block_order": [
+        "split_iYMbmi",
+        "split_4EQQp4"
+      ],
+      "name": "Marketing Story",
+      "settings": {
+        "heading": "Marketing Story - titel",
+        "subheading": "Marketing Story - ondertitel",
+        "alternate": true,
+        "default_position": "left",
+        "vertical_alignment": "center"
+      }
+    },
+    "block_marketing_media_text_Jp3MKt": {
+      "type": "block-marketing-media-text",
+      "blocks": {
+        "image_text_debQTH": {
+          "type": "image_text",
+          "settings": {
+            "image": "shopify://shop_images/Middeleeuwse_monnikspij.webp",
+            "image_position": "left",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "heading": "Marketing Media & Text",
+            "text": "<p>Add your description here...</p>",
+            "cta_text": "Knoptekst",
+            "cta_url": "shopify://blogs/oudheid-romeinen/de-parazonium-symbool-van-macht-in-de-romeinse-oudheid",
+            "cta_style": "primary",
+            "background_color": "#ffffff"
+          }
+        }
+      },
+      "block_order": [
+        "image_text_debQTH"
+      ],
+      "custom_css": [
+        "section {padding: 2em 0;}"
+      ],
+      "name": "Marketing Media & Text",
+      "settings": {
+        "heading": "",
+        "subheading": ""
+      }
+    },
+    "block_marketing_grid_AwWFAT": {
+      "type": "block-marketing-grid",
+      "blocks": {
+        "banner_436czV": {
+          "type": "banner",
+          "settings": {
+            "image": "shopify://shop_images/Fantasy_helm.webp",
+            "label": "New Collection",
+            "heading": "Summer Collection",
+            "text": "",
+            "link_url": "",
+            "design": "blue"
+          }
+        },
+        "banner_3CVcPN": {
+          "type": "banner",
+          "settings": {
+            "image": "shopify://shop_images/Middeleeuws_overkleed_wapenrok.webp",
+            "label": "New Collection",
+            "heading": "Summer Collection",
+            "text": "",
+            "link_url": "",
+            "design": "green"
+          }
+        },
+        "product_pziVfC": {
+          "type": "product",
+          "settings": {
+            "product": "100-wollen-deken-mantel-vissegraat-blauw",
+            "second_image": false,
+            "design": "red"
+          }
+        }
+      },
+      "block_order": [
+        "banner_436czV",
+        "banner_3CVcPN",
+        "product_pziVfC"
+      ],
+      "name": "Marketing Grid",
+      "settings": {
+        "heading": "Marketing Grid",
+        "subtext": "Marketing Grid - subtext",
+        "view": "grid",
+        "enable_gaps": true,
+        "width": "alignwide",
+        "background_color": "transparent"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "block_marketing_cover_yk8iXx",
+    "block_marketing_cover_KgQqbT",
+    "block_marketing_banners_BPCHck",
+    "block_marketing_banners_rTahpG",
+    "block_marketing_banners_eCAFa4",
+    "block_marketing_banners_FDnnW6",
+    "block_marketing_banners_w6YEx7",
+    "block_marketing_brands_small_hcBWAT",
+    "block_marketing_brands_VrePbW",
+    "block_marketing_story_9cHJJT",
+    "block_marketing_media_text_Jp3MKt",
+    "block_marketing_grid_AwWFAT"
+  ]
+}

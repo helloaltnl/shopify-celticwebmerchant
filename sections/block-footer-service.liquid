@@ -1,0 +1,505 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-FOOTER-SERVICE
+  ============================================================================
+  Flexible footer section with configurable columns via blocks.
+
+  FEATURES:
+  - Customer service block with image and contact link
+  - Showroom block with info and directions link
+  - Newsletter signup block
+  - Custom text block for flexible content
+  - Color customization
+
+  BLOCKS:
+  - service: Customer service with optional image
+  - showroom: Showroom/location info
+  - newsletter: Email signup form
+  - text: Custom text with optional link
+
+  DEPENDENCIES:
+  - html-theme-icons snippet
+  ============================================================================
+{%- endcomment -%}
+
+<div class="block-footer-service__content {{ section.settings.width }}">
+	{%- for block in section.blocks -%}
+		{%- case block.type -%}
+
+			{%- when 'service' -%}
+				{%- liquid
+					assign heading = block.settings.heading
+					if heading == blank
+						assign heading = 'footer.service_heading' | t
+					endif
+					assign text = block.settings.text
+					if text == blank
+						assign text = 'footer.service_text' | t
+					endif
+					assign link_text = block.settings.link_text
+					if link_text == blank
+						assign link_text = 'footer.service_link_text' | t
+					endif
+				-%}
+				<div class="block-footer-service__column" {{ block.shopify_attributes }}>
+					<h4 class="block-footer-service__heading">{{ heading }}</h4>
+					<div class="block-footer-service__body">
+						{%- if block.settings.image -%}
+							<figure class="block-footer-service__image">
+								<img
+									src="{{ block.settings.image | image_url: width: 128 }}"
+									alt="{{ heading | escape }}"
+									loading="lazy"
+									width="64"
+									height="64"
+								>
+							</figure>
+						{%- endif -%}
+						<div class="block-footer-service__text">
+							<p>{{ text }}</p>
+							{%- if block.settings.link != blank -%}
+								<a href="{{ block.settings.link }}" class="block-footer-service__link">
+									<span>{{ link_text }}</span>
+								</a>
+							{%- endif -%}
+						</div>
+					</div>
+				</div>
+
+			{%- when 'showroom' -%}
+				{%- liquid
+					assign heading = block.settings.heading
+					if heading == blank
+						assign heading = 'footer.showroom_heading' | t
+					endif
+					assign text = block.settings.text
+					if text == blank
+						assign text = 'footer.showroom_text' | t
+					endif
+					assign link_text = block.settings.link_text
+					if link_text == blank
+						assign link_text = 'footer.showroom_link_text' | t
+					endif
+				-%}
+				<div class="block-footer-service__column" {{ block.shopify_attributes }}>
+					<h4 class="block-footer-service__heading">{{ heading }}</h4>
+					<div class="block-footer-service__body">
+						<div class="block-footer-service__text">
+							<p>{{ text }}</p>
+							{%- if block.settings.link != blank -%}
+								<a href="{{ block.settings.link }}" class="block-footer-service__link">
+									<span>{{ link_text }}</span>
+								</a>
+							{%- endif -%}
+						</div>
+					</div>
+				</div>
+
+			{%- when 'newsletter' -%}
+				{%- liquid
+					assign heading = block.settings.heading
+					if heading == blank
+						assign heading = 'newsletter.heading' | t
+					endif
+					assign placeholder = block.settings.placeholder
+					if placeholder == blank
+						assign placeholder = 'newsletter.placeholder' | t
+					endif
+				-%}
+				<div class="block-footer-service__column" {{ block.shopify_attributes }}>
+					<h4 class="block-footer-service__heading">{{ heading }}</h4>
+					<div class="block-footer-service__body">
+						{%- form 'customer', id: 'ContactFooter', class: 'block-footer-service__form' -%}
+							<input type="hidden" name="contact[tags]" value="newsletter">
+							
+							<div class="block-footer-service__field">
+								<input
+									id="NewsletterForm--{{ section.id }}"
+									type="email"
+									name="contact[email]"
+									class="block-footer-service__input"
+									value="{{ form.email }}"
+									aria-required="true"
+									autocorrect="off"
+									autocapitalize="off"
+									autocomplete="email"
+									{% if form.errors %}
+										autofocus
+										aria-invalid="true"
+										aria-describedby="ContactFooter-error"
+									{% elsif form.posted_successfully? %}
+										aria-describedby="ContactFooter-success"
+									{% endif %}
+									placeholder="{{ placeholder }}"
+									required
+								>
+								<label class="block-footer-service__label visually-hidden" for="NewsletterForm--{{ section.id }}">
+									{{ 'newsletter.label' | t }}
+								</label>
+								<button type="submit" class="block-footer-service__submit" aria-label="{{ 'newsletter.button' | t }}">
+									{% render 'html-theme-icons', icon: 'arrow', size: 20 %}
+								</button>
+							</div>
+
+							{%- if form.errors -%}
+								<div class="block-footer-service__message block-footer-service__message--error" id="ContactFooter-error">
+									{% render 'html-theme-icons', icon: 'error', size: 16 %}
+									<span>{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</span>
+								</div>
+							{%- endif -%}
+
+							{%- if form.posted_successfully? -%}
+								<div class="block-footer-service__message block-footer-service__message--success" id="ContactFooter-success" tabindex="-1" autofocus>
+									{% render 'html-theme-icons', icon: 'success', size: 16 %}
+									<span>{{ 'newsletter.success' | t }}</span>
+								</div>
+							{%- endif -%}
+						{%- endform -%}
+					</div>
+				</div>
+
+			{%- when 'text' -%}
+				<div class="block-footer-service__column" {{ block.shopify_attributes }}>
+					{%- if block.settings.heading != blank -%}
+						<h4 class="block-footer-service__heading">{{ block.settings.heading }}</h4>
+					{%- endif -%}
+					<div class="block-footer-service__body">
+						<div class="block-footer-service__text">
+							{%- if block.settings.text != blank -%}
+								<p>{{ block.settings.text }}</p>
+							{%- endif -%}
+							{%- if block.settings.link != blank and block.settings.link_text != blank -%}
+								<a href="{{ block.settings.link }}" class="block-footer-service__link">
+									<span>{{ block.settings.link_text }}</span>
+								</a>
+							{%- endif -%}
+						</div>
+					</div>
+				</div>
+
+		{%- endcase -%}
+	{%- endfor -%}
+</div>
+
+{% style %}
+	.block-footer-service {
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding: 2em 0;
+	}
+
+	.block-footer-service__content {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 2em;
+	}
+
+	.block-footer-service__column {
+		flex: 1 1 15em;
+		min-width: 0;
+	}
+
+	.block-footer-service__heading {
+		font-family: var(--theme-font-family-serif);
+		font-size: 1.4em;
+		font-weight: 400;
+		color: inherit;
+		margin: 0 0 0.5em 0;
+	}
+
+	.block-footer-service__body {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		gap: 1em;
+	}
+
+	.block-footer-service__image {
+		flex: 0 0 auto;
+		width: 3.5em;
+		height: 3.5em;
+		margin: 0;
+		padding: 0;
+		border-radius: 50%;
+		overflow: hidden;
+		background-color: var(--theme-color-white);
+	}
+
+	.block-footer-service__image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.block-footer-service__text {
+		flex: 1 1 auto;
+	}
+
+	.block-footer-service__text p {
+		margin: 0 0 1em 0;
+		letter-spacing: var(--theme-letter-spacing);
+		line-height: 1.5;
+	}
+
+	.block-footer-service__link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		padding: 0.5em 1em;
+		border: 1px solid currentColor;
+		color: inherit;
+		text-decoration: none;
+		font-size: 0.9em;
+		transition: background-color 150ms ease, color 150ms ease;
+	}
+
+	.block-footer-service__link:hover {
+		background-color: var(--theme-color-white);
+		color: {{ section.settings.background_color }};
+	}
+
+	/* Newsletter form */
+	.block-footer-service__form {
+		width: 100%;
+	}
+
+	.block-footer-service__field {
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
+		border: 1px solid currentColor;
+	}
+
+	.block-footer-service__input {
+		flex: 1 1 auto;
+		min-width: 0;
+		padding: 0.75em 1em;
+		border: none;
+		background-color: transparent;
+		color: inherit;
+		font-size: 1em;
+		font-family: inherit;
+	}
+
+	.block-footer-service__input::placeholder {
+		color: inherit;
+		opacity: 0.6;
+	}
+
+	.block-footer-service__input:focus {
+		outline: none;
+	}
+
+	.block-footer-service__submit {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.75em 1em;
+		border: none;
+		background-color: transparent;
+		color: inherit;
+		cursor: pointer;
+		transition: background-color 150ms ease, color 150ms ease;
+	}
+
+	.block-footer-service__submit:hover {
+		background-color: var(--theme-color-white);
+		color: {{ section.settings.background_color }};
+	}
+
+	.block-footer-service__message {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		margin-top: 0.75em;
+		font-size: 0.9em;
+	}
+
+	.block-footer-service__message--error {
+		color: var(--theme-color-alert);
+	}
+
+	.block-footer-service__message--success {
+		color: var(--theme-color-success);
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.block-footer-service__column {
+			flex: 1 1 100%;
+		}
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "Footer service",
+	"tag": "section",
+	"class": "block-footer-service",
+	"limit": 1,
+	"enabled_on": {
+		"groups": ["footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "align"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#0f1f38"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#ffffff"
+		}
+	],
+	"blocks": [
+		{
+			"type": "service",
+			"name": "Customer service",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "text",
+					"id": "heading",
+					"label": "Heading",
+					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "image_picker",
+					"id": "image",
+					"label": "Image"
+				},
+				{
+					"type": "textarea",
+					"id": "text",
+					"label": "Text",
+					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "url",
+					"id": "link",
+					"label": "Link"
+				},
+				{
+					"type": "text",
+					"id": "link_text",
+					"label": "Link text",
+					"info": "Leave empty to use locale default"
+				}
+			]
+		},
+		{
+			"type": "showroom",
+			"name": "Showroom",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "text",
+					"id": "heading",
+					"label": "Heading",
+					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "textarea",
+					"id": "text",
+					"label": "Text",
+					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "url",
+					"id": "link",
+					"label": "Link"
+				},
+				{
+					"type": "text",
+					"id": "link_text",
+					"label": "Link text",
+					"info": "Leave empty to use locale default"
+				}
+			]
+		},
+		{
+			"type": "newsletter",
+			"name": "Newsletter",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "text",
+					"id": "heading",
+					"label": "Heading",
+					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "text",
+					"id": "placeholder",
+					"label": "Input placeholder",
+					"info": "Leave empty to use locale default"
+				}
+			]
+		},
+		{
+			"type": "text",
+			"name": "Custom text",
+			"settings": [
+				{
+					"type": "text",
+					"id": "heading",
+					"label": "Heading"
+				},
+				{
+					"type": "textarea",
+					"id": "text",
+					"label": "Text"
+				},
+				{
+					"type": "url",
+					"id": "link",
+					"label": "Link"
+				},
+				{
+					"type": "text",
+					"id": "link_text",
+					"label": "Link text"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "Service",
+			"category": "Footer",
+			"blocks": [
+				{ "type": "service" },
+				{ "type": "showroom" },
+				{ "type": "newsletter" }
+			]
+		}
+	]
+}
+{% endschema %}

@@ -1,440 +1,880 @@
-<section id="product-information" class="product-information-content align">
-	<article>
-		{%- assign refs = product.metafields.custom['product-information-references'] -%}
-		{%- assign has_refs = false -%}
-		{%- if refs and refs.value -%}
-		  {%- assign has_refs = true -%}
-		{%- endif -%}
-		<section>
-			{% if product.description != blank %}
-			<section 
-				class="product-information-description{% if has_refs %} has-product-references{% endif %}"
-				data-readmore="collapsed" 
-				data-readmore-paragraphs="1" 
-				aria-live="polite"> 
-				<h2>Product omschrijving</h2>
-				{{ product.description 
-					| replace: '<br><br>', '</p><p>' 
-					| replace: '<p hidden></p>', ''
-					| replace: '<p hidden="hidden"></p>', ''
-					| replace: '<p aria-hidden="true"></p>', ''
-					| replace: '<p>&nbsp;</p>', ''
-					| replace: '<p> &nbsp; </p>', ''
-					| replace: '<p> </p>', ''
-					| replace: '<p></p>', ''
-				}}
-				<button 
-					class="is-button" 
-					type="button" 
-					aria-expanded="false" 
-					>
-					<span data-label-collapsed>Lees meer</span>
-					<span data-label-expanded hidden>Minder</span>
-					<i>
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
-					</i>
-				</button>
-			</section>
-			{% endif %}
-			
-			{% if product.metafields.custom.product_details != blank %}
-			<section class="product-information-details">
-				<details open>
-					<summary>
-						<i class="is-summary-icon">
-							<svg width="24" height="24" role="img" aria-label="productdetails" class="icon">
-								<use href="#icon-details"></use>
-							</svg>
-						</i>
-						<span class="is-summary-label">Product details</span>
-						<span class="is-summary-caret"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
-					</summary>
-					{{product.metafields.custom.product_details}}
-				</details>
-			</section>
-			{%- endif -%}
-			
-		</section>
-		{%- if product.metafields.custom['product-information-references'] -%}
-		<aside>
-			<section>
-			<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
-				
-			<symbol id="icon-details" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<line x1="17" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="17" y1="18" x2="3" y2="18"></line>
-				</g>
-			</symbol>	
-			
-			<symbol id="icon-sizechart" viewBox="0 0 24 24">
-				<g><path d="M5.46973 4.53027C5.61621 4.67676 5.80811 4.75 6 4.75C6.19189 4.75 6.38379 4.67676 6.53027 4.53027C6.82324 4.2373 6.82324 3.76269 6.53027 3.46972L4.53027 1.46972C4.39453 1.33398 4.20703 1.25 4 1.25C3.79297 1.25 3.60547 1.33398 3.46973 1.46973L1.46973 3.46973C1.17676 3.7627 1.17676 4.23731 1.46973 4.53028C1.7627 4.82325 2.23731 4.82325 2.53028 4.53028L3.25 3.81055V18C3.25 18.4141 3.58594 18.75 4 18.75C4.41406 18.75 4.75 18.4141 4.75 18V3.81055L5.46973 4.53027Z"></path>
-				<path d="M22.5303 19.4697L20.5303 17.4697C20.2373 17.1768 19.7627 17.1768 19.4697 17.4697C19.1768 17.7627 19.1768 18.2373 19.4697 18.5303L20.1894 19.25H6C5.58594 19.25 5.25 19.5859 5.25 20C5.25 20.4141 5.58594 20.75 6 20.75H20.1894L19.4697 21.4697C19.1768 21.7627 19.1768 22.2373 19.4697 22.5303C19.6162 22.6768 19.8076 22.75 20 22.75C20.1924 22.75 20.3838 22.6768 20.5303 22.5303L22.5303 20.5303C22.666 20.3945 22.75 20.207 22.75 20C22.75 19.793 22.666 19.6055 22.5303 19.4697Z"></path>
-				<path d="M6.25 7V17C6.25 17.4141 6.58594 17.75 7 17.75H17C17.4141 17.75 17.75 17.4141 17.75 17V7C17.75 6.58594 17.4141 6.25 17 6.25H7C6.58594 6.25 6.25 6.58594 6.25 7ZM7.75 7.75H16.25V16.25H7.75V7.75Z"></path></g>
-			</symbol>
-				
-			<!-- Kwaliteitsclassificatie: badge + ster -->
-			<symbol id="icon-kwaliteitsclassificatie" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M12 2l2.2 2.6 3.4.6-2.2 2.6.4 3.4L12 10.4 8.2 11.2l.4-3.4-2.2-2.6 3.4-.6L12 2z"/>
-				<path d="M7 14.5l-1 5.5 6-2 6 2-1-5.5"/>
-				</g>
-			</symbol>
-			
-			<!-- Materiaal: lagen -->
-			<symbol id="icon-materiaal" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M12 3l8 4-8 4-8-4 8-4z"/>
-				<path d="M20 11l-8 4-8-4"/>
-				<path d="M20 15l-8 4-8-4"/>
-				</g>
-			</symbol>
-			
-			<!-- Afwerking: glans/sparkles -->
-			<symbol id="icon-afwerking" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M12 4l1.8 3.2L17 9l-3.2 1.8L12 14l-1.8-3.2L7 9l3.2-1.8L12 4z"/>
-				<path d="M18.5 5.5l.9 1.6 1.6.9-1.6.9-.9 1.6-.9-1.6-1.6-.9 1.6-.9.9-1.6z"/>
-				<path d="M5.5 14l.7 1.2 1.2.7-1.2.7-.7 1.2-.7-1.2-1.2-.7 1.2-.7.7-1.2z"/>
-				</g>
-			</symbol>
-			
-			<!-- Garantie: schild + check -->
-			<symbol id="icon-garantie" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M12 3l7 3v5c0 4.5-3.5 7.8-7 10-3.5-2.2-7-5.5-7-10V6l7-3z"/>
-				<path d="M9 12l2 2 4-4"/>
-				</g>
-			</symbol>
-			
-			<!-- Bevestiging: bout + moer -->
-			<symbol id="icon-bevestiging" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M4 7l4-2 4 2v4l-4 2-4-2V7z"/>
-				<circle cx="8" cy="9" r="1.6"/>
-				<path d="M14 7l6 0M14 11h6M14 15h6"/>
-				</g>
-			</symbol>
-			
-			<!-- Opmeten: liniaal -->
-			<symbol id="icon-opmeten" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<rect x="3" y="7" width="18" height="6" rx="1.5"/>
-				<path d="M7 7v6M10 7v3M13 7v6M16 7v3M19 7v6"/>
-				</g>
-			</symbol>
-			
-			<!-- Onderhoud: sleutel + tandwiel -->
-			<symbol id="icon-onderhoud" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M9 16l-4 4M10.5 14.5a3.5 3.5 0 11-5-5l2 2 2-2a3.5 3.5 0 011 5z"/>
-				<circle cx="17" cy="7" r="2.2"/>
-				<path d="M17 3.8v-1M17 11.2v1M20.2 7h1M12.8 7h-1M19 5l.7-.7M15 9l-.7.7M19 9l.7.7M15 5l-.7-.7"/>
-				</g>
-			</symbol>
-			
-			<!-- Productie: fabriek -->
-			<symbol id="icon-productie" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M3 20h18v-7l-5-3-4 3V8l-4 3V5h-3v15z"/>
-				<path d="M8 20v-3h3v3M13 20v-3h3v3"/>
-				<path d="M16 5h3v5"/>
-				</g>
-			</symbol>
-			
-			<!-- Verzending: truck -->
-			<symbol id="icon-verzending" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M3 7h10v7H3z"/>
-				<path d="M13 9h4l3 3v2h-7"/>
-				<circle cx="7" cy="17" r="2"/>
-				<circle cx="17" cy="17" r="2"/>
-				<path d="M5 17h2M15 17h2"/>
-				</g>
-			</symbol>
-			
-			<!-- Leeftijdsverificatie: schild + 18 -->
-			<symbol id="icon-leeftijdsverificatie" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M12 3l7 3v5c0 4.5-3.5 7.8-7 10-3.5-2.2-7-5.5-7-10V6l7-3z"/>
-				<path d="M9.5 10.5v4"/>
-				<circle cx="14.5" cy="12.5" r="2"/>
-				</g>
-			</symbol>
-			
-			<!-- Verpakkingsinformatie: doos -->
-			<symbol id="icon-verpakkingsinformatie" viewBox="0 0 24 24">
-				<g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M12 3l9 4.5-9 4.5L3 7.5 12 3z"/>
-				<path d="M21 7.5v8L12 20.5 3 15.5v-8"/>
-				<path d="M12 12v8"/>
-				<path d="M12 7.5l-4.5 2.2M12 7.5l4.5 2.2"/>
-				</g>
-			</symbol>
-			</svg>
-			
-			
-			
-			{% if product.metafields.custom.product-sizechart != blank %}
-				<details>
-					<summary>
-						<i class="is-summary-icon">
-							<svg width="24" height="24" role="img" aria-label="maattabel" class="icon">
-								<use href="#icon-sizechart"></use>
-							</svg>
-						</i>
-						<span class="is-summary-label">Sizechart</span>
-						<span class="is-summary-caret"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
-					</summary>
-					{{ product.metafields.custom.product-sizechart | metafield_tag | replace: '&lt;', '<' | replace: '&gt;', '>' }}
-				</details>
-			{% endif %}
-			
-			{%- assign ref_items = product.metafields.custom['product-information-references'].value -%}
-			{%- assign ref_first = true -%}
-			{%- for ref_item in ref_items -%}
-				{%- assign ref_type = '' -%}
-				{%- if ref_item.type -%}
-					{%- assign ref_info = ref_item.type.value -%}
-					{%- assign ref_type = ref_info.system.handle -%}
-					{% comment %} {{ref_info.title}} - {{ref_type}} {% endcomment %}
-				{%- endif -%}
-				<details class="is-information is-information-{{ref_type}}" {% if ref_first %}open{% endif %}>
-					<summary>
-						<i class="is-summary-icon">
-							{%- case ref_type -%}
-								{%- when 'verpakkingsinformatie' -%}
-									<svg width="24" height="24" role="img" aria-label="verpakkingsinformatie" class="icon">
-										<use href="#icon-verpakkingsinformatie"></use>
-									</svg>
-								{%- when 'leeftijdsverificatie' -%}
-									<svg width="24" height="24" role="img" aria-label="leeftijdsverificatie" class="icon">
-										<use href="#icon-leeftijdsverificatie"></use>
-									</svg>
-								{%- when 'productie' -%}
-									<svg width="24" height="24" role="img" aria-label="productie" class="icon">
-										<use href="#icon-productie"></use>
-									</svg>
-								{%- when 'onderhoud' -%}
-									<svg width="24" height="24" role="img" aria-label="onderhoud" class="icon">
-										<use href="#icon-onderhoud"></use>
-									</svg>
-								{%- when 'afwerking' -%}
-									<svg width="24" height="24" role="img" aria-label="afwerking" class="icon">
-										<use href="#icon-afwerking"></use>
-									</svg>
-								{%- when 'kwaliteitsclassificatie' -%}
-									<svg width="24" height="24" role="img" aria-label="kwaliteitsclassificatie" class="icon">
-										<use href="#icon-kwaliteitsclassificatie"></use>
-									</svg>
-								{%- when 'materiaal' -%}
-									<svg width="24" height="24" role="img" aria-label="materiaal" class="icon">
-										<use href="#icon-materiaal"></use>
-									</svg>
-								{%- when 'garantie' -%}
-									<svg width="24" height="24" role="img" aria-label="garantie" class="icon">
-										<use href="#icon-garantie"></use>
-									</svg>
-								{%- when 'opmeten' -%}
-									<svg width="24" height="24" role="img" aria-label="opmeten" class="icon">
-										<use href="#icon-opmeten"></use>
-									</svg>
-								{%- when 'verzending' -%}
-									<svg width="24" height="24" role="img" aria-label="verzending" class="icon">
-										<use href="#icon-verzending"></use>
-									</svg>
-								{%- when 'bevestiging' -%}
-									<svg width="24" height="24" role="img" aria-label="verzending" class="icon">
-										<use href="#icon-bevestiging"></use>
-									</svg>
-									
-								{%- else -%}
-							{%- endcase -%}
-						</i>
-						<span class="is-summary-label">{{ref_item.title}}</span>
-						<span class="is-summary-caret"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
-					</summary>
-					{{ref_item.content | metafield_tag}}
-				</details>
-				{%- assign ref_first = false -%}
-			{%- endfor -%}
-			</section>
-		</aside>
-		{%- endif -%}
-	</article>
-</section>
+{%- comment -%}
+  ============================================================================
+  BLOCK-PRODUCT-INFORMATION
+  ============================================================================
+  Product description and additional information from metafields.
+
+  FEATURES:
+  - Collapsible product description with read more/less
+  - Product details from metafield
+  - Size chart in modal (always)
+  - Information references: inline details (≤128 chars) or modal (>128 chars)
+  - Responsive two-column layout
+
+  DEPENDENCIES:
+  - html-theme-icons snippet
+  - theme-modal.js
+  - Product metafields:
+    - custom.product_details
+    - custom.product-sizechart
+    - custom.product-information-references
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign refs = product.metafields.custom['product-information-references']
+  assign has_refs = false
+  if refs and refs.value
+    assign has_refs = true
+  endif
+  assign has_sizechart = false
+  if product.metafields.custom['product-sizechart'] != blank
+    assign has_sizechart = true
+  endif
+  assign content_threshold = 128
+  
+  assign description_heading = section.settings.description_heading
+  if description_heading == blank
+    assign description_heading = 'product.description_heading' | t
+  endif
+  assign details_heading = section.settings.details_heading
+  if details_heading == blank
+    assign details_heading = 'product.details_heading' | t
+  endif
+  assign sizechart_heading = section.settings.sizechart_heading
+  if sizechart_heading == blank
+    assign sizechart_heading = 'product.sizechart_heading' | t
+  endif
+  assign read_more_text = section.settings.read_more_text
+  if read_more_text == blank
+    assign read_more_text = 'general.read_more' | t
+  endif
+  assign read_less_text = section.settings.read_less_text
+  if read_less_text == blank
+    assign read_less_text = 'general.read_less' | t
+  endif
+-%}
+
+<div class="block-product-information__content {{ section.settings.width }}" id="product-information">
+  <article class="block-product-information__article">
+    <div class="block-product-information__main">
+      {%- if product.description != blank -%}
+        <section 
+          class="block-product-information__description{% if has_refs %} has-product-references{% endif %}"
+          data-readmore="collapsed" 
+          data-readmore-paragraphs="1" 
+          aria-live="polite"
+        >
+          <h2 class="block-product-information__heading">{{ description_heading }}</h2>
+          {{ product.description 
+            | replace: '<br><br>', '</p><p>' 
+            | replace: '<p hidden></p>', ''
+            | replace: '<p hidden="hidden"></p>', ''
+            | replace: '<p aria-hidden="true"></p>', ''
+            | replace: '<p>&nbsp;</p>', ''
+            | replace: '<p> &nbsp; </p>', ''
+            | replace: '<p> </p>', ''
+            | replace: '<p></p>', ''
+          }}
+          <button class="block-product-information__toggle" type="button" aria-expanded="false">
+            <span data-label-collapsed>{{ read_more_text }}</span>
+            <span data-label-expanded hidden>{{ read_less_text }}</span>
+            {%- render 'html-theme-icons', icon: 'chevron-down', size: 20 -%}
+          </button>
+        </section>
+      {%- endif -%}
+      
+      {%- if product.metafields.custom.product_details != blank -%}
+        <section class="block-product-information__details">
+          <details open>
+            <summary>
+              <span class="block-product-information__summary-icon">
+                {%- render 'html-theme-icons', icon: 'details', size: 24 -%}
+              </span>
+              <span class="block-product-information__summary-label">{{ details_heading }}</span>
+              <span class="block-product-information__summary-caret">
+                {%- render 'html-theme-icons', icon: 'chevron-down', size: 20 -%}
+              </span>
+            </summary>
+            <div class="block-product-information__details-list">
+              {%- assign details_raw = product.metafields.custom.product_details.value | default: product.metafields.custom.product_details -%}
+              {%- comment -%} Try splitting on <br> first, then <br/>, then <br /> {%- endcomment -%}
+              {%- assign details_lines = details_raw | split: '<br>' -%}
+              {%- if details_lines.size == 1 -%}
+                {%- assign details_lines = details_raw | split: '<br/>' -%}
+              {%- endif -%}
+              {%- if details_lines.size == 1 -%}
+                {%- assign details_lines = details_raw | split: '<br />' -%}
+              {%- endif -%}
+              {%- comment -%} If still no splits, output as single block without title styling {%- endcomment -%}
+              {%- if details_lines.size == 1 -%}
+                <div class="block-product-information__details-item">{{ details_raw }}</div>
+              {%- else -%}
+                {%- for line in details_lines -%}
+                  {%- assign line_stripped = line | strip_html | strip -%}
+                  {%- if line_stripped != blank -%}
+                    {%- if forloop.first -%}
+                      <div class="block-product-information__details-title">{{ line_stripped }}</div>
+                    {%- else -%}
+                      {%- assign line_parts = line_stripped | split: ': ' -%}
+                      {%- if line_parts.size > 1 -%}
+                        <div class="block-product-information__details-item">
+                          <strong>{{ line_parts.first }}:</strong> {{ line_parts | slice: 1, line_parts.size | join: ': ' }}
+                        </div>
+                      {%- else -%}
+                        <div class="block-product-information__details-item">{{ line_stripped }}</div>
+                      {%- endif -%}
+                    {%- endif -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endif -%}
+            </div>
+          </details>
+        </section>
+      {%- endif -%}
+    </div>
+
+    {%- if has_refs or has_sizechart -%}
+      <aside class="block-product-information__aside">
+        <div class="block-product-information__references">
+          
+          {%- comment -%} Sizechart - always modal {%- endcomment -%}
+          {%- if has_sizechart -%}
+            <div class="block-product-information__item">
+              <button 
+                type="button" 
+                class="block-product-information__trigger"
+                data-modal-trigger="sizechart-modal-{{ section.id }}"
+              >
+                <span class="block-product-information__trigger-icon">
+                  {%- render 'html-theme-icons', icon: 'sizechart', size: 24 -%}
+                </span>
+                <span class="block-product-information__trigger-label">{{ sizechart_heading }}</span>
+                <span class="block-product-information__trigger-arrow">
+                  {%- render 'html-theme-icons', icon: 'arrow-up-right', size: 18 -%}
+                </span>
+              </button>
+            </div>
+          {%- endif -%}
+          
+          {%- comment -%} Information references {%- endcomment -%}
+          {%- if has_refs -%}
+            {%- assign ref_items = refs.value -%}
+            
+            {%- comment -%} First pass: Inline details (short content) {%- endcomment -%}
+            {%- assign ref_index = 0 -%}
+            {%- for ref_item in ref_items -%}
+              {%- liquid
+                assign ref_type = ''
+                if ref_item.type
+                  assign ref_info = ref_item.type.value
+                  assign ref_type = ref_info.system.handle
+                endif
+                
+                assign ref_content = ref_item.content | metafield_tag
+                assign ref_content_stripped = ref_content | strip_html | strip
+                assign ref_content_size = ref_content_stripped | size
+                assign use_modal = false
+                if ref_content_size > content_threshold
+                  assign use_modal = true
+                endif
+              -%}
+              
+              {%- unless use_modal -%}
+                {%- capture ref_icon -%}
+                  {%- case ref_type -%}
+                    {%- when 'verpakkingsinformatie' -%}
+                      {%- render 'html-theme-icons', icon: 'package', size: 24 -%}
+                    {%- when 'leeftijdsverificatie' -%}
+                      {%- render 'html-theme-icons', icon: 'shield-check', size: 24 -%}
+                    {%- when 'productie' -%}
+                      {%- render 'html-theme-icons', icon: 'factory', size: 24 -%}
+                    {%- when 'onderhoud' -%}
+                      {%- render 'html-theme-icons', icon: 'wrench', size: 24 -%}
+                    {%- when 'afwerking' -%}
+                      {%- render 'html-theme-icons', icon: 'sparkles', size: 24 -%}
+                    {%- when 'kwaliteitsclassificatie' -%}
+                      {%- render 'html-theme-icons', icon: 'badge', size: 24 -%}
+                    {%- when 'materiaal' -%}
+                      {%- render 'html-theme-icons', icon: 'layers', size: 24 -%}
+                    {%- when 'garantie' -%}
+                      {%- render 'html-theme-icons', icon: 'shield', size: 24 -%}
+                    {%- when 'opmeten' -%}
+                      {%- render 'html-theme-icons', icon: 'ruler', size: 24 -%}
+                    {%- when 'verzending' -%}
+                      {%- render 'html-theme-icons', icon: 'truck', size: 24 -%}
+                    {%- when 'bevestiging' -%}
+                      {%- render 'html-theme-icons', icon: 'bolt', size: 24 -%}
+                    {%- else -%}
+                      {%- render 'html-theme-icons', icon: 'info', size: 24 -%}
+                  {%- endcase -%}
+                {%- endcapture -%}
+                
+                <details class="block-product-information__item block-product-information__item--{{ ref_type }}">
+                  <summary>
+                    <span class="block-product-information__summary-icon">{{ ref_icon }}</span>
+                    <span class="block-product-information__summary-label">{{ ref_item.title }}</span>
+                    <span class="block-product-information__summary-caret">
+                      {%- render 'html-theme-icons', icon: 'chevron-down', size: 20 -%}
+                    </span>
+                  </summary>
+                  <div class="block-product-information__item-content">
+                    {{ ref_content }}
+                  </div>
+                </details>
+              {%- endunless -%}
+              
+              {%- assign ref_index = ref_index | plus: 1 -%}
+            {%- endfor -%}
+            
+            {%- comment -%} Second pass: Modal triggers (long content) {%- endcomment -%}
+            {%- assign ref_index = 0 -%}
+            {%- for ref_item in ref_items -%}
+              {%- liquid
+                assign ref_type = ''
+                if ref_item.type
+                  assign ref_info = ref_item.type.value
+                  assign ref_type = ref_info.system.handle
+                endif
+                
+                assign ref_content = ref_item.content | metafield_tag
+                assign ref_content_stripped = ref_content | strip_html | strip
+                assign ref_content_size = ref_content_stripped | size
+                assign use_modal = false
+                if ref_content_size > content_threshold
+                  assign use_modal = true
+                endif
+                assign modal_id = 'ref-modal-' | append: section.id | append: '-' | append: ref_index
+              -%}
+              
+              {%- if use_modal -%}
+                {%- capture ref_icon -%}
+                  {%- case ref_type -%}
+                    {%- when 'verpakkingsinformatie' -%}
+                      {%- render 'html-theme-icons', icon: 'package', size: 24 -%}
+                    {%- when 'leeftijdsverificatie' -%}
+                      {%- render 'html-theme-icons', icon: 'shield-check', size: 24 -%}
+                    {%- when 'productie' -%}
+                      {%- render 'html-theme-icons', icon: 'factory', size: 24 -%}
+                    {%- when 'onderhoud' -%}
+                      {%- render 'html-theme-icons', icon: 'wrench', size: 24 -%}
+                    {%- when 'afwerking' -%}
+                      {%- render 'html-theme-icons', icon: 'sparkles', size: 24 -%}
+                    {%- when 'kwaliteitsclassificatie' -%}
+                      {%- render 'html-theme-icons', icon: 'badge', size: 24 -%}
+                    {%- when 'materiaal' -%}
+                      {%- render 'html-theme-icons', icon: 'layers', size: 24 -%}
+                    {%- when 'garantie' -%}
+                      {%- render 'html-theme-icons', icon: 'shield', size: 24 -%}
+                    {%- when 'opmeten' -%}
+                      {%- render 'html-theme-icons', icon: 'ruler', size: 24 -%}
+                    {%- when 'verzending' -%}
+                      {%- render 'html-theme-icons', icon: 'truck', size: 24 -%}
+                    {%- when 'bevestiging' -%}
+                      {%- render 'html-theme-icons', icon: 'bolt', size: 24 -%}
+                    {%- else -%}
+                      {%- render 'html-theme-icons', icon: 'info', size: 24 -%}
+                  {%- endcase -%}
+                {%- endcapture -%}
+                
+                <div class="block-product-information__item block-product-information__item--{{ ref_type }}">
+                  <button 
+                    type="button" 
+                    class="block-product-information__trigger"
+                    data-modal-trigger="{{ modal_id }}"
+                  >
+                    <span class="block-product-information__trigger-icon">{{ ref_icon }}</span>
+                    <span class="block-product-information__trigger-label">{{ ref_item.title }}</span>
+                    <span class="block-product-information__trigger-arrow">
+                      {%- render 'html-theme-icons', icon: 'arrow-up-right', size: 18 -%}
+                    </span>
+                  </button>
+                </div>
+              {%- endif -%}
+              
+              {%- assign ref_index = ref_index | plus: 1 -%}
+            {%- endfor -%}
+          {%- endif -%}
+        </div>
+      </aside>
+    {%- endif -%}
+  </article>
+</div>
+
+{%- comment -%} ============================================
+   MODALS
+   ============================================ {%- endcomment -%}
+
+{%- comment -%} Sizechart Modal {%- endcomment -%}
+{%- if has_sizechart -%}
+  <div 
+    class="block-product-information__modal"
+    data-modal="sizechart-modal-{{ section.id }}"
+    role="dialog"
+    aria-modal="true"
+    aria-label="{{ sizechart_heading }}"
+    hidden
+  >
+    <div class="block-product-information__modal-overlay" data-modal-overlay></div>
+    <div class="block-product-information__modal-content theme-modal__content">
+      <header class="block-product-information__modal-header theme-modal__header">
+        <h3 class="block-product-information__modal-title theme-modal__title">
+          {%- render 'html-theme-icons', icon: 'sizechart', size: 24 -%}
+          {{ sizechart_heading }}
+        </h3>
+        <button type="button" class="block-product-information__modal-close theme-modal__close" data-modal-close aria-label="{{ 'accessibility.close' | t }}">
+          {%- render 'html-theme-icons', icon: 'close', size: 24 -%}
+        </button>
+      </header>
+      <div class="block-product-information__modal-body theme-modal__body">
+        {{ product.metafields.custom['product-sizechart'] | metafield_tag | replace: '&lt;', '<' | replace: '&gt;', '>' }}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{%- comment -%} Reference Modals (only for long content) {%- endcomment -%}
+{%- if has_refs -%}
+  {%- assign ref_items = refs.value -%}
+  {%- assign ref_index = 0 -%}
+  {%- for ref_item in ref_items -%}
+    {%- liquid
+      assign ref_type = ''
+      if ref_item.type
+        assign ref_info = ref_item.type.value
+        assign ref_type = ref_info.system.handle
+      endif
+      
+      assign ref_content = ref_item.content | metafield_tag
+      assign ref_content_stripped = ref_content | strip_html | strip
+      assign ref_content_size = ref_content_stripped | size
+      assign use_modal = false
+      if ref_content_size > content_threshold
+        assign use_modal = true
+      endif
+      assign modal_id = 'ref-modal-' | append: section.id | append: '-' | append: ref_index
+    -%}
+    
+    {%- if use_modal -%}
+      {%- capture ref_icon -%}
+        {%- case ref_type -%}
+          {%- when 'verpakkingsinformatie' -%}
+            {%- render 'html-theme-icons', icon: 'package', size: 24 -%}
+          {%- when 'leeftijdsverificatie' -%}
+            {%- render 'html-theme-icons', icon: 'shield-check', size: 24 -%}
+          {%- when 'productie' -%}
+            {%- render 'html-theme-icons', icon: 'factory', size: 24 -%}
+          {%- when 'onderhoud' -%}
+            {%- render 'html-theme-icons', icon: 'wrench', size: 24 -%}
+          {%- when 'afwerking' -%}
+            {%- render 'html-theme-icons', icon: 'sparkles', size: 24 -%}
+          {%- when 'kwaliteitsclassificatie' -%}
+            {%- render 'html-theme-icons', icon: 'badge', size: 24 -%}
+          {%- when 'materiaal' -%}
+            {%- render 'html-theme-icons', icon: 'layers', size: 24 -%}
+          {%- when 'garantie' -%}
+            {%- render 'html-theme-icons', icon: 'shield', size: 24 -%}
+          {%- when 'opmeten' -%}
+            {%- render 'html-theme-icons', icon: 'ruler', size: 24 -%}
+          {%- when 'verzending' -%}
+            {%- render 'html-theme-icons', icon: 'truck', size: 24 -%}
+          {%- when 'bevestiging' -%}
+            {%- render 'html-theme-icons', icon: 'bolt', size: 24 -%}
+          {%- else -%}
+            {%- render 'html-theme-icons', icon: 'info', size: 24 -%}
+        {%- endcase -%}
+      {%- endcapture -%}
+      
+      <div 
+        class="block-product-information__modal"
+        data-modal="{{ modal_id }}"
+        role="dialog"
+        aria-modal="true"
+        aria-label="{{ ref_item.title }}"
+        hidden
+      >
+        <div class="block-product-information__modal-overlay" data-modal-overlay></div>
+        <div class="block-product-information__modal-content theme-modal__content">
+          <header class="block-product-information__modal-header theme-modal__header">
+            <h3 class="block-product-information__modal-title theme-modal__title">
+              {{ ref_icon }}
+              {{ ref_item.title }}
+            </h3>
+            <button type="button" class="block-product-information__modal-close theme-modal__close" data-modal-close aria-label="{{ 'accessibility.close' | t }}">
+              {%- render 'html-theme-icons', icon: 'close', size: 24 -%}
+            </button>
+          </header>
+          <div class="block-product-information__modal-body theme-modal__body">
+            {{ ref_content }}
+          </div>
+        </div>
+      </div>
+    {%- endif -%}
+    
+    {%- assign ref_index = ref_index | plus: 1 -%}
+  {%- endfor -%}
+{%- endif -%}
 
 <script>
-(() => {
+(function() {
   const blocks = document.querySelectorAll('[data-readmore]');
-  blocks.forEach(block => {
-	const btn = block.querySelector('button[aria-expanded]');
-	if (!btn) return;
+  blocks.forEach(function(block) {
+    const btn = block.querySelector('button[aria-expanded]');
+    if (!btn) return;
 
-	// Config per blok
-	const maxParas = parseInt(block.dataset.readmoreParagraphs || '1', 10);
-	const selector = block.dataset.readmoreSelector || ':scope > p, :scope > .readmore-item';
-	const trimEmpty = (block.dataset.readmoreTrimEmpty || 'true') === 'true';
+    const maxParas = parseInt(block.dataset.readmoreParagraphs || '1', 10);
+    const selector = block.dataset.readmoreSelector || ':scope > p, :scope > .readmore-item';
+    const trimEmpty = (block.dataset.readmoreTrimEmpty || 'true') === 'true';
 
-	const collapsedLabel = btn.querySelector('[data-label-collapsed]');
-	const expandedLabel  = btn.querySelector('[data-label-expanded]');
+    const collapsedLabel = btn.querySelector('[data-label-collapsed]');
+    const expandedLabel = btn.querySelector('[data-label-expanded]');
 
-	// Alle directe children die meetellen als “paragraaf”
-	let countables = Array.from(block.querySelectorAll(selector))
-	  .filter(el => el.parentElement === block && el !== btn);
+    let countables = Array.from(block.querySelectorAll(selector))
+      .filter(function(el) { return el.parentElement === block && el !== btn; });
 
-	// Optioneel: lege <p> verwijderen
-	if (trimEmpty) {
-	  countables = countables.filter(el => {
-		if (el.tagName !== 'P') return true;
-		const txt = (el.textContent || '').replace(/\u00A0/g, ' ').trim();
-		if (!txt) { el.remove(); return false; }
-		return true;
-	  });
-	}
+    if (trimEmpty) {
+      countables = countables.filter(function(el) {
+        if (el.tagName !== 'P') return true;
+        const txt = (el.textContent || '').replace(/\u00A0/g, ' ').trim();
+        if (!txt) { el.remove(); return false; }
+        return true;
+      });
+    }
 
-	// Te weinig paragrafen? Knop weg.
-	if (countables.length <= maxParas) {
-	  btn.remove(); // 💥 knop volledig verwijderen
-	  return;
-	}
+    if (countables.length <= maxParas) {
+      btn.remove();
+      return;
+    }
 
-	// Toggle functionaliteit
-	function setState(expanded) {
-	  block.setAttribute('data-readmore', expanded ? 'expanded' : 'collapsed');
-	  btn.setAttribute('aria-expanded', expanded);
-	  if (collapsedLabel) collapsedLabel.hidden = expanded;
-	  if (expandedLabel)  expandedLabel.hidden  = !expanded;
+    function setState(expanded) {
+      block.setAttribute('data-readmore', expanded ? 'expanded' : 'collapsed');
+      btn.setAttribute('aria-expanded', expanded);
+      if (collapsedLabel) collapsedLabel.hidden = expanded;
+      if (expandedLabel) expandedLabel.hidden = !expanded;
 
-	  countables.forEach((el, i) => {
-		el.hidden = i >= maxParas && !expanded;
-	  });
-	}
+      countables.forEach(function(el, i) {
+        el.hidden = i >= maxParas && !expanded;
+      });
+    }
 
-	// Init
-	setState(false);
+    setState(false);
 
-	btn.addEventListener('click', () => {
-	  const expanded = btn.getAttribute('aria-expanded') === 'true';
-	  setState(!expanded);
-	});
+    btn.addEventListener('click', function() {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      setState(!expanded);
+    });
   });
 })();
 </script>
 
-{% style %}
-.block-product-information {
-	background-color: var(--theme-color-grey);
-	padding-top: 4em; padding-bottom: 0em;
-}
-.product-information-content {
-	scroll-margin-top: 100px;
-	& > article {
-		display: flex; flex-direction: row; flex-wrap: wrap;
-		align-items: flex-start; justify-content: space-between;
-		column-gap: 4em; row-gap: 2em;
-		& > h2 { flex-basis: 100%;}
-		& > section { 
-			flex-basis: 20em; flex-grow: 1; padding-left: 1em; padding-right: 1em;
-			
-		}
-		& > aside { 
-			flex-basis: 10em; flex-grow: 1;
-			& > section {
-				background-color: #fff; padding:1em 2em;
-				& > details {
-					border-bottom: var(--theme-color-blue) 1px solid;
-					padding-top: 1em; padding-bottom: 1em;
-					& > summary {
-						display: flex; flex-direction: row; flex-wrap: nowrap;
-						align-items: flex-start; justify-content: flex-start;
-						column-gap: 1em;
-						& > i { width:1em; height:1em;}
-						& > span.is-summary-label {
-							line-height: 1.2em; letter-spacing: -0.02em; flex-grow: 1;
-						}
-						& > span.is-summary-caret {
-							
-						}
-					}
-					& p { letter-spacing: -0.02em;}
-					& li { letter-spacing: -0.02em;}
-					&:last-of-type { border-bottom: none;}
-					&[open] {
-						& > summary {
-							& > span.is-summary-caret {
-								& svg {
-									transform: rotate(180deg);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
-}
-.product-information-description { 
-	& p { letter-spacing: -0.02em;}
-	& p:first-of-type { font-size: 1.2em;}
-	& p a { color: inherit;}
-	& li { letter-spacing: -0.02em;}
-	& table { margin-bottom: 1em;}
-	& button {
-		background-color: transparent; padding:0.5em 1em;
-		border-bottom: currentcolor 1px solid;
-	}
-	&[data-readmore="collapsed"] {
-		& p:first-of-type {}
-		& p:first-of-type ~ *:not(button.is-button) { display:none;}
-		& button {
-			& span[data-label-collapsed] {}
-			& span[data-label-expanded] { display:none;}
-		}
-	}
-	&[data-readmore="expanded"] {
-		& button {
-			& span[data-label-collapsed] {display:none;}
-			& span[data-label-expanded] { }
-		}
-	}
-}
-.product-information-details { 
-	margin-top: 4em;
-	& > details {
-		& > summary {
-			display: none;
-		}
-	}
-}
-@media (max-width: 760px) {
-	.product-information-content {
-		& > article {
-			& > section {
-				flex-basis: 100%; text-align: center;
-			}
-			& > aside {
-				flex-basis: 100%;
-			}
-		}
-	}
-}
-{% endstyle %}
+<style>
+  .block-product-information {
+    background-color: {{ section.settings.background_color }};
+    color: {{ section.settings.text_color }};
+    padding-block: 4em 2em;
+  }
+
+  .block-product-information__content {
+    scroll-margin-top: 100px;
+  }
+
+  .block-product-information__article {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2em 4em;
+  }
+
+  .block-product-information__main {
+    flex: 1 1 20em;
+    padding-inline: 1em;
+  }
+
+  .block-product-information__aside {
+    flex: 1 1 10em;
+  }
+
+  .block-product-information__heading {
+    font-family: var(--theme-font-family-serif);
+    font-size: 1.5em;
+    font-weight: 400;
+    margin: 0 0 1em 0;
+  }
+
+  /* Description */
+  .block-product-information__description {
+    & p { letter-spacing: -0.02em; }
+    & p:first-of-type { font-size: 1.2em; }
+    & p a { color: inherit; }
+    & li { letter-spacing: -0.02em; }
+    & table { margin-bottom: 1em; }
+  }
+
+  .block-product-information__description[data-readmore="collapsed"] {
+    & p:first-of-type ~ *:not(.block-product-information__toggle) { 
+      display: none; 
+    }
+  }
+
+  .block-product-information__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid currentColor;
+    padding: 0.5em 1em;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+  }
+
+  .block-product-information__toggle svg {
+    transition: transform 200ms ease;
+  }
+
+  .block-product-information__toggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+  }
+
+  /* Details section */
+  .block-product-information__details {
+    margin-top: 4em; 
+  }
+
+  .block-product-information__details > details > summary {
+    display: none;
+  }
+
+  .block-product-information__details-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .block-product-information__details-title {
+    font-weight: 600;
+    padding-bottom: 0.6em;
+    margin-bottom: 0.2em;
+    border-bottom: 1px solid var(--theme-color-border, #ccc);
+  }
+
+  .block-product-information__details-item {
+    padding: 0.2em 0;
+    border-bottom: 1px solid var(--theme-color-border, #ccc);
+    letter-spacing: -0.02em;
+  }
+
+  .block-product-information__details-item:last-child {
+    border-bottom: none;
+  }
+
+  /* References aside */
+  .block-product-information__references {
+    background-color: var(--theme-color-white, #fff);
+    padding: 1em 2em;
+  }
+
+  /* Item (both details and button trigger) */
+  .block-product-information__item {
+    border-bottom: 1px solid var(--theme-color-blue, #0f1f38);
+    padding-block: 1em;
+  }
+
+  .block-product-information__item:last-child {
+    border-bottom: none;
+  }
+
+  /* Inline details */
+  .block-product-information__item summary {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 1em;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .block-product-information__item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .block-product-information__summary-icon {
+    flex-shrink: 0;
+    width: 1.5em;
+    height: 1.5em;
+  }
+
+  .block-product-information__summary-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .block-product-information__summary-label {
+    flex-grow: 1;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .block-product-information__summary-caret {
+    flex-shrink: 0;
+  }
+
+  .block-product-information__summary-caret svg {
+    transition: transform 200ms ease;
+  }
+
+  .block-product-information__item[open] .block-product-information__summary-caret svg {
+    transform: rotate(180deg);
+  }
+
+  .block-product-information__item-content {
+    padding-top: 1em;
+    padding-left: 2.5em;
+  }
+
+  .block-product-information__item-content p,
+  .block-product-information__item-content li {
+    letter-spacing: -0.02em;
+  }
+
+  /* Modal trigger button */
+  .block-product-information__trigger {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 1em;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .block-product-information__trigger:hover {
+    opacity: 0.8;
+  }
+
+  .block-product-information__trigger-icon {
+    flex-shrink: 0;
+    width: 1.5em;
+    height: 1.5em;
+  }
+
+  .block-product-information__trigger-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .block-product-information__trigger-label {
+    flex-grow: 1;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .block-product-information__trigger-arrow {
+    flex-shrink: 0;
+    opacity: 0.6;
+    transition: transform 200ms ease, opacity 200ms ease;
+  }
+
+  .block-product-information__trigger:hover .block-product-information__trigger-arrow {
+    opacity: 1;
+    transform: translate(2px, -2px);
+  }
+
+  /* Modal styling */
+  .block-product-information__modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .block-product-information__modal[hidden] {
+    display: none;
+  }
+
+  .block-product-information__modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .block-product-information__modal-content {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+    width: 90vw;
+  }
+
+  .block-product-information__modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+
+  .block-product-information__modal-title svg {
+    flex-shrink: 0;
+  }
+
+  .block-product-information__modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .block-product-information__modal-body p,
+  .block-product-information__modal-body li {
+    letter-spacing: -0.02em;
+  }
+
+  .block-product-information__modal-body table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .block-product-information__modal-body th,
+  .block-product-information__modal-body td {
+    padding: 0.5em;
+    border: 1px solid var(--theme-color-grey, #e5e5e5);
+    text-align: left;
+  }
+
+  .block-product-information__modal-body th {
+    background-color: var(--theme-color-grey, #f5f5f5);
+    font-weight: 600;
+  }
+
+  /* Responsive */
+  @media (max-width: 760px) {
+    .block-product-information__main {
+      flex-basis: 100%;
+      text-align: center;
+    }
+
+    .block-product-information__aside {
+      flex-basis: 100%;
+    }
+  }
+</style>
 
 {% schema %}
 {
-  "name": "Product information",
-  "tag": "section",
-  "class": "block-product-information",
-  "disabled_on": {
-	"groups": ["header", "footer"]
-  },
-  "settings": [],
-  "presets": [
-	{
-	  "name": "Product information",
-	  "category": "Theme Product",
-	}
-  ]
+	"name": "Product information",
+	"tag": "section",
+	"class": "block-product-information",
+	"limit": 1,
+	"enabled_on": {
+		"templates": ["product"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "description_heading",
+			"label": "Description heading",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "text",
+			"id": "details_heading",
+			"label": "Details heading",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "text",
+			"id": "sizechart_heading",
+			"label": "Size chart heading",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "text",
+			"id": "read_more_text",
+			"label": "Read more text",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "text",
+			"id": "read_less_text",
+			"label": "Read less text",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "align"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#f8f8f8"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "How to use"
+		},
+		{
+			"type": "paragraph",
+			"content": "Displays product description with read more/less, product details, size chart, and information references."
+		},
+		{
+			"type": "paragraph",
+			"content": "Metafields: custom.product_details, custom.product-sizechart, custom.product-information-references"
+		}
+	],
+	"presets": [
+		{
+			"name": "Information",
+			"category": "Product"
+		}
+	]
 }
 {% endschema %}

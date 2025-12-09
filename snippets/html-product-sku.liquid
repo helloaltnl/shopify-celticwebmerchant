@@ -1,5 +1,36 @@
-{%- assign v = product.selected_or_first_available_variant -%}
-<div class="pform-sku" aria-live="polite">
-  {%- if show_label -%}<span class="pform__label">SKU:</span>{%- endif -%}
-  <span data-sku>{{ v.sku }}</span>
-</div>
+{%- comment -%}
+  ============================================================================
+  HTML-PRODUCT-SKU
+  ============================================================================
+  Displays the product SKU (Stock Keeping Unit).
+
+  PARAMETERS:
+  - product: {Object} Product object (required)
+  - show_label: {Boolean} Show "SKU:" label (default: true)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign v = product.selected_or_first_available_variant
+  assign display_label = show_label | default: true
+-%}
+
+{%- if v.sku != blank -%}
+  <div class="product-sku">
+    {%- if display_label -%}
+      <span class="product-sku__label">{{ 'product.sku' | t }}:</span>
+    {%- endif -%}
+    <span class="product-sku__value" data-sku>{{ v.sku }}</span>
+  </div>
+{%- endif -%}
+
+<style>
+  .product-sku {
+    font-size: 0.875em;
+    opacity: 0.7;
+  }
+
+  .product-sku__label {
+    font-weight: 500;
+  }
+</style>

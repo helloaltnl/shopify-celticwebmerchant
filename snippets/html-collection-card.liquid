@@ -1,0 +1,139 @@
+{%- comment -%}
+============================================================================
+HTML-COLLECTION-CARD
+============================================================================
+Reusable collection card component.
+
+USAGE:
+{% render 'html-collection-card', collection: collection %}
+{% render 'html-collection-card', collection: collection, show_count: true, image_ratio: '1 / 1' %}
+
+PARAMETERS:
+- collection: {Collection} Collection object (required)
+- show_count: {Boolean} Show product count (default: true)
+- image_ratio: {String} CSS aspect ratio (default: '1 / 1')
+- image_size: {Number} Image width in pixels (default: 600)
+- text_align: {String} Text alignment (default: 'center')
+
+DEPENDENCIES:
+- html-theme-icons snippet
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	assign show_count = show_count | default: true
+	assign image_ratio = image_ratio | default: '1 / 1'
+	assign image_size = image_size | default: 600
+	assign text_align = text_align | default: 'center'
+-%}
+
+<article class="collection-card" style="--collection-card-ratio: {{ image_ratio }}; --collection-card-text-align: {{ text_align }};">
+	<a href="{{ collection.url }}" class="collection-card__link"></a>
+	
+	<figure class="collection-card__image">
+		{%- if collection.image -%}
+			<img
+				src="{{ collection.image | image_url: width: image_size }}"
+				alt="{{ collection.image.alt | escape | default: collection.title }}"
+				loading="lazy"
+				width="{{ image_size }}"
+				height="{{ image_size }}"
+			>
+		{%- elsif collection.products.first.featured_image -%}
+			<img
+				src="{{ collection.products.first.featured_image | image_url: width: image_size }}"
+				alt="{{ collection.title }}"
+				loading="lazy"
+				width="{{ image_size }}"
+				height="{{ image_size }}"
+			>
+		{%- else -%}
+			<div class="collection-card__placeholder">
+				{%- render 'html-theme-icons', icon: 'collection', size: 48 -%}
+			</div>
+		{%- endif -%}
+	</figure>
+
+	<div class="collection-card__content">
+		<h3 class="collection-card__title">{{ collection.title }}</h3>
+		
+		{%- if show_count -%}
+			<span class="collection-card__count">
+				{{ 'collection.products_count' | t: count: collection.all_products_count }}
+			</span>
+		{%- endif -%}
+	</div>
+</article>
+
+<style>
+	.collection-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		height: 100%;
+		background: var(--theme-color-white, #fff);
+		border: 1px solid var(--theme-color-border, #e5e5e5);
+		overflow: hidden;
+		transition: box-shadow 200ms ease;
+	}
+
+	.collection-card:hover {
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+
+	.collection-card__link {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+	}
+
+	.collection-card__image {
+		margin: 0;
+		padding: 0;
+		aspect-ratio: var(--collection-card-ratio, 1 / 1);
+		overflow: hidden;
+		background: var(--theme-color-grey, #f5f5f5);
+	}
+
+	.collection-card__image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 300ms ease;
+	}
+
+	.collection-card:hover .collection-card__image img {
+		transform: scale(1.05);
+	}
+
+	.collection-card__placeholder {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		opacity: 0.3;
+	}
+
+	.collection-card__content {
+		display: flex;
+		flex-direction: column;
+		padding: 1.25em;
+		text-align: var(--collection-card-text-align, center);
+	}
+
+	.collection-card__title {
+		font-family: var(--theme-font-family-serif);
+		font-size: 1.1em;
+		font-weight: 500;
+		line-height: 1.3;
+		margin: 0;
+	}
+
+	.collection-card__count {
+		font-size: 0.85em;
+		opacity: 0.6;
+		margin-top: 0.25em;
+	}
+</style>

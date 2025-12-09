@@ -12,22 +12,22 @@
     "product-form": {
       "type": "block-product-form",
       "blocks": {
-        "reviews_VDGF8N": {
-          "type": "reviews",
-          "settings": {}
+        "rating_CMxGnn": {
+          "type": "rating",
+          "settings": {
+            "scroll_target": "#reviews",
+            "show_count": true,
+            "size": 16
+          }
         },
         "heading_RX6EDQ": {
           "type": "heading",
           "settings": {
-            "text": "Koop dit product"
+            "show_vendor": true
           }
         },
-        "price_z8KqXx": {
+        "price_zBizDd": {
           "type": "price",
-          "settings": {}
-        },
-        "description_P6MUtq": {
-          "type": "description",
           "settings": {}
         },
         "variant_picker_FRRdBk": {
@@ -38,59 +38,111 @@
         },
         "stock_P8dwNk": {
           "type": "stock",
-          "settings": {}
+          "settings": {
+            "show_stock_count": true
+          }
         },
         "delivery_iLH8jX": {
           "type": "delivery",
           "settings": {}
         },
-        "notify_aprMUM": {
+        "notify_Ta47NL": {
           "type": "notify",
           "settings": {}
         },
         "atc_LyVFKC": {
           "type": "atc",
           "settings": {
-            "full_width": true
+            "full_width": true,
+            "show_quantity": true,
+            "show_wishlist": true
+          }
+        },
+        "trust_payments_Lra8px": {
+          "type": "trust_payments",
+          "settings": {
+            "method_1": "ideal",
+            "method_2": "visa",
+            "method_3": "mastercard",
+            "method_4": "paypal",
+            "method_5": "klarna"
+          }
+        },
+        "trust_identity_CTE9dt": {
+          "type": "trust_identity",
+          "settings": {
+            "tag": "ID check",
+            "message": "Dit artikel wordt alleen verkocht aan 18+. We versturen je bestelling na ID verificatie."
+          }
+        },
+        "trust_usps_dMe7Mk": {
+          "type": "trust_usps",
+          "settings": {
+            "item_1_text": "Niet goed? Geld terug binnen 2 werkdagen",
+            "item_1_url": "shopify://pages/niet-goed-geld-terug",
+            "item_2_text": "Wij verzenden wereldwijd",
+            "item_2_url": "shopify://pages/wereldwijde-verzending",
+            "item_3_text": "Levenslange garantie op onze producten",
+            "item_3_url": "shopify://pages/footer-usp-4",
+            "item_4_text": "",
+            "item_4_url": ""
           }
         }
       },
       "block_order": [
-        "reviews_VDGF8N",
+        "rating_CMxGnn",
         "heading_RX6EDQ",
-        "price_z8KqXx",
-        "description_P6MUtq",
+        "price_zBizDd",
         "variant_picker_FRRdBk",
         "stock_P8dwNk",
         "delivery_iLH8jX",
-        "notify_aprMUM",
-        "atc_LyVFKC"
+        "notify_Ta47NL",
+        "atc_LyVFKC",
+        "trust_payments_Lra8px",
+        "trust_identity_CTE9dt",
+        "trust_usps_dMe7Mk"
       ],
       "settings": {
-        "product": ""
+        "product": "",
+        "width": "alignwide",
+        "block_gap": 0.8,
+        "background_color": "#ffffff",
+        "text_color": "#111111"
       }
     },
     "product-information": {
       "type": "block-product-information",
-      "settings": {}
+      "settings": {
+        "description_heading": "",
+        "details_heading": "",
+        "sizechart_heading": "",
+        "read_more_text": "",
+        "read_less_text": "",
+        "width": "align",
+        "background_color": "#f8f8f8",
+        "text_color": "#111111"
+      }
     },
     "block_product_recommended_afRGwD": {
       "type": "block-product-recommended",
       "name": "Recommended products",
       "settings": {
-        "heading": "Aanbevolen producten"
-      }
-    },
-    "product-recommendations": {
-      "type": "block-product-recommendations",
-      "settings": {}
-    },
-    "product-blog": {
-      "type": "block-product-blogs",
-      "settings": {
-        "heading": "Welcome to our blog",
-        "subtext": "Here you can highlight promotions, features, or anything else.",
-        "view": "grid"
+        "heading": "",
+        "max_products": 8,
+        "hide_out_of_stock": true,
+        "card_layout": "horizontal",
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_rating": false,
+        "show_vendor": false,
+        "show_badges": false,
+        "quick_add": true,
+        "width": "alignwide",
+        "grid_columns": 3,
+        "grid_columns_tablet": "3",
+        "grid_columns_mobile": "1",
+        "background_color": "#f5f5f5",
+        "text_color": "#111111"
       }
     },
     "17622440393afaba32": {
@@ -121,10 +173,41 @@
         "include_margins": true
       }
     },
-    "1763017874af4843d9": {
-      "type": "apps",
+    "product-discovery": {
+      "type": "block-product-discovery",
+      "settings": {
+        "heading": "",
+        "limit": 4,
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_rating": false,
+        "show_vendor": false,
+        "show_badges": false,
+        "quick_add": false,
+        "width": "alignwide",
+        "grid_columns": 4,
+        "grid_columns_tablet": "3",
+        "grid_columns_mobile": "2",
+        "background_color": "#f8f8f8",
+        "text_color": "#111111"
+      }
+    },
+    "product-blog": {
+      "type": "block-product-blogs",
+      "settings": {
+        "heading": "",
+        "read_more_text": "",
+        "width": "align",
+        "background_color": "#f8f8f8",
+        "text_color": "#111111",
+        "knowledge_background_color": "#0f1f38",
+        "knowledge_text_color": "#ffffff"
+      }
+    },
+    "block_product_reviews_keNkJP": {
+      "type": "block-product-reviews",
       "blocks": {
-        "doran_product_reviews_product_widget_UWRaK3": {
+        "doran_product_reviews_product_widget_acKtE8": {
           "type": "shopify://apps/doran-product-reviews/blocks/product-widget/ca90c3ee-bc39-4c25-90cd-fdf0519c6d11",
           "settings": {
             "topPadding": 36,
@@ -136,10 +219,13 @@
         }
       },
       "block_order": [
-        "doran_product_reviews_product_widget_UWRaK3"
+        "doran_product_reviews_product_widget_acKtE8"
       ],
+      "name": "Reviews",
       "settings": {
-        "include_margins": true
+        "width": "align",
+        "background_color": "#f8f8f8",
+        "text_color": "#111111"
       }
     }
   },
@@ -147,9 +233,9 @@
     "product-form",
     "product-information",
     "block_product_recommended_afRGwD",
-    "product-recommendations",
-    "product-blog",
     "17622440393afaba32",
-    "1763017874af4843d9"
+    "product-discovery",
+    "product-blog",
+    "block_product_reviews_keNkJP"
   ]
 }

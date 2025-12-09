@@ -138,7 +138,7 @@
     opacity: 0;
   }
   
-  .marketing-grid-product__link:hover ~ .marketing-grid-product__image .marketing-grid-product__image-secondary {
+  .marketing-grid-product:hover .marketing-grid-product__image-secondary {
     opacity: 1;
   }
   
@@ -150,6 +150,7 @@
     padding: 1.5em;
     text-align: center;
     background-color: rgba(0, 0, 0, 0.8);
+    pointer-events: none;
   }
   
   .marketing-grid-product__title {
@@ -294,7 +295,7 @@
   }
   
   /* Hover effects */
-  .marketing-grid-product__link:hover ~ .marketing-grid-product__image .marketing-grid-product__image-primary {
+  .marketing-grid-product:hover .marketing-grid-product__image-primary {
     transform: scale(1.05);
   }
   

@@ -1,0 +1,173 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-FOOTER-COPYRIGHT
+  ============================================================================
+  Copyright notice, developer credit, and policy links.
+
+  FEATURES:
+  - Dynamic year from current date
+  - Optional developer credit
+  - Optional policy links from shop.policies
+  - Color customization
+
+  DEPENDENCIES:
+  - None
+  ============================================================================
+{%- endcomment -%}
+
+<div class="block-footer-copyright__content {{ section.settings.width }}">
+	<small class="block-footer-copyright__text">
+		&copy; {{ 'now' | date: '%Y' }} {{ section.settings.copyright_text }}
+	</small>
+
+	{%- if section.settings.developer_credit != blank -%}
+		<small class="block-footer-copyright__credit">
+			{{ section.settings.developer_credit }}
+		</small>
+	{%- endif -%}
+
+	{%- if section.settings.show_policy -%}
+		<ul class="block-footer-copyright__policies" role="list">
+			{%- for policy in shop.policies -%}
+				{%- if policy != blank -%}
+					<li class="block-footer-copyright__policy">
+						<a href="{{ policy.url }}">{{ policy.title | escape }}</a>
+					</li>
+				{%- endif -%}
+			{%- endfor -%}
+		</ul>
+	{%- endif -%}
+</div>
+
+{% style %}
+	.block-footer-copyright {
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding: 1.5em 0;
+	}
+
+	.block-footer-copyright__content {
+		text-align: center;
+	}
+
+	.block-footer-copyright__text,
+	.block-footer-copyright__credit {
+		display: block;
+		font-size: 0.75em;
+		line-height: 1.5;
+		opacity: 0.5;
+	}
+
+	.block-footer-copyright__text {
+		margin-bottom: 0.25em;
+	}
+
+	.block-footer-copyright__credit {
+		margin-bottom: 1em;
+	}
+
+	.block-footer-copyright__policies {
+		list-style: none;
+		padding: 0;
+		margin: 1em 0 0;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5em 1em;
+	}
+
+	.block-footer-copyright__policy a {
+		color: inherit;
+		text-decoration: none;
+		font-size: 0.75em;
+		opacity: 0.5;
+		transition: opacity 150ms ease;
+	}
+
+	.block-footer-copyright__policy a:hover {
+		opacity: 1;
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "Footer copyright",
+	"tag": "section",
+	"class": "block-footer-copyright",
+	"limit": 1,
+	"enabled_on": {
+		"groups": ["footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "copyright_text",
+			"label": "Copyright text",
+			"placeholder": "Your Company Name. All rights reserved."
+		},
+		{
+			"type": "text",
+			"id": "developer_credit",
+			"label": "Developer credit"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_policy",
+			"label": "Show policy links",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "align"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#0f1f38"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#ffffff"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Policy links are automatically pulled from Settings > Policies in Shopify admin."
+		}
+	],
+	"presets": [
+		{
+			"name": "Copyright",
+			"category": "Footer"
+		}
+	]
+}
+{% endschema %}

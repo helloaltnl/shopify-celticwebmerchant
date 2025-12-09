@@ -1,0 +1,213 @@
+{% comment %}
+  ============================================================================
+  HTML-FORM-CURRENCIES
+  ============================================================================
+
+  Purpose:
+  Simple currency/country selector using Shopify's native localization.
+  Shows all available countries with their currencies.
+
+  Usage:
+  {% render 'html-form-currencies' %}
+  {% render 'html-form-currencies', show_search: true %}
+
+  Parameters:
+  - show_search: {Boolean} Show search field for countries (default: true if 8+ countries)
+  - class: {String} Additional CSS classes (optional)
+
+  Dependencies:
+  - Must be wrapped in a <form method="post" action="{{ routes.root_url }}localization">
+  - Requires Shopify Markets with multiple countries enabled
+
+  ============================================================================
+{% endcomment %}
+
+{%- liquid
+  assign additional_class = class | default: ''
+  assign show_search = show_search
+  
+  if show_search == blank
+    if localization.available_countries.size > 8
+      assign show_search = true
+    else
+      assign show_search = false
+    endif
+  endif
+  
+  assign show_currency = false
+  assign currencies = localization.available_countries | map: 'currency' | map: 'iso_code' | uniq
+  if currencies.size > 1
+    assign show_currency = true
+  endif
+-%}
+
+<style>
+  .form-currencies {
+    width: 100%;
+  }
+
+  .form-currencies__select-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .form-currencies__select {
+    appearance: none;
+    width: 100%;
+    padding: 1rem 3rem 1rem 1.25rem;
+    font-size: 1rem;
+    font-family: inherit;
+    color: inherit;
+    background: rgb(var(--color-background));
+    border: 1px solid rgba(var(--color-foreground), 0.2);
+    border-radius: var(--border-radius, 0);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-currencies__select:hover,
+  .form-currencies__select:focus {
+    border-color: rgba(var(--color-foreground), 0.4);
+  }
+
+  .form-currencies__select:focus {
+    outline: none;
+    border-color: rgb(var(--color-foreground));
+  }
+
+  .form-currencies__icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+  }
+
+  .form-currencies__icon svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .form-currencies__search {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-currencies__search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    border: 1px solid rgba(var(--color-foreground), 0.2);
+    border-radius: var(--border-radius, 0);
+  }
+
+  .form-currencies__search-input:focus {
+    outline: none;
+    border-color: rgb(var(--color-foreground));
+  }
+
+  .form-currencies__option {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .form-currencies__currency {
+    margin-left: 0.5rem;
+    color: rgba(var(--color-foreground), 0.6);
+  }
+
+  .form-currencies__notice {
+    padding: 1rem 1.25rem;
+    background: rgba(var(--color-foreground), 0.05);
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+    border-radius: var(--border-radius, 0);
+    font-size: 0.875rem;
+    color: rgba(var(--color-foreground), 0.75);
+  }
+</style>
+
+{%- if localization.available_countries.size > 0 -%}
+  <div class="form-currencies {{ additional_class }}">
+    {%- if show_search -%}
+      <div class="form-currencies__search">
+        <input
+          type="search"
+          class="form-currencies__search-input"
+          placeholder="{{ 'localization.search' | t }}"
+          aria-label="{{ 'localization.search' | t }}"
+          data-currency-search
+        >
+      </div>
+    {%- endif -%}
+
+    <div class="form-currencies__select-wrapper">
+      <select 
+        class="form-currencies__select"
+        name="country_code"
+        aria-label="{{ 'localization.country' | t }}"
+        data-currency-select
+      >
+        {%- for country in localization.available_countries -%}
+          <option 
+            value="{{ country.iso_code }}"
+            {% if country.iso_code == localization.country.iso_code %}selected{% endif %}
+            data-country-name="{{ country.name | downcase }}"
+          >
+            {{ country.name }}
+            {%- if show_currency -%}
+              ({{ country.currency.iso_code }} {{ country.currency.symbol }})
+            {%- endif -%}
+          </option>
+        {%- endfor -%}
+      </select>
+      
+      <span class="form-currencies__icon" aria-hidden="true">
+        <svg viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+
+  {%- if show_search -%}
+  <script>
+    (function() {
+      const searchInput = document.querySelector('[data-currency-search]');
+      const select = document.querySelector('[data-currency-select]');
+      
+      if (!searchInput || !select) return;
+
+      searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        const options = select.querySelectorAll('option');
+        
+        let firstMatch = null;
+        
+        options.forEach(option => {
+          const countryName = option.dataset.countryName || '';
+          const matches = searchTerm === '' || countryName.includes(searchTerm);
+          
+          // Hide non-matching options (not all browsers support this)
+          option.style.display = matches ? '' : 'none';
+          option.disabled = !matches;
+          
+          if (matches && !firstMatch) {
+            firstMatch = option;
+          }
+        });
+        
+        // Select first match
+        if (firstMatch && searchTerm !== '') {
+          select.value = firstMatch.value;
+        }
+      });
+    })();
+  </script>
+  {%- endif -%}
+{%- else -%}
+  <div class="form-currencies__notice">
+    <strong>No countries configured</strong><br>
+    Enable Shopify Markets in: Settings → Markets<br>
+    Current country: {{ localization.country.name }} ({{ localization.country.iso_code }})
+  </div>
+{%- endif -%}

@@ -1,0 +1,243 @@
+{%- comment -%}
+  Search form with optional predictive search
+  
+  Parameters:
+  - input_id: {String} Unique ID for input element (required)
+  - enable_predictive: {Boolean} Enable predictive search (default: true)
+  - placeholder: {String} Input placeholder text
+  - autofocus: {Boolean} Auto-focus input on render (default: false)
+  - search_type: {String} Search result type: 'product', 'article', 'page', or comma-separated (default: 'product')
+  
+  Usage:
+  {% render 'html-form-search', input_id: 'search-modal', enable_predictive: true %}
+{%- endcomment -%}
+
+{%- liquid
+  assign input_id = input_id | default: 'search-input'
+  assign enable_predictive = enable_predictive | default: true
+  assign placeholder = placeholder | default: 'search.placeholder' | t
+  assign autofocus = autofocus | default: false
+  assign search_type = search_type | default: 'product'
+-%}
+
+{%- if enable_predictive -%}
+  <predictive-search data-loading-text="{{ 'accessibility.loading' | t }}">
+{%- endif -%}
+
+<form action="{{ routes.search_url }}" method="get" role="search" class="search-form">
+  <div class="search-form__field">
+    <input
+      class="search-form__input"
+      id="{{ input_id }}"
+      type="search"
+      name="q"
+      value="{{ search.terms | escape }}"
+      placeholder="{{ placeholder }}"
+      {%- if autofocus -%}
+        autofocus
+      {%- endif -%}
+      {%- if enable_predictive -%}
+        role="combobox"
+        aria-expanded="false"
+        aria-owns="predictive-search-results-{{ input_id }}"
+        aria-controls="predictive-search-results-{{ input_id }}"
+        aria-haspopup="listbox"
+        aria-autocomplete="list"
+        autocorrect="off"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+      {%- endif -%}
+    >
+    
+    <label class="search-form__label visually-hidden" for="{{ input_id }}">
+      {{ placeholder }}
+    </label>
+    
+    <input type="hidden" name="options[prefix]" value="last">
+    <input type="hidden" name="type" value="{{ search_type }}">
+    
+    <button
+      type="reset"
+      class="search-form__reset{% if search.terms == blank %} hidden{% endif %}"
+      aria-label="{{ 'search.reset' | t }}"
+    >
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19,6.4L17.6,5L12,10.6L6.4,5L5,6.4l5.6,5.6L5,17.6L6.4,19l5.6-5.6l5.6,5.6l1.4-1.4L13.4,12L19,6.4z"/>
+      </svg>
+    </button>
+    
+    <button 
+      type="submit" 
+      class="search-form__submit" 
+      aria-label="{{ 'search.placeholder' | t }}"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    </button>
+  </div>
+
+  {%- if enable_predictive -%}
+    <div 
+      class="predictive-search" 
+      id="predictive-search-results-{{ input_id }}"
+      tabindex="-1" 
+      data-predictive-search
+    >
+      <div class="predictive-search__loading">
+        <svg class="spinner" viewBox="0 0 50 50">
+          <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="5"/>
+        </svg>
+      </div>
+    </div>
+    
+    <span class="predictive-search-status visually-hidden" role="status" aria-hidden="true"></span>
+  {%- endif -%}
+</form>
+
+{%- if enable_predictive -%}
+  </predictive-search>
+{%- endif -%}
+
+{%- style -%}
+  .search-form {
+    position: relative;
+    width: 100%;
+  }
+  
+  .search-form__field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--color-background, #fff);
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: 4px;
+    padding: 0.25rem;
+  }
+  
+  .search-form__input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    padding: 0.35rem 0.5rem;
+    outline: none;
+  }
+  
+  .search-form__input::placeholder {
+    color: var(--color-foreground-subtle, #666);
+  }
+  
+  .search-form__reset,
+  .search-form__submit {
+    background: transparent;
+    border: none;
+    padding: 0.35rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-foreground, #1a1a1a);
+  }
+  
+  .search-form__reset svg,
+  .search-form__submit svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  
+  .search-form__reset:hover,
+  .search-form__submit:hover {
+    opacity: 0.7;
+  }
+  
+  .search-form__reset.hidden,
+  .search-form__submit.hidden {
+    display: none;
+  }
+  
+  .search-form__reset {
+    margin-right: 0.25rem;
+  }
+  
+  .predictive-search {
+    position: relative;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.5rem;
+    background: var(--color-background, #fff);
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: 4px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    z-index: 10;
+  }
+  
+  .predictive-search.active {
+    display: block;
+  }
+  
+  .predictive-search__loading {
+    display: none;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .predictive-search__loading.active {
+    display: block;
+  }
+  
+  .spinner {
+    width: 2rem;
+    height: 2rem;
+    animation: spin 1s linear infinite;
+  }
+  
+  .spinner circle {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+{%- endstyle -%}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.search-form').forEach(function(form) {
+      const input = form.querySelector('.search-form__input');
+      const resetBtn = form.querySelector('.search-form__reset');
+      if (!input || !resetBtn) return;
+
+      // Toggle reset button visibility
+      function toggleReset() {
+        resetBtn.classList.toggle('hidden', !input.value.trim());
+      }
+
+      input.addEventListener('input', toggleReset);
+
+      // Clear input without submitting
+      resetBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        input.value = '';
+        input.focus();
+        toggleReset();
+      });
+    });
+  });
+</script>

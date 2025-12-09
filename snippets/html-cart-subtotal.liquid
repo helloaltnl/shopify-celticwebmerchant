@@ -1,27 +1,82 @@
-{% comment %}
-  Renders cart subtotal with discounts and tax information
-  
-  Accepts:
+{%- comment -%}
+  ============================================================================
+  HTML-CART-SUBTOTAL
+  ============================================================================
+  Renders cart subtotal with discounts and tax information.
+
+  PARAMETERS:
   - cart: {Object} Cart object (required)
-  - show_cart_note: {Boolean} Show cart note textarea - default: false
-  - context: {String} Context ('page' | 'drawer' | 'preview') - default: 'page'
-  
-  Usage:
+  - show_cart_note: {Boolean} Show cart note textarea (default: false)
+  - context: {String} 'page' | 'drawer' | 'preview' (default: 'page')
+
+  DEPENDENCIES:
+  - theme-cart.js (cart-note custom element)
+
+  USAGE:
   {% render 'html-cart-subtotal', cart: cart, show_cart_note: true %}
-{% endcomment %}
+  ============================================================================
+{%- endcomment -%}
 
 {%- liquid
   assign show_cart_note = show_cart_note | default: false
   assign context = context | default: 'page'
 -%}
 
+<div class="cart-subtotal" data-cart-subtotal>
+  {%- comment -%} Cart-level discounts {%- endcomment -%}
+  {%- if cart.cart_level_discount_applications.size > 0 -%}
+    <ul class="cart-subtotal__discounts">
+      {%- for discount in cart.cart_level_discount_applications -%}
+        <li class="cart-subtotal__discount">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.4,12.7l-9.1,9.1c-0.4,0.4-1,0.4-1.4,0l-9.1-9.1c-0.2-0.2-0.3-0.4-0.3-0.7V3c0-0.6,0.4-1,1-1h9c0.3,0,0.5,0.1,0.7,0.3l9.1,9.1C21.8,11.8,21.8,12.4,21.4,12.7z M6,7c0.6,0,1-0.4,1-1S6.6,5,6,5S5,5.4,5,6S5.4,7,6,7z"/></svg>
+          <span>
+            {{ discount.title | escape }}
+            <strong>(-{{ discount.total_allocated_amount | money }})</strong>
+          </span>
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+
+  {%- comment -%} Estimated total {%- endcomment -%}
+  <div class="cart-subtotal__row cart-subtotal__row--total">
+    <span class="cart-subtotal__label">{{ 'cart.estimated_total' | t }}</span>
+    <span class="cart-subtotal__value" data-cart-total>{{ cart.total_price | money_with_currency }}</span>
+  </div>
+
+  {%- comment -%} Tax & shipping info {%- endcomment -%}
+  <p class="cart-subtotal__note">
+    {%- if cart.taxes_included -%}
+      {{ 'cart.taxes_included' | t }}
+    {%- endif -%}
+    {{ 'cart.shipping_at_checkout' | t }}
+  </p>
+
+  {%- comment -%} Cart note - uses cart-note custom element {%- endcomment -%}
+  {%- if show_cart_note -%}
+    <cart-note class="cart-subtotal__note-field">
+      <label for="CartNote-{{ context }}" class="cart-subtotal__note-label">
+        {{ 'cart.note' | t }}
+      </label>
+      <textarea
+        id="CartNote-{{ context }}"
+        class="cart-subtotal__note-textarea"
+        name="note"
+        placeholder="{{ 'cart.note_placeholder' | t }}"
+      >{{ cart.note }}</textarea>
+    </cart-note>
+  {%- endif -%}
+</div>
+
 <style>
   .cart-subtotal {
-    padding: 1.5rem 0;
+    padding: 1.5em;
+    background-color: var(--theme-color-white);
+    border-radius: 4px;
   }
 
   .cart-subtotal__discounts {
-    margin: 0 0 1rem;
+    margin: 0 0 1em;
     padding: 0;
     list-style: none;
   }
@@ -29,170 +84,90 @@
   .cart-subtotal__discount {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
-    font-size: 0.875rem;
-    color: rgb(var(--color-sale));
+    gap: 0.5em;
+    padding: 0.5em 0;
+    font-size: 0.9em;
+    color: var(--theme-color-success);
   }
 
-  .cart-subtotal__discount svg {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  .cart-subtotal__totals {
+  .cart-subtotal__row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding: 1rem 0;
-    border-top: 1px solid rgba(var(--color-foreground), 0.08);
+    padding: 0.75em 0;
   }
 
-  .cart-subtotal__label {
-    font-size: 1.125rem;
+  .cart-subtotal__row--total {
+    padding: 0;
+  }
+
+  .cart-subtotal__row--total .cart-subtotal__label {
+    font-size: 1.1em;
     font-weight: 500;
   }
 
-  .cart-subtotal__value {
-    font-size: 1.5rem;
+  .cart-subtotal__row--total .cart-subtotal__value {
+    font-size: 1.4em;
     font-weight: 600;
   }
 
-  .cart-subtotal__tax-note {
-    margin: 1rem 0 0;
-    font-size: 0.875rem;
-    color: rgba(var(--color-foreground), 0.75);
+  .cart-subtotal__note {
+    margin: 1em 0 0;
+    font-size: 0.85em;
     line-height: 1.5;
+    opacity: 0.75;
   }
 
-  .cart-subtotal__tax-note a {
-    color: rgb(var(--color-link));
+  .cart-subtotal__note a {
+    color: inherit;
     text-decoration: underline;
   }
 
-  .cart-note {
-    margin-top: 1.5rem;
+  /* Cart note field */
+  .cart-subtotal__note-field {
+    display: block;
+    margin-top: 1.5em;
+    padding-top: 1.5em;
+    border-top: 1px solid var(--theme-border-color);
   }
 
-  .cart-note__label {
+  .cart-subtotal__note-label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
+    margin-bottom: 0.5em;
+    font-size: 0.9em;
     font-weight: 500;
   }
 
-  .cart-note__textarea {
+  .cart-subtotal__note-textarea {
     width: 100%;
     min-height: 80px;
-    padding: 0.75rem;
-    font-size: 0.875rem;
+    padding: 0.75em;
     font-family: inherit;
+    font-size: 0.9em;
     line-height: 1.5;
-    border: 1px solid rgba(var(--color-foreground), 0.2);
-    border-radius: var(--border-radius);
+    border: 1px solid var(--theme-border-color);
+    border-radius: 4px;
     resize: vertical;
+    background-color: var(--theme-color-white);
   }
 
-  .cart-note__textarea:focus {
+  .cart-subtotal__note-textarea:focus {
     outline: none;
-    border-color: rgb(var(--color-foreground));
+    border-color: var(--theme-color-blue);
   }
 
   /* Compact mode for drawer */
   {% if context == 'drawer' or context == 'preview' %}
   .cart-subtotal {
-    padding: 1rem 0;
+    padding: 1em;
   }
 
-  .cart-subtotal__label {
-    font-size: 1rem;
+  .cart-subtotal__row--total .cart-subtotal__label {
+    font-size: 1em;
   }
 
-  .cart-subtotal__value {
-    font-size: 1.25rem;
+  .cart-subtotal__row--total .cart-subtotal__value {
+    font-size: 1.2em;
   }
   {% endif %}
 </style>
-
-<div class="cart-subtotal">
-  {%- comment -%} Cart-level Discounts {%- endcomment -%}
-  {%- if cart.cart_level_discount_applications.size > 0 -%}
-    <ul class="cart-subtotal__discounts">
-      {%- for discount in cart.cart_level_discount_applications -%}
-        <li class="cart-subtotal__discount">
-          {{- 'icon-discount.svg' | inline_asset_content -}}
-          <span>
-            {{ discount.title | escape }}
-            (-{{ discount.total_allocated_amount | money }})
-          </span>
-        </li>
-      {%- endfor -%}
-    </ul>
-  {%- endif -%}
-
-  {%- comment -%} Estimated Total {%- endcomment -%}
-  <div class="cart-subtotal__totals">
-    <h2 class="cart-subtotal__label">
-      {{ 'sections.cart.estimated_total' | t }}
-    </h2>
-    <p class="cart-subtotal__value">
-      {{ cart.total_price | money_with_currency }}
-    </p>
-  </div>
-
-  {%- comment -%} Tax & Shipping Information {%- endcomment -%}
-  <div class="cart-subtotal__tax-note">
-    {%- if cart.duties_included and cart.taxes_included -%}
-      {%- if shop.shipping_policy.body == blank -%}
-        {{ 'sections.cart.duties_and_taxes_included_shipping_at_checkout_without_policy' | t }}
-      {%- else -%}
-        {{
-          'sections.cart.duties_and_taxes_included_shipping_at_checkout_with_policy_html'
-          | t: link: shop.shipping_policy.url
-        }}
-      {%- endif -%}
-    {%- elsif cart.duties_included == false and cart.taxes_included -%}
-      {%- if shop.shipping_policy.body == blank -%}
-        {{ 'sections.cart.taxes_included_shipping_at_checkout_without_policy' | t }}
-      {%- else -%}
-        {{
-          'sections.cart.taxes_included_shipping_at_checkout_with_policy_html'
-          | t: link: shop.shipping_policy.url
-        }}
-      {%- endif -%}
-    {%- elsif cart.duties_included and cart.taxes_included == false -%}
-      {%- if shop.shipping_policy.body == blank -%}
-        {{ 'sections.cart.duties_included_taxes_at_checkout_shipping_at_checkout_without_policy' | t }}
-      {%- else -%}
-        {{
-          'sections.cart.duties_included_taxes_at_checkout_shipping_at_checkout_with_policy_html'
-          | t: link: shop.shipping_policy.url
-        }}
-      {%- endif -%}
-    {%- elsif cart.duties_included == false and cart.taxes_included == false -%}
-      {%- if shop.shipping_policy.body == blank -%}
-        {{ 'sections.cart.taxes_at_checkout_shipping_at_checkout_without_policy' | t }}
-      {%- else -%}
-        {{
-          'sections.cart.taxes_at_checkout_shipping_at_checkout_with_policy_html'
-          | t: link: shop.shipping_policy.url
-        }}
-      {%- endif -%}
-    {%- endif -%}
-  </div>
-
-  {%- comment -%} Cart Note (Optional) {%- endcomment -%}
-  {%- if show_cart_note -%}
-    <cart-note class="cart-note">
-      <label for="CartNote-{{ context }}" class="cart-note__label">
-        {{ 'sections.cart.note' | t }}
-      </label>
-      <textarea
-        id="CartNote-{{ context }}"
-        class="cart-note__textarea"
-        name="note"
-        placeholder="{{ 'sections.cart.note' | t }}"
-      >{{ cart.note }}</textarea>
-    </cart-note>
-  {%- endif -%}
-</div>

@@ -3,17 +3,21 @@
   Call-to-action button/banner
   
   Parameters:
-  - text: {String} Button text (required)
+  - text: {String} Button text (uses locale 'general.read_more' if blank)
   - url: {String} Button URL (required)
   - style: {String} primary | secondary | outline - default: primary
   - size: {String} small | medium | large - default: medium
   - alignment: {String} left | center | right - default: center
   - full_width: {Boolean} Make button full width - default: false
   - new_tab: {Boolean} Open link in new tab - default: false
+  - button_color: {String} Custom button background/border color
+  - button_text_color: {String} Custom button text color
 {% endcomment %}
 
 {%- liquid
-  assign text = text | default: 'Click here'
+  if text == blank
+    assign text = 'general.read_more' | t | default: 'Read more'
+  endif
   assign url = url | default: '#'
   assign style = style | default: 'primary'
   assign size = size | default: 'medium'
@@ -22,10 +26,32 @@
   assign new_tab = new_tab | default: false
 -%}
 
+{%- capture inline_style -%}
+  {%- if style == 'outline' -%}
+    {%- if button_color != blank -%}
+      --cta-border-color: {{ button_color }};
+      --cta-text-color: {{ button_color }};
+      --cta-hover-bg: {{ button_color }};
+    {%- endif -%}
+    {%- if button_text_color != blank -%}
+      --cta-hover-text: {{ button_text_color }};
+    {%- endif -%}
+  {%- else -%}
+    {%- if button_color != blank -%}
+      --cta-bg-color: {{ button_color }};
+      --cta-border-color: {{ button_color }};
+    {%- endif -%}
+    {%- if button_text_color != blank -%}
+      --cta-text-color: {{ button_text_color }};
+    {%- endif -%}
+  {%- endif -%}
+{%- endcapture -%}
+
 <div class="marketing-cta marketing-cta--align-{{ alignment }}">
   <a 
     href="{{ url }}" 
     class="marketing-cta__button marketing-cta__button--{{ style }} marketing-cta__button--{{ size }}{% if full_width %} marketing-cta__button--full{% endif %}"
+    {% if inline_style != blank %}style="{{ inline_style | strip_newlines | strip }}"{% endif %}
     {% if new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
   >
     {{ text | escape }}
@@ -84,38 +110,38 @@
     width: 100%;
   }
   
-  /* Style variations */
+  /* Style variations - Primary */
   .marketing-cta__button--primary {
-    background-color: #000;
-    color: #fff;
-    border-color: #000;
+    background-color: var(--cta-bg-color, #000);
+    color: var(--cta-text-color, #fff);
+    border-color: var(--cta-border-color, #000);
   }
   
   .marketing-cta__button--primary:hover {
-    background-color: #333;
-    border-color: #333;
+    opacity: 0.85;
   }
   
+  /* Style variations - Secondary */
   .marketing-cta__button--secondary {
-    background-color: #666;
-    color: #fff;
-    border-color: #666;
+    background-color: var(--cta-bg-color, #666);
+    color: var(--cta-text-color, #fff);
+    border-color: var(--cta-border-color, #666);
   }
   
   .marketing-cta__button--secondary:hover {
-    background-color: #555;
-    border-color: #555;
+    opacity: 0.85;
   }
   
+  /* Style variations - Outline */
   .marketing-cta__button--outline {
     background-color: transparent;
-    color: #000;
-    border-color: #000;
+    color: var(--cta-text-color, #000);
+    border-color: var(--cta-border-color, #000);
   }
   
   .marketing-cta__button--outline:hover {
-    background-color: #000;
-    color: #fff;
+    background-color: var(--cta-hover-bg, #000);
+    color: var(--cta-hover-text, #fff);
   }
   
   /* Focus state for accessibility */

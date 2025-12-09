@@ -1,58 +1,245 @@
-{{ 'section-main-page.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+============================================================================
+MAIN-PAGE
+============================================================================
+Main section for pages with optional featured image, title and content.
+Block-based structure for flexible layout.
 
-{%- style -%}
-  .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
-  }
+FEATURES:
+- Hero image with configurable height and focus point
+- Page title
+- Rich text content
 
-  @media screen and (min-width: 750px) {
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding_top }}px;
-      padding-bottom: {{ section.settings.padding_bottom }}px;
-    }
-  }
-{%- endstyle -%}
+DEPENDENCIES:
+- html-theme-icons snippet
+============================================================================
+{%- endcomment -%}
 
-<div class="page-width page-width--narrow section-{{ section.id }}-padding">
-  <h1 class="main-page-title page-title h0{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
-    {{ page.title | escape }}
-  </h1>
-  <div class="rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-    {{ page.content }}
-  </div>
-</div>
+{%- liquid
+	assign is_default_template = false
+	if template.suffix == blank
+		assign is_default_template = true
+	endif
+-%}
+
+{%- if is_default_template -%}
+<article class="main-page">
+	{%- for block in section.blocks -%}
+		{%- case block.type -%}
+
+			{%- when 'featured_image' -%}
+				{%- if block.settings.image != blank -%}
+					{%- liquid
+						assign focus_x = block.settings.focus_x | default: 50
+						assign focus_y = block.settings.focus_y | default: 50
+					-%}
+					<figure class="main-page__hero main-page__hero--{{ block.settings.image_height }}" {{ block.shopify_attributes }}>
+						<img
+							src="{{ block.settings.image | image_url: width: 1600 }}"
+							srcset="
+								{{ block.settings.image | image_url: width: 600 }} 600w,
+								{{ block.settings.image | image_url: width: 900 }} 900w,
+								{{ block.settings.image | image_url: width: 1200 }} 1200w,
+								{{ block.settings.image | image_url: width: 1600 }} 1600w
+							"
+							sizes="100vw"
+							alt="{{ block.settings.image.alt | escape | default: page.title }}"
+							loading="eager"
+							fetchpriority="high"
+							width="{{ block.settings.image.width }}"
+							height="{{ block.settings.image.height }}"
+							style="object-position: {{ focus_x }}% {{ focus_y }}%;"
+						>
+					</figure>
+				{%- endif -%}
+
+			{%- when 'title' -%}
+				{%- if page.title != blank -%}
+					<header class="main-page__header {{ section.settings.width }}" {{ block.shopify_attributes }}>
+						<h1 class="main-page__title">{{ page.title }}</h1>
+					</header>
+				{%- endif -%}
+
+			{%- when 'content' -%}
+				{%- if page.content != blank -%}
+					<div class="main-page__content {{ section.settings.width }} rte" {{ block.shopify_attributes }}>
+						{{ page.content }}
+					</div>
+				{%- endif -%}
+
+		{%- endcase -%}
+	{%- endfor -%}
+</article>
+{%- endif -%}
+
+{% style %}
+	.main-page {
+		padding-bottom: 3em;
+	}
+
+	/* Hero Image */
+	.main-page__hero {
+		width: 100vw;
+		margin-left: calc(50% - 50vw);
+		margin-right: calc(50% - 50vw);
+		padding: 0;
+		overflow: hidden;
+	}
+
+	.main-page__hero img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.main-page__hero--adapt {
+		aspect-ratio: auto;
+	}
+
+	.main-page__hero--adapt img {
+		height: auto;
+	}
+
+	.main-page__hero--small {
+		height: 30vh;
+	}
+
+	.main-page__hero--medium {
+		height: 50vh;
+	}
+
+	.main-page__hero--large {
+		height: 70vh;
+	}
+
+	/* Header */
+	.main-page__header {
+		padding-top: 2em;
+		padding-bottom: 1em;
+	}
+
+	.main-page__title {
+		font-family: var(--theme-font-family-serif);
+		font-size: clamp(2em, 5vw, 3em);
+		font-weight: 400;
+		line-height: 1.1;
+		margin: 0;
+	}
+
+	/* Content */
+	.main-page__content {
+		padding-top: 1em;
+		padding-bottom: 2em;
+	}
+
+	.main-page__content.rte {
+		line-height: 1.7;
+	}
+
+	.main-page__content.rte p {
+		margin-bottom: 1.2em;
+	}
+
+	.main-page__content.rte h2,
+	.main-page__content.rte h3,
+	.main-page__content.rte h4 {
+		margin-top: 1.5em;
+		margin-bottom: 0.5em;
+	}
+
+	.main-page__content.rte img {
+		margin: 1.5em 0;
+	}
+
+	.main-page__content.rte ul,
+	.main-page__content.rte ol {
+		margin: 1em 0;
+		padding-left: 1.5em;
+		list-style: revert;
+	}
+
+	.main-page__content.rte li {
+		margin-bottom: 0.5em;
+	}
+{% endstyle %}
 
 {% schema %}
 {
-  "name": "t:sections.main-page.name",
-  "tag": "section",
-  "class": "section",
-  "settings": [
-    {
-      "type": "header",
-      "content": "t:sections.all.padding.section_padding_heading"
-    },
-    {
-      "type": "range",
-      "id": "padding_top",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "label": "t:sections.all.padding.padding_top",
-      "default": 36
-    },
-    {
-      "type": "range",
-      "id": "padding_bottom",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "label": "t:sections.all.padding.padding_bottom",
-      "default": 36
-    }
-  ]
+	"name": "Page content",
+	"tag": "section",
+	"class": "main-page",
+	"settings": [
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Content width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" }
+			],
+			"default": "align"
+		}
+	],
+	"blocks": [
+		{
+			"type": "featured_image",
+			"name": "Featured image",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "image_picker",
+					"id": "image",
+					"label": "Image"
+				},
+				{
+					"type": "select",
+					"id": "image_height",
+					"label": "Image height",
+					"options": [
+						{ "value": "adapt", "label": "Adapt to image" },
+						{ "value": "small", "label": "Small" },
+						{ "value": "medium", "label": "Medium" },
+						{ "value": "large", "label": "Large" }
+					],
+					"default": "medium"
+				},
+				{
+					"type": "header",
+					"content": "Focus point"
+				},
+				{
+					"type": "range",
+					"id": "focus_x",
+					"label": "Horizontal focus",
+					"min": 0,
+					"max": 100,
+					"step": 5,
+					"default": 50,
+					"unit": "%"
+				},
+				{
+					"type": "range",
+					"id": "focus_y",
+					"label": "Vertical focus",
+					"min": 0,
+					"max": 100,
+					"step": 5,
+					"default": 50,
+					"unit": "%"
+				}
+			]
+		},
+		{
+			"type": "title",
+			"name": "Title",
+			"limit": 1
+		},
+		{
+			"type": "content",
+			"name": "Content",
+			"limit": 1
+		}
+	]
 }
 {% endschema %}

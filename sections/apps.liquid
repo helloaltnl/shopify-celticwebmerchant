@@ -1,20 +1,83 @@
-<div class="{% if section.settings.include_margins %}page-width{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+{%- comment -%}
+  ============================================================================
+  BLOCK-APPS
+  ============================================================================
+  Container section for third-party app blocks.
+
+  FEATURES:
+  - Renders app blocks from Shopify App Extensions
+  - Width alignment options
+  - Color customization
+  ============================================================================
+{%- endcomment -%}
+
+<div class="block-apps__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
   {%- for block in section.blocks -%}
     {% render block %}
   {%- endfor -%}
 </div>
 
+{% style %}
+  #shopify-section-{{ section.id }}.block-apps {
+    background-color: {{ section.settings.background_color | default: '#ffffff' }};
+    color: {{ section.settings.text_color | default: '#111111' }};
+    padding-block: 0;
+  }
+{% endstyle %}
+
 {% schema %}
 {
-  "name": "t:sections.apps.name",
+  "name": "Apps",
   "tag": "section",
-  "class": "section",
+  "class": "block-apps",
   "settings": [
     {
-      "type": "checkbox",
-      "id": "include_margins",
-      "default": true,
-      "label": "t:sections.apps.settings.include_margins.label"
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Width",
+      "options": [
+        { "value": "alignsmall", "label": "Narrow" },
+        { "value": "align", "label": "Regular" },
+        { "value": "alignwide", "label": "Wide" },
+        { "value": "alignfull", "label": "Full" }
+      ],
+      "default": "align"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#111111"
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Anchor",
+      "info": "ID for anchor links (e.g. #my-section)"
+    },
+    {
+      "type": "text",
+      "id": "custom_class",
+      "label": "Custom class",
+      "info": "Add custom CSS class for styling"
     }
   ],
   "blocks": [
@@ -24,7 +87,8 @@
   ],
   "presets": [
     {
-      "name": "t:sections.apps.presets.name"
+      "name": "Apps",
+      "category": "Page"
     }
   ]
 }

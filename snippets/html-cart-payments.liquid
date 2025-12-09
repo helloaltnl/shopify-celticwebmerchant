@@ -1,168 +1,127 @@
-{% comment %}
-  Renders cart payment buttons (checkout + additional checkout buttons)
-  
-  Accepts:
+{%- comment -%}
+  ============================================================================
+  HTML-CART-PAYMENTS
+  ============================================================================
+  Renders cart payment buttons (checkout + additional checkout buttons).
+
+  PARAMETERS:
   - cart: {Object} Cart object (required)
-  - show_terms: {Boolean} Show terms and conditions checkbox - default: false
-  - terms_text: {String} Terms checkbox text
-  - terms_link: {String} Terms link URL
-  - terms_link_text: {String} Terms link text
-  - show_additional_buttons: {Boolean} Show Apple Pay, Google Pay, etc. - default: true
-  - button_text: {String} Custom checkout button text - default: translation
-  - context: {String} Context ('page' | 'drawer' | 'preview') - default: 'page'
-  
-  Usage:
-  {% render 'html-cart-payments', 
-    cart: cart,
-    show_terms: true,
-    terms_text: 'I agree to the',
-    terms_link: '/policies/terms-of-service',
-    terms_link_text: 'terms and conditions'
-  %}
-{% endcomment %}
+  - show_terms: {Boolean} Show terms text (default: false)
+  - terms_text: {String} Terms text with HTML links
+  - show_additional_buttons: {Boolean} Show Apple Pay, etc. (default: true)
+  - button_text: {String} Custom button text (default: translation)
+  - context: {String} 'page' | 'drawer' | 'preview' (default: 'page')
+
+  USAGE:
+  {% render 'html-cart-payments', cart: cart, show_terms: true %}
+  ============================================================================
+{%- endcomment -%}
 
 {%- liquid
   assign show_terms = show_terms | default: false
-  assign show_additional_buttons = show_additional_buttons | default: true
+  if show_additional_buttons == nil
+    assign show_additional_buttons = true
+  endif
   assign context = context | default: 'page'
-  assign button_text = button_text | default: 'sections.cart.checkout'
+  
+  # Button text: use translation key if blank, otherwise use custom text
+  if button_text == blank
+    assign button_label = 'cart.checkout' | t
+  else
+    # Check if it's a translation key (contains a dot) or custom text
+    if button_text contains '.'
+      assign button_label = button_text | t
+    else
+      assign button_label = button_text
+    endif
+  endif
+  
+  if terms_text == blank
+    assign terms_text = 'cart.terms_html' | t
+  endif
 -%}
+
+<div class="cart-payments">
+  {%- comment -%} Primary Checkout Button {%- endcomment -%}
+  <button
+    type="submit"
+    name="checkout"
+    class="cart-payments__checkout is-button is-button--primary"
+    data-cart-checkout-button
+    {%- if cart.item_count == 0 %}disabled{% endif -%}
+  >
+    {{ button_label }}
+  </button>
+
+  {%- comment -%} Additional Checkout Buttons (Apple Pay, Google Pay, etc.) {%- endcomment -%}
+  {%- if show_additional_buttons and additional_checkout_buttons -%}
+    <div class="cart-payments__additional additional-checkout-buttons">
+      {{ content_for_additional_checkout_buttons }}
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} Terms and Conditions Text {%- endcomment -%}
+  {%- if show_terms -%}
+    <div class="cart-payments__terms">
+      {{ terms_text }}
+    </div>
+  {%- endif -%}
+</div>
 
 <style>
   .cart-payments {
-    padding: 1.5rem 0;
+    padding: 1.5em 0;
   }
 
-  .cart-payments__terms {
-    margin-bottom: 1.5rem;
-  }
-
-  .cart-payments__terms-label {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    cursor: pointer;
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
-
-  .cart-payments__terms-checkbox {
-    flex-shrink: 0;
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-top: 0.125rem;
-    cursor: pointer;
-    border: 1px solid rgba(var(--color-foreground), 0.3);
-    border-radius: 0.25rem;
-  }
-
-  .cart-payments__terms-text {
-    color: rgba(var(--color-foreground), 0.75);
-  }
-
-  .cart-payments__terms-text a {
-    color: rgb(var(--color-link));
-    text-decoration: underline;
-  }
-
-  .cart-payments__checkout-button {
+  .cart-payments__checkout {
     width: 100%;
-    padding: 1rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    text-align: center;
-    background: rgb(var(--color-button));
-    color: rgb(var(--color-button-text));
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: all 0.2s ease;
+    padding: 1em 2em;
+    font-size: 1em;
   }
 
-  .cart-payments__checkout-button:hover {
-    background: rgb(var(--color-button-hover));
-  }
-
-  .cart-payments__checkout-button:disabled {
+  .cart-payments__checkout:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
-  .cart-payments__additional-buttons {
-    margin-top: 1rem;
+  .cart-payments__additional {
+    margin-top: 1em;
+  }
+
+  .cart-payments__terms {
+    margin-top: 1.5em;
+    padding-top: 0em;
+    border-top: 1px solid var(--theme-border-color);
+    font-size: 0.85em;
+    line-height: 1.6;
+    text-align: center;
+    opacity: 0.75;
+  }
+
+  .cart-payments__terms a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  .cart-payments__terms a:hover {
+    text-decoration: none;
   }
 
   /* Compact mode for drawer */
   {% if context == 'drawer' or context == 'preview' %}
   .cart-payments {
-    padding: 1rem 0;
+    padding: 1em 0;
   }
 
-  .cart-payments__checkout-button {
-    padding: 0.875rem 1.5rem;
-    font-size: 0.9375rem;
+  .cart-payments__checkout {
+    padding: 0.875em 1.5em;
+    font-size: 0.9em;
+  }
+
+  .cart-payments__terms {
+    margin-top: 1em;
+    padding-top: 1em;
+    font-size: 0.8em;
   }
   {% endif %}
 </style>
-
-<div class="cart-payments">
-  {%- comment -%} Terms and Conditions Checkbox {%- endcomment -%}
-  {%- if show_terms -%}
-    <div class="cart-payments__terms">
-      <label class="cart-payments__terms-label">
-        <input 
-          type="checkbox" 
-          id="cart-terms-checkbox-{{ context }}"
-          class="cart-payments__terms-checkbox"
-          data-cart-terms-checkbox
-        >
-        <span class="cart-payments__terms-text">
-          {{ terms_text }}
-          {%- if terms_link != blank -%}
-            <a href="{{ terms_link }}" target="_blank" rel="noopener noreferrer">
-              {{ terms_link_text }}
-            </a>
-          {%- endif -%}
-        </span>
-      </label>
-    </div>
-  {%- endif -%}
-
-  {%- comment -%} Primary Checkout Button {%- endcomment -%}
-  <button
-    type="submit"
-    name="checkout"
-    class="cart-payments__checkout-button"
-    data-cart-checkout-button
-    {%- if cart.item_count == 0 %}disabled{% endif -%}
-    {%- if show_terms %}disabled{% endif -%}
-  >
-    {{ button_text | t }}
-  </button>
-
-  {%- comment -%} Additional Checkout Buttons (Apple Pay, Google Pay, etc.) {%- endcomment -%}
-  {%- if show_additional_buttons and additional_checkout_buttons -%}
-    <div class="cart-payments__additional-buttons additional-checkout-buttons">
-      {{ content_for_additional_checkout_buttons }}
-    </div>
-  {%- endif -%}
-</div>
-
-{%- if show_terms -%}
-  <script>
-    (function() {
-      const checkbox = document.getElementById('cart-terms-checkbox-{{ context }}');
-      const checkoutButton = checkbox?.closest('.cart-payments')?.querySelector('[data-cart-checkout-button]');
-      
-      if (checkbox && checkoutButton) {
-        // Initial state
-        checkoutButton.disabled = !checkbox.checked;
-        
-        // Toggle on change
-        checkbox.addEventListener('change', function() {
-          checkoutButton.disabled = !this.checked;
-        });
-      }
-    })();
-  </script>
-{%- endif -%}

@@ -1,9 +1,9 @@
 {% comment %}
   HTML Marketing Grid Component: Video Item
-  Video player (YouTube/Vimeo) with cover image for grid layouts
+  Video player (hosted) with cover image for grid layouts
   
   Parameters:
-  - video_url: {String} YouTube or Vimeo URL (required)
+  - video: {Object} Shopify video object from Files library (required)
   - cover_image: {Object} Cover/poster image (optional)
   - description: {String} Video description for accessibility (optional)
   - design: {String} blue | red | green - default: blue
@@ -11,7 +11,7 @@
   
   Usage:
   {% render 'html-marketing-grid-video',
-    video_url: block.settings.video_url,
+    video: block.settings.video,
     cover_image: block.settings.cover_image,
     description: block.settings.description,
     design: block.settings.design,
@@ -22,24 +22,18 @@
 {%- liquid
   assign description = description | default: 'Video'
   assign design = design | default: 'blue'
-  
-  if video_url
-    if video_url.type == 'youtube'
-      assign video_id = video_url.id
-      assign video_type = 'youtube'
-    elsif video_url.type == 'vimeo'
-      assign video_id = video_url.id
-      assign video_type = 'vimeo'
-    endif
-  endif
-  
   assign unique_id = 'video-' | append: block_id
+  
+  assign has_video = false
+  if video != blank and video.sources.size > 0
+    assign has_video = true
+  endif
 -%}
 
 <div class="marketing-grid-video is-design-{{ design }}">
-  {%- if video_id -%}
+  {%- if has_video -%}
     {%- if cover_image != blank -%}
-      <div class="marketing-grid-video__cover" id="cover-{{ unique_id }}">
+      <div class="marketing-grid-video__cover" id="cover-{{ unique_id }}" data-video-cover>
         {%- capture sizes -%}
           (min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw
         {%- endcapture -%}
@@ -55,45 +49,54 @@
         <button 
           class="marketing-grid-video__play-button" 
           aria-label="Play video"
-          onclick="document.getElementById('cover-{{ unique_id }}').style.display='none'; document.getElementById('iframe-{{ unique_id }}').src += '&autoplay=1';"
+          data-video-play="{{ unique_id }}"
         >
           <span class="marketing-grid-video__play-icon">
-            {{- 'icon-play.svg' | inline_asset_content -}}
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 8L24 16L12 24V8Z" fill="currentColor"/>
+            </svg>
           </span>
         </button>
       </div>
     {%- endif -%}
     
     <div class="marketing-grid-video__player">
-      {%- if video_type == 'youtube' -%}
-        <iframe
-          id="iframe-{{ unique_id }}"
-          src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&rel=0"
-          class="marketing-grid-video__iframe"
-          allow="autoplay; encrypted-media"
-          allowfullscreen
-          title="{{ description | escape }}"
-          loading="lazy"
-        ></iframe>
-      {%- elsif video_type == 'vimeo' -%}
-        <iframe
-          id="iframe-{{ unique_id }}"
-          src="https://player.vimeo.com/video/{{ video_id }}"
-          class="marketing-grid-video__iframe"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowfullscreen
-          title="{{ description | escape }}"
-          loading="lazy"
-        ></iframe>
-      {%- endif -%}
+      <video
+        id="player-{{ unique_id }}"
+        class="marketing-grid-video__video"
+        {%- if cover_image %} poster="{{ cover_image | image_url: width: 1200 }}"{% endif %}
+        controls
+        playsinline
+        preload="metadata"
+        title="{{ description | escape }}"
+      >
+        {%- for source in video.sources -%}
+          <source src="{{ source.url }}" type="{{ source.mime_type }}">
+        {%- endfor -%}
+      </video>
     </div>
+    
+    <script>
+      (function() {
+        const playBtn = document.querySelector('[data-video-play="{{ unique_id }}"]');
+        const cover = document.getElementById('cover-{{ unique_id }}');
+        const video = document.getElementById('player-{{ unique_id }}');
+        
+        if (playBtn && cover && video) {
+          playBtn.addEventListener('click', function() {
+            cover.style.display = 'none';
+            video.play();
+          });
+        }
+      })();
+    </script>
   {%- else -%}
     <div class="marketing-grid-video__placeholder">
       <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="40" cy="40" r="40" fill="#e0e0e0"/>
         <path d="M32 26L54 40L32 54V26Z" fill="#999"/>
       </svg>
-      <p>Add a video URL</p>
+      <p>Select a video</p>
     </div>
   {%- endif -%}
 </div>
@@ -113,13 +116,13 @@
     height: 100%;
   }
   
-  .marketing-grid-video__iframe {
+  .marketing-grid-video__video {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    border: none;
+    object-fit: cover;
   }
   
   /* Cover image */
@@ -175,6 +178,7 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    color: #000;
   }
   
   .marketing-grid-video__play-icon svg {

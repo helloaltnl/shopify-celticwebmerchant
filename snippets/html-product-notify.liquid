@@ -1,3 +1,37 @@
-<div class="product-notify">
-	<div class="wc_wl_bis_btn" data-product_id="{{ product.id }}" data-variant_id="{{ product.selected_or_first_available_variant.id }}"></div>
+{%- comment -%}
+  ============================================================================
+  HTML-PRODUCT-NOTIFY
+  ============================================================================
+  Back in stock notification button (third-party app integration).
+  
+  PARAMETERS:
+  - product: {Object} Product object (required)
+  
+  NOTE:
+  This renders a placeholder that gets populated by the back-in-stock app.
+  The app uses the data attributes to identify the product/variant.
+  ============================================================================
+{%- endcomment -%}
+{% comment %} 
+{%- liquid
+  assign p = product
+  assign current_variant = p.selected_or_first_available_variant
+-%}
+
+<div class="product-notify" data-product-notify>
+  <div 
+    class="wc_wl_bis_btn" 
+    data-product_id="{{ p.id }}" 
+    data-variant_id="{{ current_variant.id }}"
+  ></div>
 </div>
+
+<style>
+  .product-notify {
+    margin: 1em 0;
+  }
+
+  .product-notify:empty {
+    display: none;
+  }
+</style> {% endcomment %}

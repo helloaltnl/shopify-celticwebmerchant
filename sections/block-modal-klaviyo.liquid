@@ -1,0 +1,367 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-MODAL-KLAVIYO
+  ============================================================================
+
+  Purpose:
+  Modal for displaying Klaviyo signup forms (newsletter, popups, etc).
+  Supports multiple regions and languages - each block contains codes and form.
+  
+  Usage:
+  Add to footer-group.json or render directly in a template.
+  Trigger with html-button-klaviyo snippet.
+
+  Matching Priority:
+  1. Region match (region_code matches localization.country.iso_code)
+  2. Language match (language_code matches localization.language.iso_code)
+  3. Fallback (region_code and language_code are empty or '*')
+
+  Dependencies:
+  - theme-modal.js
+  - theme-ux.css
+  - html-theme-icons snippet
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign show_trigger = section.settings.show_trigger
+  assign modal_id = section.settings.modal_id | default: 'klaviyo-modal'
+  assign current_region = localization.country.iso_code | upcase
+  assign current_language = localization.language.iso_code | downcase
+  assign matched_form = nil
+  assign language_form = nil
+  assign fallback_form = nil
+  
+  for block in section.blocks
+    if block.type == 'form'
+      assign block_region = block.settings.region_code | upcase | strip
+      assign block_language = block.settings.language_code | downcase | strip
+      
+      comment
+        Priority 1: Region match
+      endcomment
+      if block_region != blank and block_region != '*' and block_region == current_region
+        assign matched_form = block
+        break
+      endif
+      
+      comment
+        Priority 2: Language match (store for later if no region match)
+      endcomment
+      if language_form == nil and block_language != blank and block_language != '*' and block_language == current_language
+        if block_region == blank or block_region == '*'
+          assign language_form = block
+        endif
+      endif
+      
+      comment
+        Priority 3: Fallback (both empty or *)
+      endcomment
+      if fallback_form == nil
+        assign is_region_fallback = false
+        assign is_language_fallback = false
+        
+        if block_region == blank or block_region == '*'
+          assign is_region_fallback = true
+        endif
+        
+        if block_language == blank or block_language == '*'
+          assign is_language_fallback = true
+        endif
+        
+        if is_region_fallback and is_language_fallback
+          assign fallback_form = block
+        endif
+      endif
+    endif
+  endfor
+  
+  comment
+    Use matched form, or fall back to language match, or fallback
+  endcomment
+  unless matched_form
+    if language_form
+      assign matched_form = language_form
+    else
+      assign matched_form = fallback_form
+    endif
+  endunless
+-%}
+
+{%- if matched_form -%}
+{%- assign form_code = matched_form.settings.form_code -%}
+
+{%- if form_code != blank -%}
+
+{%- comment -%} Trigger Button {%- endcomment -%}
+{%- if show_trigger -%}
+  <button 
+    type="button" 
+    class="block-modal-klaviyo__trigger"
+    aria-haspopup="dialog"
+    data-modal-trigger="{{ modal_id }}"
+  >
+    <span class="block-modal-klaviyo__trigger-icon" aria-hidden="true">
+      {%- render 'html-theme-icons', icon: 'email', size: 20 -%}
+    </span>
+    <span class="block-modal-klaviyo__trigger-text">
+      {{ section.settings.trigger_text | default: 'Newsletter' }}
+    </span>
+  </button>
+{%- endif -%}
+
+{%- comment -%} Modal {%- endcomment -%}
+<div 
+  data-modal="{{ modal_id }}"
+  id="{{ modal_id }}"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="{{ modal_id }}-title"
+  hidden
+  {{ matched_form.shopify_attributes }}
+>
+  <div data-modal-overlay></div>
+  
+  <div class="theme-modal__content block-modal-klaviyo__content" style="--modal-width: {{ section.settings.modal_width | default: 480 }}px;">
+    <button 
+      type="button" 
+      class="block-modal-klaviyo__close"
+      data-modal-close
+      aria-label="{{ 'accessibility.close' | t }}"
+    >
+      {%- render 'html-theme-icons', icon: 'close', size: 20 -%}
+    </button>
+
+    {%- if section.settings.modal_heading != blank or section.settings.modal_description != blank -%}
+      <header class="block-modal-klaviyo__header">
+        {%- if section.settings.modal_heading != blank -%}
+          <h2 class="block-modal-klaviyo__title" id="{{ modal_id }}-title">
+            {{ section.settings.modal_heading }}
+          </h2>
+        {%- endif -%}
+        {%- if section.settings.modal_description != blank -%}
+          <p class="block-modal-klaviyo__description">
+            {{ section.settings.modal_description }}
+          </p>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+
+    <div class="block-modal-klaviyo__form">
+      {{ form_code }}
+    </div>
+
+    {%- if section.settings.show_privacy_text and section.settings.privacy_text != blank -%}
+      <p class="block-modal-klaviyo__privacy">
+        {{ section.settings.privacy_text }}
+      </p>
+    {%- endif -%}
+  </div>
+</div>
+
+<style>
+  /* Trigger Button */
+  .block-modal-klaviyo__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.5em 0.75em;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.875em;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 200ms ease;
+  }
+
+  .block-modal-klaviyo__trigger:hover {
+    opacity: 0.7;
+  }
+
+  .block-modal-klaviyo__trigger-icon {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  /* Modal content overrides */
+  .block-modal-klaviyo__content {
+    max-width: var(--modal-width, 480px);
+    padding: 2rem;
+  }
+
+  /* Close button - positioned absolutely */
+  .block-modal-klaviyo__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    padding: 0.25rem;
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 200ms ease;
+    z-index: 1;
+  }
+
+  .block-modal-klaviyo__close:hover {
+    opacity: 1;
+  }
+
+  /* Header */
+  .block-modal-klaviyo__header {
+    margin-bottom: 1.5rem;
+    padding-right: 2rem;
+  }
+
+  .block-modal-klaviyo__title {
+    margin: 0 0 0.5rem;
+    font-family: var(--theme-font-family-serif);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .block-modal-klaviyo__description {
+    margin: 0;
+    font-size: 0.9375rem;
+    opacity: 0.8;
+  }
+
+  /* Privacy text */
+  .block-modal-klaviyo__privacy {
+    margin: 1.5rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 0.75rem;
+    opacity: 0.6;
+  }
+</style>
+
+{%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.block-modal-klaviyo.name",
+  "tag": "section",
+  "class": "block-modal-klaviyo",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:sections.block-modal-klaviyo.settings.header_trigger.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_trigger",
+      "label": "t:sections.block-modal-klaviyo.settings.show_trigger.label",
+      "info": "t:sections.block-modal-klaviyo.settings.show_trigger.info",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "trigger_text",
+      "label": "t:sections.block-modal-klaviyo.settings.trigger_text.label",
+      "default": "t:sections.block-modal-klaviyo.settings.trigger_text.default"
+    },
+    {
+      "type": "text",
+      "id": "modal_id",
+      "label": "t:sections.block-modal-klaviyo.settings.modal_id.label",
+      "info": "t:sections.block-modal-klaviyo.settings.modal_id.info",
+      "default": "klaviyo-modal"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.block-modal-klaviyo.settings.header_modal.content"
+    },
+    {
+      "type": "text",
+      "id": "modal_heading",
+      "label": "t:sections.block-modal-klaviyo.settings.modal_heading.label",
+      "default": "t:sections.block-modal-klaviyo.settings.modal_heading.default"
+    },
+    {
+      "type": "textarea",
+      "id": "modal_description",
+      "label": "t:sections.block-modal-klaviyo.settings.modal_description.label",
+      "default": "t:sections.block-modal-klaviyo.settings.modal_description.default"
+    },
+    {
+      "type": "range",
+      "id": "modal_width",
+      "label": "t:sections.block-modal-klaviyo.settings.modal_width.label",
+      "min": 320,
+      "max": 720,
+      "step": 40,
+      "unit": "px",
+      "default": 480
+    },
+    {
+      "type": "header",
+      "content": "t:sections.block-modal-klaviyo.settings.header_privacy.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_privacy_text",
+      "label": "t:sections.block-modal-klaviyo.settings.show_privacy_text.label",
+      "default": true
+    },
+    {
+      "type": "textarea",
+      "id": "privacy_text",
+      "label": "t:sections.block-modal-klaviyo.settings.privacy_text.label",
+      "default": "t:sections.block-modal-klaviyo.settings.privacy_text.default"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "form",
+      "name": "t:sections.block-modal-klaviyo.blocks.form.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "region_code",
+          "label": "t:sections.block-modal-klaviyo.blocks.form.settings.region_code.label",
+          "info": "t:sections.block-modal-klaviyo.blocks.form.settings.region_code.info",
+          "placeholder": "NL"
+        },
+        {
+          "type": "text",
+          "id": "language_code",
+          "label": "t:sections.block-modal-klaviyo.blocks.form.settings.language_code.label",
+          "info": "t:sections.block-modal-klaviyo.blocks.form.settings.language_code.info",
+          "placeholder": "en"
+        },
+        {
+          "type": "html",
+          "id": "form_code",
+          "label": "t:sections.block-modal-klaviyo.blocks.form.settings.form_code.label",
+          "info": "t:sections.block-modal-klaviyo.blocks.form.settings.form_code.info"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Klaviyo",
+      "category": "Modal",
+      "blocks": [
+        {
+          "type": "form",
+          "settings": {
+            "language_code": "en"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

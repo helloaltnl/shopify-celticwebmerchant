@@ -1,28 +1,313 @@
-<section class="page-blogs-content alignwide">
-	Blog overzicht hier, gebaseerd op opties
-</section>
+{%- comment -%}
+============================================================================
+MAIN-PAGE-BLOGS
+============================================================================
+Main section for blog overview pages.
+Shows articles from multiple blogs sorted by date.
 
-{%- style -%}
-	section.page-blogs { }
-	section.page-blogs-content {}
-{%- endstyle -%}
+DEPENDENCIES:
+- html-articles-grid snippet
+- html-article-card snippet
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	assign heading_text = section.settings.heading
+	if heading_text == blank
+		assign heading_text = 'blog.heading' | t
+	endif
+-%}
+
+<div class="main-page-blogs__content {{ section.settings.width }}">
+	<header class="main-page-blogs__header">
+		<h1 class="main-page-blogs__title">{{ heading_text }}</h1>
+		{%- if section.settings.subheading != blank -%}
+			<p class="main-page-blogs__subheading">{{ section.settings.subheading }}</p>
+		{%- endif -%}
+	</header>
+
+	{%- capture articles_html -%}
+		{%- render 'html-articles-grid',
+			blocks: section.blocks,
+			articles_per_blog: section.settings.articles_per_blog,
+			max_articles: section.settings.max_articles,
+			card_layout: section.settings.card_layout,
+			show_image: section.settings.show_image,
+			show_blog_title: section.settings.show_blog_title,
+			show_date: section.settings.show_date,
+			show_excerpt: section.settings.show_excerpt,
+			show_cta: section.settings.show_cta,
+			image_ratio: section.settings.image_ratio,
+			class_prefix: 'main-page-blogs',
+			card_background: section.settings.card_background_color,
+			card_text_color: section.settings.card_text_color
+		-%}
+	{%- endcapture -%}
+
+	{%- assign has_articles = articles_html | strip | size -%}
+
+	{%- if has_articles > 0 -%}
+		<ul class="main-page-blogs__grid" style="--grid-columns: {{ section.settings.columns_desktop | default: 4 }}; --grid-columns-tablet: {{ section.settings.columns_tablet | default: 3 }}; --grid-columns-mobile: {{ section.settings.columns_mobile | default: 1 }};">
+			{{ articles_html }}
+		</ul>
+	{%- else -%}
+		<p class="main-page-blogs__empty">{{ 'blog.no_articles' | t | default: 'No articles found.' }}</p>
+	{%- endif -%}
+</div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.main-page-blogs {
+		background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: 3em;
+	}
+
+	#shopify-section-{{ section.id }} .main-page-blogs__header {
+		margin-bottom: 2em;
+		text-align: {{ section.settings.text_align | default: 'center' }};
+	}
+
+	.main-page-blogs__title {
+		font-family: var(--theme-font-family-serif);
+		font-size: clamp(1.6em, 4vw, 2em);
+		font-weight: 400;
+		margin: 0;
+	}
+
+	.main-page-blogs__subheading {
+		margin: 0.5em 0 0;
+		opacity: 0.8;
+	}
+
+	.main-page-blogs__grid {
+		display: grid;
+		grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+		gap: 0.5em;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.main-page-blogs__item {
+		display: flex;
+		min-width: 0;
+	}
+
+	.main-page-blogs__empty {
+		text-align: center;
+		opacity: 0.6;
+		padding: 3em 1em;
+	}
+
+	@media (max-width: 64em) {
+		.main-page-blogs__grid {
+			grid-template-columns: repeat(var(--grid-columns-tablet, 3), 1fr);
+		}
+	}
+
+	@media (max-width: 47.5em) {
+		.main-page-blogs__grid {
+			grid-template-columns: repeat(var(--grid-columns-mobile, 1), 1fr);
+		}
+	}
+{% endstyle %}
 
 {% schema %}
 {
-  "name": "Page blogs",
-  "tag": "section",
-  "class": "page-blogs",
-  "disabled_on": {
-	"groups": ["header", "footer"]
-  },
-  "settings": [],
-  "blocks": [],
-  "presets": [
-	{
-	  "name": "Page blogs section",
-	  "category": "Theme Page",
-	  "blocks": []
-	}
-  ]
+	"name": "Blog overview",
+	"tag": "section",
+	"class": "main-page-blogs",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "text",
+			"id": "subheading",
+			"label": "Subheading"
+		},
+		{
+			"type": "header",
+			"content": "Display"
+		},
+		{
+			"type": "range",
+			"id": "articles_per_blog",
+			"label": "Articles per blog",
+			"min": 1,
+			"max": 10,
+			"step": 1,
+			"default": 5
+		},
+		{
+			"type": "range",
+			"id": "max_articles",
+			"label": "Maximum total articles",
+			"min": 2,
+			"max": 24,
+			"step": 2,
+			"default": 12
+		},
+		{
+			"type": "header",
+			"content": "Article card"
+		},
+		{
+			"type": "select",
+			"id": "card_layout",
+			"label": "Card layout",
+			"options": [
+				{ "value": "vertical", "label": "Vertical" },
+				{ "value": "horizontal", "label": "Horizontal" }
+			],
+			"default": "vertical"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_image",
+			"label": "Show image",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "image_ratio",
+			"label": "Image ratio",
+			"options": [
+				{ "value": "adapt", "label": "Adapt" },
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" }
+			],
+			"default": "landscape"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_blog_title",
+			"label": "Show blog title",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_date",
+			"label": "Show article date",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_excerpt",
+			"label": "Show article excerpt",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_cta",
+			"label": "Show read more link",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "select",
+			"id": "text_align",
+			"label": "Header alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" }
+			],
+			"default": "center"
+		},
+		{
+			"type": "range",
+			"id": "columns_desktop",
+			"label": "Columns (desktop)",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 4
+		},
+		{
+			"type": "select",
+			"id": "columns_tablet",
+			"label": "Columns (tablet)",
+			"options": [
+				{ "value": "1", "label": "1" },
+				{ "value": "2", "label": "2" },
+				{ "value": "3", "label": "3" }
+			],
+			"default": "3"
+		},
+		{
+			"type": "select",
+			"id": "columns_mobile",
+			"label": "Columns (mobile)",
+			"options": [
+				{ "value": "1", "label": "1" },
+				{ "value": "2", "label": "2" }
+			],
+			"default": "1"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Section background",
+			"default": "#f8f8f8"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Section text",
+			"default": "#111111"
+		},
+		{
+			"type": "color",
+			"id": "card_background_color",
+			"label": "Card background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "card_text_color",
+			"label": "Card text",
+			"default": "#111111"
+		}
+	],
+	"blocks": [
+		{
+			"type": "blog",
+			"name": "Blog feed",
+			"settings": [
+				{
+					"type": "blog",
+					"id": "blog",
+					"label": "Select blog"
+				}
+			]
+		}
+	]
 }
 {% endschema %}

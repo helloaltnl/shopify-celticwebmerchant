@@ -1,151 +1,205 @@
-<section class="block-marketing-banners">
-  <div class="block-marketing-banners__inner alignwide is-constrained">
-    {%- if section.settings.heading != blank -%}
-      {%- render 'html-marketing-headline',
-        heading: section.settings.heading,
-        subheading: section.settings.subheading,
-        alignment: 'center'
-      -%}
-    {%- endif -%}
-    
-    <div class="block-marketing-banners__grid block-marketing-banners__grid--{{ section.settings.layout }}">
-      {%- for block in section.blocks -%}
-        <div class="block-marketing-banners__item" {{ block.shopify_attributes }}>
-          {%- render 'html-marketing-banner',
-            text: block.settings.text,
-            cta_text: block.settings.cta_text,
-            cta_url: block.settings.cta_url,
-            style: block.settings.style,
-            dismissible: block.settings.dismissible
-          -%}
-        </div>
-      {%- endfor -%}
-    </div>
-  </div>
-</section>
+{%- liquid
+	assign has_heading = false
+	if section.settings.heading != blank
+		assign has_heading = true
+	endif
+-%}
 
-{%- style -%}
-  .block-marketing-banners__grid {
-    display: grid;
-    gap: 1rem;
-    margin-top: 2rem;
-  }
-  
-  .block-marketing-banners__grid--stacked {
-    grid-template-columns: 1fr;
-  }
-  
-  .block-marketing-banners__grid--two-column {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .block-marketing-banners__grid--three-column {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  @media (max-width: 989px) {
-    .block-marketing-banners__grid--three-column {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  
-  @media (max-width: 749px) {
-    .block-marketing-banners__grid--two-column,
-    .block-marketing-banners__grid--three-column {
-      grid-template-columns: 1fr;
-    }
-  }
-{%- endstyle -%}
+<div class="block-marketing-banners__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	{%- if has_heading -%}
+		{%- render 'html-marketing-headline',
+			heading: section.settings.heading,
+			subheading: section.settings.subheading,
+			alignment: 'center'
+		-%}
+	{%- endif -%}
+	
+	<div class="block-marketing-banners__grid block-marketing-banners__grid--{{ section.settings.layout }}{% if has_heading %} block-marketing-banners__grid--has-heading{% endif %}">
+		{%- for block in section.blocks -%}
+			<div class="block-marketing-banners__item" {{ block.shopify_attributes }}>
+				{%- render 'html-marketing-banner',
+					text: block.settings.text,
+					cta_text: block.settings.cta_text,
+					cta_url: block.settings.cta_url,
+					style: block.settings.style,
+					dismissible: block.settings.dismissible
+				-%}
+			</div>
+		{%- endfor -%}
+	</div>
+</div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-banners {
+		background-color: {{ section.settings.background_color | default: '#ffffff' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: 3em;
+	}
+
+	.block-marketing-banners__grid {
+		display: grid;
+		gap: 1em;
+	}
+
+	.block-marketing-banners__grid--has-heading {
+		margin-block-start: 2em;
+	}
+
+	.block-marketing-banners__grid--stacked {
+		grid-template-columns: 1fr;
+	}
+
+	.block-marketing-banners__grid--two-column {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.block-marketing-banners__grid--three-column {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	@media (max-width: 989px) {
+		.block-marketing-banners__grid--three-column {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 749px) {
+		.block-marketing-banners__grid--two-column,
+		.block-marketing-banners__grid--three-column {
+			grid-template-columns: 1fr;
+		}
+	}
+{% endstyle %}
 
 {% schema %}
 {
-  "name": "Marketing Banners",
-  "tag": "section",
-  "class": "block-marketing-banners",
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  },
-  "settings": [
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading"
-    },
-    {
-      "type": "text",
-      "id": "subheading",
-      "label": "Subheading"
-    },
-    {
-      "type": "select",
-      "id": "layout",
-      "label": "Layout",
-      "options": [
-        { "value": "stacked", "label": "Stacked" },
-        { "value": "two-column", "label": "Two Columns" },
-        { "value": "three-column", "label": "Three Columns" }
-      ],
-      "default": "stacked"
-    }
-  ],
-  "blocks": [
-    {
-      "type": "banner",
-      "name": "Banner",
-      "settings": [
-        {
-          "type": "textarea",
-          "id": "text",
-          "label": "Banner Text",
-          "default": "Important announcement"
-        },
-        {
-          "type": "text",
-          "id": "cta_text",
-          "label": "Button Text"
-        },
-        {
-          "type": "url",
-          "id": "cta_url",
-          "label": "Button URL"
-        },
-        {
-          "type": "select",
-          "id": "style",
-          "label": "Style",
-          "options": [
-            { "value": "info", "label": "Info" },
-            { "value": "success", "label": "Success" },
-            { "value": "warning", "label": "Warning" },
-            { "value": "error", "label": "Error" },
-            { "value": "promo", "label": "Promo" }
-          ],
-          "default": "promo"
-        },
-        {
-          "type": "checkbox",
-          "id": "dismissible",
-          "label": "Dismissible",
-          "default": false
-        }
-      ]
-    }
-  ],
-  "max_blocks": 6,
-  "presets": [
-    {
-      "name": "Marketing Banners",
-      "category": "Theme Marketing",
-      "blocks": [
-        {
-          "type": "banner",
-          "settings": {
-            "text": "Free shipping on orders over $50",
-            "style": "promo"
-          }
-        }
-      ]
-    }
-  ]
+	"name": "Marketing banners",
+	"tag": "section",
+	"class": "block-marketing-banners",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading"
+		},
+		{
+			"type": "text",
+			"id": "subheading",
+			"label": "Subheading"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "select",
+			"id": "layout",
+			"label": "Grid layout",
+			"options": [
+				{ "value": "stacked", "label": "Stacked" },
+				{ "value": "two-column", "label": "Two columns" },
+				{ "value": "three-column", "label": "Three columns" }
+			],
+			"default": "stacked"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"blocks": [
+		{
+			"type": "banner",
+			"name": "Banner",
+			"settings": [
+				{
+					"type": "textarea",
+					"id": "text",
+					"label": "Text"
+				},
+				{
+					"type": "text",
+					"id": "cta_text",
+					"label": "Button text",
+					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "url",
+					"id": "cta_url",
+					"label": "Button link"
+				},
+				{
+					"type": "select",
+					"id": "style",
+					"label": "Style",
+					"options": [
+						{ "value": "info", "label": "Info" },
+						{ "value": "success", "label": "Success" },
+						{ "value": "warning", "label": "Warning" },
+						{ "value": "error", "label": "Error" },
+						{ "value": "promo", "label": "Promo" }
+					],
+					"default": "promo"
+				},
+				{
+					"type": "checkbox",
+					"id": "dismissible",
+					"label": "Dismissible",
+					"default": false
+				}
+			]
+		}
+	],
+	"max_blocks": 6,
+	"presets": [
+		{
+			"name": "Banners",
+			"category": "Marketing",
+			"blocks": [
+				{ "type": "banner" }
+			]
+		}
+	]
 }
 {% endschema %}

@@ -1,0 +1,96 @@
+{%- comment -%}
+  ============================================================================
+  HTML-BUTTON-REGION
+  ============================================================================
+
+  Purpose:
+  Renders a trigger button for the region selector modal.
+  Use in header, footer, or anywhere you want to open the region modal.
+  
+  Usage:
+  {% render 'html-button-region' %}
+  {% render 'html-button-region', show_icon: false %}
+  {% render 'html-button-region', show_language: true, show_currency: false %}
+
+  Parameters:
+  - class: {String} Additional CSS classes (optional)
+  - show_icon: {Boolean} Show globe icon (default: true)
+  - show_language: {Boolean} Show current language (default: true)
+  - show_currency: {Boolean} Show current currency (default: true)
+  - modal_id: {String} ID of modal to trigger (default: 'region-modal')
+
+  Dependencies:
+  - html-theme-icons snippet
+  - theme-modal.js
+  - Requires block-modal-region section to be present on the page
+
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign additional_class = class | default: ''
+  assign show_icon = show_icon | default: true
+  assign show_lang = show_language | default: true
+  assign show_curr = show_currency | default: true
+  assign target_modal = modal_id | default: 'region-modal'
+-%}
+
+<button 
+  type="button" 
+  class="button-region {{ additional_class }}"
+  aria-haspopup="dialog"
+  data-modal-trigger="{{ target_modal }}"
+>
+  {%- if show_icon -%}
+    <span class="button-region__icon" aria-hidden="true">
+      {%- render 'html-theme-icons', icon: 'globe', size: 20 -%}
+    </span>
+  {%- endif -%}
+  
+  <span class="button-region__text">
+    {%- if show_lang -%}
+      <span class="button-region__language">{{ localization.language.endonym_name | capitalize }}</span>
+    {%- endif -%}
+    {%- if show_lang and show_curr -%}
+      <span class="button-region__separator" aria-hidden="true">|</span>
+    {%- endif -%}
+    {%- if show_curr -%}
+      <span class="button-region__currency">{{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }}</span>
+    {%- endif -%}
+  </span>
+</button>
+
+<style>
+  .button-region {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.5em 0.75em;
+    background: transparent;
+    border: 1px solid currentColor;
+    font-family: inherit;
+    font-size: 0.875em;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 150ms ease;
+  }
+
+  .button-region:hover {
+    opacity: 0.7;
+  }
+
+  .button-region__icon {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .button-region__text {
+    display: flex;
+    align-items: center;
+    gap: 0.375em;
+  }
+
+  .button-region__separator {
+    opacity: 0.5;
+  }
+</style>

@@ -1,0 +1,82 @@
+{%- comment -%}
+  ============================================================================
+  HTML-PRODUCT-IDENTITY
+  ============================================================================
+  Conditional identity verification notice based on product tag.
+
+  PARAMETERS:
+  - product: {Object} Product object (required)
+  - tag: {String} Tag to check for (e.g. "ID check")
+  - message: {String} Message to display
+  - icon: {Object} Image object for custom icon (optional)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign show_notice = false
+  assign check_tag = tag | default: 'ID check'
+  
+  for t in product.tags
+    if t == check_tag
+      assign show_notice = true
+      break
+    endif
+  endfor
+-%}
+
+{%- if show_notice -%}
+  <div class="product-identity" data-product-identity>
+    <div class="product-identity__icon">
+      {%- if icon != blank -%}
+        <img 
+          src="{{ icon | image_url: width: 96 }}" 
+          alt="" 
+          width="48" 
+          height="48"
+          loading="lazy"
+        >
+      {%- else -%}
+        <svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true">
+          <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="3"/>
+          <text x="24" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="currentColor">18+</text>
+        </svg>
+      {%- endif -%}
+    </div>
+    <p class="product-identity__message">
+      {{ message | default: 'This item is only sold to 18+. We will ship your order after ID verification.' }}
+    </p>
+  </div>
+{%- endif -%}
+
+<style>
+  .product-identity {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5em;
+    padding: 1em 0em;
+    background-color: transparent;
+    border: none;
+    border-radius: 4px;
+    /* margins controlled by parent */
+  }
+
+  .product-identity__icon {
+    flex-shrink: 0;
+    color: red;
+  }
+
+  .product-identity__icon img,
+  .product-identity__icon svg {
+    display: block;
+    width: 48px;
+    height: 48px;
+  }
+
+  .product-identity__message {
+    margin: 0;
+    font-size: 0.9em;
+    line-height: 1.4;
+    color: inherit;
+    padding-top: 0.25em;
+  }
+</style>

@@ -1,145 +1,343 @@
 {%- comment -%}
-	Collect recommended products based on template context
-	- Product page: show recommendations for current product
-	- Cart page: show recommendations for all cart items
+  ============================================================================
+  BLOCK-PRODUCT-RECOMMENDED
+  ============================================================================
+  Display recommended products based on template context.
+  
+  FEATURES:
+  - Product page: recommendations from current product metafield
+  - Cart page: recommendations from all cart items
+  - Configurable product card display
+  - Responsive grid layout
+  
+  DEPENDENCIES:
+  - html-product-card snippet
+  - Product metafield: custom.recommended-products (list of product references)
+  ============================================================================
 {%- endcomment -%}
 
 {%- liquid
-	assign recommended_product_ids = ''
+  assign recommended_product_ids = ''
+  assign max_products = section.settings.max_products | default: 8
+  assign product_count = 0
 -%}
 
 {%- capture recommended_products_html -%}
-	{%- if template.name == 'product' -%}
-		{%- comment -%} Product page: get recommendations from current product {%- endcomment -%}
-		{%- if product.metafields.custom.recommended-products.value -%}
-			{%- for rec_product in product.metafields.custom.recommended-products.value -%}
-				{%- unless recommended_product_ids contains rec_product.id -%}
-					{%- assign recommended_product_ids = recommended_product_ids | append: rec_product.id | append: ',' -%}
-					<li class="block-product-recommended__item">
-						{%- render 'html-product-card', 
-							product: rec_product, 
-							show_secondary_image: true,
-							show_vendor: false, 
-							show_price: true,
-							show_stock: true,
-							show_delivery: true,
-							show_rating: true,
-							show_badges: true, 
-							quick_add: true, 
-							context: 'recommendations' 
-						-%}
-					</li>
-				{%- endunless -%}
-			{%- endfor -%}
-		{%- endif -%}
+  {%- if template.name == 'product' -%}
+    {%- comment -%} Product page: get recommendations from current product {%- endcomment -%}
+    {%- if product.metafields.custom.recommended-products.value -%}
+      {%- for rec_product in product.metafields.custom.recommended-products.value -%}
+        {%- if product_count >= max_products -%}
+          {%- break -%}
+        {%- endif -%}
+        {%- unless recommended_product_ids contains rec_product.id -%}
+          {%- if section.settings.hide_out_of_stock and rec_product.available == false -%}
+            {%- continue -%}
+          {%- endif -%}
+          {%- assign recommended_product_ids = recommended_product_ids | append: rec_product.id | append: ',' -%}
+          {%- assign product_count = product_count | plus: 1 -%}
+          <li class="block-product-recommended__item">
+            {%- render 'html-product-card', 
+              product: rec_product,
+              layout: section.settings.card_layout,
+              image_ratio: section.settings.image_ratio,
+              show_secondary_image: section.settings.show_secondary_image,
+              show_rating: section.settings.show_rating,
+              show_vendor: section.settings.show_vendor,
+              show_price: true,
+              show_stock: true,
+              show_delivery: true,
+              show_badges: section.settings.show_badges,
+              quick_add: section.settings.quick_add
+            -%}
+          </li>
+        {%- endunless -%}
+      {%- endfor -%}
+    {%- endif -%}
 
-	{%- elsif template.name == 'cart' -%}
-		{%- comment -%} Cart page: get recommendations from all cart items {%- endcomment -%}
-		{%- for item in cart.items -%}
-			{%- if item.product.metafields.custom.recommended-products.value -%}
-				{%- for rec_product in item.product.metafields.custom.recommended-products.value -%}
-					{%- unless recommended_product_ids contains rec_product.id -%}
-						{%- assign recommended_product_ids = recommended_product_ids | append: rec_product.id | append: ',' -%}
-						<li class="block-product-recommended__item">
-							{%- render 'html-product-card', 
-								product: rec_product, 
-								show_secondary_image: true,
-								show_vendor: false, 
-								show_price: true,
-								show_stock: true,
-								show_delivery: true,
-								show_rating: true,
-								show_badges: true, 
-								quick_add: true, 
-								context: 'recommendations' 
-							-%}
-						</li>
-					{%- endunless -%}
-				{%- endfor -%}
-			{%- endif -%}
-		{%- endfor -%}
-	{%- endif -%}
+  {%- elsif template.name == 'cart' -%}
+    {%- comment -%} Cart page: get recommendations from all cart items {%- endcomment -%}
+    {%- for item in cart.items -%}
+      {%- if product_count >= max_products -%}
+        {%- break -%}
+      {%- endif -%}
+      {%- if item.product.metafields.custom.recommended-products.value -%}
+        {%- for rec_product in item.product.metafields.custom.recommended-products.value -%}
+          {%- if product_count >= max_products -%}
+            {%- break -%}
+          {%- endif -%}
+          {%- unless recommended_product_ids contains rec_product.id -%}
+            {%- if section.settings.hide_out_of_stock and rec_product.available == false -%}
+              {%- continue -%}
+            {%- endif -%}
+            {%- assign recommended_product_ids = recommended_product_ids | append: rec_product.id | append: ',' -%}
+            {%- assign product_count = product_count | plus: 1 -%}
+            <li class="block-product-recommended__item">
+              {%- render 'html-product-card', 
+                product: rec_product,
+                layout: section.settings.card_layout,
+                image_ratio: section.settings.image_ratio,
+                show_secondary_image: section.settings.show_secondary_image,
+                show_rating: section.settings.show_rating,
+                show_vendor: section.settings.show_vendor,
+                show_price: true,
+                show_stock: true,
+                show_delivery: true,
+                show_badges: section.settings.show_badges,
+                quick_add: section.settings.quick_add
+              -%}
+            </li>
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
 {%- endcapture -%}
 
 {%- if recommended_products_html != blank -%}
-	<section class="block-product-recommended-content">
-		<div class="block-product-recommended__header">
-			<h2>{{ section.settings.heading | default: 'Aanbevolen producten' }}</h2>
-		</div>
-		
-		<ul class="block-product-recommended__list">
-			{{ recommended_products_html }}
-		</ul>
-	</section>
+  <div class="block-product-recommended__content {{ section.settings.width }}">
+    <header class="block-product-recommended__header">
+      <h2 class="block-product-recommended__heading">
+        {%- if section.settings.heading != blank -%}
+          {{ section.settings.heading }}
+        {%- else -%}
+          {{ 'product.recommended_heading' | t }}
+        {%- endif -%}
+      </h2>
+    </header>
+    
+    <ul class="block-product-recommended__grid" style="--grid-columns: {{ section.settings.grid_columns }}; --grid-columns-tablet: {{ section.settings.grid_columns_tablet }}; --grid-columns-mobile: {{ section.settings.grid_columns_mobile }};">
+      {{ recommended_products_html }}
+    </ul>
+  </div>
 {%- endif -%}
 
-{%- style -%}
-	.block-product-recommended {
-		padding: var(--spacing-section, 4em) 0; background-color: var(--theme-color-grey);
-	}
-	
-	.block-product-recommended-content {
-		max-width: var(--page-width, 1200px);
-		margin: 0 auto;
-		padding: 0 var(--spacing-gutter, 1.5rem);
-	}
-	
-	.block-product-recommended__header {
-		margin-bottom: 2em;
-	}
-	
-	.block-product-recommended__header h2 {
-		font-size: 1.75em;
-		font-weight: 500;
-		margin: 0;
-	}
-	
-	.block-product-recommended__list {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-		gap: 1.5rem;
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-	
-	.block-product-recommended__item {
-		margin: 0;
-	}
-	
-	@media (max-width: 749px) {
-		.block-product-recommended__list {
-			grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-			gap: 1rem;
-		}
-		
-		.block-product-recommended__header h2 {
-			font-size: 1.5rem;
-		}
-	}
-{%- endstyle -%}
+<style>
+  .block-product-recommended {
+    background-color: #f8f8f8;
+    color: {{ section.settings.text_color }};
+    
+  }
+  
+  .block-product-recommended__content {
+    padding-block: 4em 2em;
+  }
+
+  .block-product-recommended__header {
+    margin-bottom: 2em;
+  }
+
+  .block-product-recommended__heading {
+    font-family: var(--theme-font-family-serif);
+    font-size: 2em;
+    font-weight: 400;
+    margin: 0;
+    text-align: center;
+  }
+
+  .block-product-recommended__grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.2em;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .block-product-recommended__item {
+    margin: 0;
+    min-width: 0;
+    width: calc((100% - (var(--grid-columns, 4) - 1) * 0.2em) / var(--grid-columns, 4));
+  }
+
+  .block-product-recommended__item > .product-card {
+    height: 100%;
+  }
+
+  @media (max-width: 64em) {
+    .block-product-recommended__item {
+      width: calc((100% - (var(--grid-columns-tablet, 3) - 1) * 0.2em) / var(--grid-columns-tablet, 3));
+    }
+  }
+
+  @media (max-width: 47.5em) {
+    .block-product-recommended__item {
+      width: calc((100% - (var(--grid-columns-mobile, 2) - 1) * 0.2em) / var(--grid-columns-mobile, 2));
+    }
+
+    .block-product-recommended__heading {
+      font-size: 1.5em;
+    }
+  }
+</style>
 
 {% schema %}
 {
-  "name": "Recommended Products",
-  "tag": "section",
-  "class": "block-product-recommended",
-  "disabled_on": {
-	"groups": ["header", "footer"]
-  },
-  "settings": [
-	{
-		"type": "text",
-		"id": "heading",
-		"label": "Heading",
-		"default": "Aanbevolen producten"
-	}
-  ],
-  "presets": [
-	{
-	  "name": "Recommended products",
-	  "category": "Theme Product"
-	}
-  ]
+	"name": "Recommended products",
+	"tag": "section",
+	"class": "block-product-recommended",
+	"enabled_on": {
+		"templates": ["product", "cart"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "range",
+			"id": "max_products",
+			"label": "Maximum products",
+			"min": 2,
+			"max": 12,
+			"step": 1,
+			"default": 8
+		},
+		{
+			"type": "checkbox",
+			"id": "hide_out_of_stock",
+			"label": "Hide out of stock products",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Product card"
+		},
+		{
+			"type": "select",
+			"id": "card_layout",
+			"label": "Card layout",
+			"options": [
+				{ "value": "vertical", "label": "Vertical" },
+				{ "value": "horizontal", "label": "Horizontal" }
+			],
+			"default": "vertical"
+		},
+		{
+			"type": "select",
+			"id": "image_ratio",
+			"label": "Image ratio",
+			"options": [
+				{ "value": "adapt", "label": "Adapt" },
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" }
+			],
+			"default": "portrait"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_secondary_image",
+			"label": "Show secondary image on hover",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_rating",
+			"label": "Show rating",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "show_vendor",
+			"label": "Show vendor",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "show_badges",
+			"label": "Show badges",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "quick_add",
+			"label": "Show quick add button",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "range",
+			"id": "grid_columns",
+			"label": "Columns (desktop)",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 4
+		},
+		{
+			"type": "select",
+			"id": "grid_columns_tablet",
+			"label": "Columns (tablet)",
+			"options": [
+				{ "value": "1", "label": "1" },
+				{ "value": "2", "label": "2" },
+				{ "value": "3", "label": "3" }
+			],
+			"default": "3"
+		},
+		{
+			"type": "select",
+			"id": "grid_columns_mobile",
+			"label": "Columns (mobile)",
+			"options": [
+				{ "value": "1", "label": "1" },
+				{ "value": "2", "label": "2" }
+			],
+			"default": "2"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#f8f8f8"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "header",
+			"content": "How to use"
+		},
+		{
+			"type": "paragraph",
+			"content": "On product pages: shows products from custom.recommended-products metafield. On cart page: combines recommendations from all cart items."
+		}
+	],
+	"presets": [
+		{
+			"name": "Recommended",
+			"category": "Product"
+		}
+	]
 }
 {% endschema %}

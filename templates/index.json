@@ -9,208 +9,264 @@
  */
 {
   "sections": {
-    "block_marketing_grid_BMwcw9": {
-      "type": "block-marketing-grid",
+    "block_marketing_cover_EyVVzr": {
+      "type": "block-marketing-cover",
       "blocks": {
-        "product_76PEAf": {
-          "type": "product",
+        "button_iA3nah": {
+          "type": "button",
           "settings": {
-            "product": "vroeg-middeleeuwse-jurk-clotilde-rood-blauw",
-            "second_image": false,
-            "design": "green"
-          }
-        },
-        "banner_pL4tVY": {
-          "type": "banner",
-          "settings": {
-            "image": "shopify://shop_images/Wishlist_reminder.jpg",
-            "label": "New Collection",
-            "heading": "Summer Collection",
-            "text": "",
-            "link_url": "",
-            "design": "red"
-          }
-        },
-        "collection_RnqdA6": {
-          "type": "collection",
-          "settings": {
-            "collection": "1-april",
-            "show_description": true,
-            "design": "blue"
-          }
-        },
-        "video_tjp8NU": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
-            "cover_image": "shopify://shop_images/5.webp",
-            "description": "Video",
-            "design": "blue"
+            "text": "Winkel nu",
+            "url": "shopify://collections/all",
+            "style": "primary",
+            "button_color": "#ffffff",
+            "button_text_color": "#243406"
           }
         }
       },
       "block_order": [
-        "product_76PEAf",
-        "banner_pL4tVY",
-        "collection_RnqdA6",
-        "video_tjp8NU"
+        "button_iA3nah"
       ],
-      "custom_css": [
-        ".marketing-grid-section {padding-top: 0;}"
-      ],
-      "name": "Marketing Grid",
+      "name": "Cover",
       "settings": {
-        "heading": "",
-        "subtext": "",
-        "view": "grid",
-        "background_color": "transparent",
-        "enable_gaps": true
+        "subheading": "Discover",
+        "heading": "The new Celtic WebMerchant",
+        "text": "",
+        "video": "shopify://files/videos/Home Banner.mp4",
+        "focus_x": 50,
+        "focus_y": 50,
+        "overlay": "medium",
+        "width": "alignfull",
+        "height": "large",
+        "text_position": "center",
+        "text_alignment": "center",
+        "custom_class": ""
       }
     },
-    "latest-products": {
-      "type": "block-product-latest",
+    "best-products": {
+      "type": "block-marketing-products",
       "settings": {
-        "collection": "",
-        "products_to_show": 8,
-        "products_in_view": 4
+        "collection": "kleding",
+        "heading": "",
+        "max_products": 4,
+        "only_available": false,
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": true,
+        "quick_add": false,
+        "width": "alignwide",
+        "columns_desktop": 4,
+        "columns_tablet": "3",
+        "columns_mobile": "2",
+        "visible_rows": 1,
+        "show_more_text": "",
+        "show_less_text": "",
+        "background_color": "#f5f5f5",
+        "text_color": "#111111",
+        "custom_class": ""
       }
     },
     "block_marketing_grid_93tkDC": {
       "type": "block-marketing-grid",
       "blocks": {
-        "banner_VqjtKq": {
+        "banner_Hriiii": {
           "type": "banner",
           "settings": {
-            "image": "shopify://shop_images/Price_drop-alert.jpg",
-            "label": "New Collection",
-            "heading": "Summer Collection",
-            "text": "",
-            "link_url": "",
+            "image": "shopify://shop_images/DSC07683_163ea61f-c4a6-4c1f-a7d9-c9783ce9c453.jpg",
+            "label": "",
+            "heading": "Ontsnap aan The Matrix",
+            "text": "Ga naar onze blog & kennisbank",
+            "link_url": "shopify://pages/blog-lookbook",
             "design": "green"
           }
         },
-        "product_DHnyzP": {
-          "type": "product",
+        "banner_KjHxcU": {
+          "type": "banner",
           "settings": {
-            "product": "vroeg-middeleeuwse-jurk-gesine-blauwgroen",
-            "second_image": false,
+            "image": "shopify://shop_images/DSC09467_1.jpg",
+            "label": "",
+            "heading": "Schrijf je in voor onze nieuwsbrief!",
+            "text": "Ontvang een kortingscode & maandelijks kans op € 100 shoptegoed",
+            "link_url": "shopify://blogs/algemeen",
             "design": "blue"
           }
         },
-        "collection_NHXkG8": {
-          "type": "collection",
+        "banner_VqjtKq": {
+          "type": "banner",
           "settings": {
-            "collection": "samurai-zwaard-kopen",
-            "show_description": true,
-            "design": "red"
-          }
-        },
-        "video_MXK66V": {
-          "type": "video",
-          "settings": {
-            "video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
-            "cover_image": "shopify://shop_images/DSC00885.jpg",
-            "description": "Video",
-            "design": "red"
+            "image": "shopify://shop_images/DSC04048_482e352a-7582-44f6-b68f-34a6fd09da78.jpg",
+            "label": "Nieuw!",
+            "heading": "Ontdek the Tribe",
+            "text": "Welkom bij de community",
+            "link_url": "shopify://pages/the-tribe",
+            "design": "green"
           }
         }
       },
       "block_order": [
-        "banner_VqjtKq",
-        "product_DHnyzP",
-        "collection_NHXkG8",
-        "video_MXK66V"
+        "banner_Hriiii",
+        "banner_KjHxcU",
+        "banner_VqjtKq"
       ],
       "name": "Marketing Grid",
       "settings": {
-        "heading": "Featured Content",
-        "subtext": "Discover our curated collection",
+        "heading": "",
+        "subtext": "",
+        "width": "align",
         "view": "slider",
-        "background_color": "white",
-        "enable_gaps": false
+        "enable_gaps": false,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "custom_class": ""
       }
     },
-    "best-products": {
-      "type": "block-product-selection",
+    "block_marketing_products_tEzFwW": {
+      "type": "block-marketing-products",
+      "name": "Products",
       "settings": {
-        "collection": "fantasy-larp-hoed",
-        "products_show": 12,
-        "products_rows": 1,
-        "readmore_label": "",
-        "readless_label": ""
+        "collection": "zwaard-kopen",
+        "heading": "",
+        "max_products": 12,
+        "only_available": true,
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": true,
+        "quick_add": false,
+        "width": "alignwide",
+        "columns_desktop": 4,
+        "columns_tablet": "3",
+        "columns_mobile": "2",
+        "visible_rows": 1,
+        "show_more_text": "",
+        "show_less_text": "",
+        "background_color": "#f5f5f5",
+        "text_color": "#111111",
+        "custom_class": ""
       }
     },
-    "popular-products": {
-      "type": "block-product-selection",
+    "block_marketing_products_V46emx": {
+      "type": "block-marketing-products",
+      "name": "Products",
       "settings": {
-        "collection": "alvast-reserveren",
-        "products_show": 12,
-        "products_rows": 1,
-        "readmore_label": "",
-        "readless_label": ""
+        "collection": "pantser",
+        "heading": "",
+        "max_products": 12,
+        "only_available": true,
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": true,
+        "quick_add": false,
+        "width": "alignwide",
+        "columns_desktop": 4,
+        "columns_tablet": "3",
+        "columns_mobile": "2",
+        "visible_rows": 1,
+        "show_more_text": "",
+        "show_less_text": "",
+        "background_color": "#f5f5f5",
+        "text_color": "#111111",
+        "custom_class": ""
       }
     },
     "block_marketing_brands_small_gekrHy": {
       "type": "block-marketing-brands-small",
       "blocks": {
-        "collection_BLdmVY": {
-          "type": "collection",
+        "brand_dxMjWa": {
+          "type": "brand",
           "settings": {
-            "collection": ""
+            "collection": "burgschneider"
           }
         },
-        "collection_zeTMmm": {
-          "type": "collection",
+        "brand_HyXWrW": {
+          "type": "brand",
           "settings": {
-            "collection": ""
+            "collection": "deepeeka"
           }
         },
-        "collection_Dd3Yjf": {
-          "type": "collection",
+        "brand_4A7fPM": {
+          "type": "brand",
           "settings": {
-            "collection": ""
+            "collection": "epic-armoury"
           }
         },
-        "collection_97BU4F": {
-          "type": "collection",
+        "brand_3kAF6b": {
+          "type": "brand",
           "settings": {
-            "collection": ""
+            "collection": "hanwei"
+          }
+        },
+        "brand_yecnzk": {
+          "type": "brand",
+          "settings": {
+            "collection": "lord-of-battles"
+          }
+        },
+        "brand_BrnLat": {
+          "type": "brand",
+          "settings": {
+            "collection": "mytholon"
+          }
+        },
+        "brand_fA7Ayd": {
+          "type": "brand",
+          "settings": {
+            "collection": "rawblade"
+          }
+        },
+        "brand_3nyrRB": {
+          "type": "brand",
+          "settings": {
+            "collection": "ulfberth"
+          }
+        },
+        "brand_YkRCR4": {
+          "type": "brand",
+          "settings": {
+            "collection": "windlass-steelcrafts"
           }
         }
       },
       "block_order": [
-        "collection_BLdmVY",
-        "collection_zeTMmm",
-        "collection_Dd3Yjf",
-        "collection_97BU4F"
+        "brand_dxMjWa",
+        "brand_HyXWrW",
+        "brand_4A7fPM",
+        "brand_3kAF6b",
+        "brand_yecnzk",
+        "brand_BrnLat",
+        "brand_fA7Ayd",
+        "brand_3nyrRB",
+        "brand_YkRCR4"
       ],
       "name": "Marketing Brands Small",
       "settings": {
         "heading": "Populaire Merken",
         "button_text": "Bekijk alle merken",
         "button_url": "shopify://pages/onze-merken",
-        "button_background": "#000000",
-        "button_color": "#ffffff",
-        "button_border_radius": 0,
-        "columns_mobile": 2,
-        "columns_tablet": 3,
-        "columns_desktop": 4,
-        "gap": 20,
+        "button_style": "primary",
+        "show_titles": false,
         "image_ratio": "1 / 1",
         "image_fit": "contain",
-        "border_radius": 8,
-        "container_width": 1400,
-        "padding_top": 60,
-        "padding_bottom": 60
+        "card_background": "#ffffff",
+        "width": "alignsmall",
+        "columns_desktop": 6,
+        "columns_tablet": 6,
+        "columns_mobile": 4,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "button_color": "",
+        "button_text_color": "",
+        "custom_class": ""
       }
     }
   },
   "order": [
-    "block_marketing_grid_BMwcw9",
-    "latest-products",
-    "block_marketing_grid_93tkDC",
+    "block_marketing_cover_EyVVzr",
     "best-products",
-    "popular-products",
+    "block_marketing_grid_93tkDC",
+    "block_marketing_products_tEzFwW",
+    "block_marketing_products_V46emx",
     "block_marketing_brands_small_gekrHy"
   ]
 }

@@ -1,0 +1,127 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-FOOTER-PAYMENTS
+  ============================================================================
+  Displays payment method icons from Shopify's enabled payment types.
+
+  FEATURES:
+  - Auto-generates icons from shop.enabled_payment_types
+  - Centered horizontal layout
+  - Color customization
+
+  DEPENDENCIES:
+  - None (uses Shopify's payment_type_svg_tag filter)
+  ============================================================================
+{%- endcomment -%}
+
+{%- if section.settings.payment_enable -%}
+	<div class="block-footer-payments__content {{ section.settings.width }}">
+		<ul class="block-footer-payments__list" role="list">
+			{%- for type in shop.enabled_payment_types -%}
+				<li class="block-footer-payments__item">
+					{{ type | payment_type_svg_tag: class: 'block-footer-payments__icon' }}
+				</li>
+			{%- endfor -%}
+		</ul>
+	</div>
+{%- endif -%}
+
+{% style %}
+	.block-footer-payments {
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding: 1.5em 0;
+	}
+
+	.block-footer-payments__list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75em 1em;
+	}
+
+	.block-footer-payments__item {
+		display: flex;
+		align-items: center;
+	}
+
+	.block-footer-payments__icon {
+		height: 1.5em;
+		width: auto;
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "Footer payments",
+	"tag": "section",
+	"class": "block-footer-payments",
+	"limit": 1,
+	"enabled_on": {
+		"groups": ["footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "checkbox",
+			"id": "payment_enable",
+			"label": "Show payment icons",
+			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "align"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#0f1f38"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#ffffff"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Payment icons are automatically generated from your enabled payment methods in Settings > Payments."
+		}
+	],
+	"presets": [
+		{
+			"name": "Payments",
+			"category": "Footer"
+		}
+	]
+}
+{% endschema %}

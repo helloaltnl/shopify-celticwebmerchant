@@ -1,297 +1,341 @@
 {%- liquid
-  assign heading = section.settings.heading
-  assign menu_handle = 'merk-menu'
-  assign menu = linklists[menu_handle]
+	assign menu = linklists[section.settings.menu]
+	assign has_heading = false
+	if section.settings.heading != blank
+		assign has_heading = true
+	endif
+	
+	assign has_button = false
+	if section.settings.button_url != blank
+		assign has_button = true
+	endif
+	
+	case section.settings.image_ratio
+		when 'square'
+			assign ratio = '1 / 1'
+		when 'portrait'
+			assign ratio = '2 / 3'
+		when 'landscape'
+			assign ratio = '3 / 2'
+		else
+			assign ratio = '1 / 1'
+	endcase
 -%}
 
-<section class="block-marketing-brands-content">
-  {%- if heading != blank -%}
-    <div class="block-marketing-brands__heading">
-      <h2>{{ heading }}</h2>
-    </div>
-  {%- endif -%}
+<div class="block-marketing-brands__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	{%- if has_heading -%}
+		<header class="block-marketing-brands__header">
+			<h2 class="block-marketing-brands__title">{{ section.settings.heading }}</h2>
+		</header>
+	{%- endif -%}
 
-  <div class="block-marketing-brands__content">
-    {%- if menu.links.size > 0 -%}
-      <div class="block-marketing-brands__grid">
-        {%- for link in menu.links -%}
-          {%- liquid
-            assign collection = collections[link.object.handle]
-            if collection == blank
-              assign collection = link.object
-            endif
-          -%}
-          
-          {%- if collection -%}
-            <a href="{{ collection.url }}" class="block-marketing-brands__item">
-              {%- if collection.image or collection.featured_image -%}
-                {%- liquid
-                  assign brand_image = collection.image
-                  if brand_image == blank
-                    assign brand_image = collection.featured_image
-                  endif
-                -%}
-                <div class="block-marketing-brands__image">
-                  {{ brand_image | image_url: width: 400 | image_tag: loading: 'lazy', alt: collection.title }}
-                </div>
-              {%- endif -%}
-              
-              <div class="block-marketing-brands__title">
-                <h3>{{ collection.title }}</h3>
-              </div>
-            </a>
-          {%- endif -%}
-        {%- endfor -%}
-      </div>
-    {%- else -%}
-      <p class="block-marketing-brands__empty">
-        Geen merken gevonden. Zorg ervoor dat het menu "{{ menu_handle }}" bestaat en gevuld is met collections.
-      </p>
-    {%- endif -%}
-  </div>
-</section>
+	{%- if menu.links.size > 0 -%}
+		<ul class="block-marketing-brands__grid{% if has_heading %} block-marketing-brands__grid--has-heading{% endif %}" role="list">
+			{%- for link in menu.links -%}
+				{%- liquid
+					assign collection = collections[link.object.handle]
+					if collection == blank
+						assign collection = link.object
+					endif
+				-%}
+				
+				{%- if collection -%}
+					<li class="block-marketing-brands__item">
+						<a href="{{ collection.url }}" class="block-marketing-brands__link">
+							{%- liquid
+								assign brand_image = collection.image | default: collection.featured_image
+							-%}
+							{%- if brand_image -%}
+								<figure class="block-marketing-brands__image">
+									{{ brand_image | image_url: width: 400 | image_tag: loading: 'lazy', alt: collection.title }}
+								</figure>
+							{%- endif -%}
+							{%- if section.settings.show_titles -%}
+								<span class="block-marketing-brands__name">{{ collection.title }}</span>
+							{%- endif -%}
+						</a>
+					</li>
+				{%- endif -%}
+			{%- endfor -%}
+		</ul>
+	{%- endif -%}
 
-{%- style -%}
-  .block-marketing-brands {
-    padding: {{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px;
-  }
+	{%- if has_button -%}
+		<div class="block-marketing-brands__actions">
+			{%- render 'html-marketing-cta',
+				text: section.settings.button_text,
+				url: section.settings.button_url,
+				style: section.settings.button_style,
+				button_color: section.settings.button_color,
+				button_text_color: section.settings.button_text_color
+			-%}
+		</div>
+	{%- endif -%}
+</div>
 
-  .block-marketing-brands-content {
-    max-width: {{ section.settings.container_width }}px;
-    margin: 0 auto;
-    padding: 0 20px;
-  }
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-brands {
+		background-color: {{ section.settings.background_color | default: '#ffffff' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: 3em;
+	}
 
-  .block-marketing-brands__heading {
-    text-align: center;
-    margin-bottom: 40px;
-  }
+	.block-marketing-brands__header {
+		text-align: center;
+	}
 
-  .block-marketing-brands__heading h2 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0;
-  }
+	.block-marketing-brands__title {
+		font-family: var(--theme-font-family-serif);
+		font-size: 2em;
+		font-weight: 400;
+		margin: 0;
+	}
 
-  .block-marketing-brands__grid {
-    display: grid;
-    grid-template-columns: repeat({{ section.settings.columns_mobile }}, 1fr);
-    gap: {{ section.settings.gap }}px;
-  }
+	#shopify-section-{{ section.id }} .block-marketing-brands__grid {
+		display: grid;
+		grid-template-columns: repeat({{ section.settings.columns_mobile | default: 2 }}, 1fr);
+		gap: 0.5em;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
 
-  @media (min-width: 768px) {
-    .block-marketing-brands__grid {
-      grid-template-columns: repeat({{ section.settings.columns_tablet }}, 1fr);
-    }
-  }
+	#shopify-section-{{ section.id }} .block-marketing-brands__grid--has-heading {
+		margin-block-start: 2em;
+	}
 
-  @media (min-width: 1024px) {
-    .block-marketing-brands__grid {
-      grid-template-columns: repeat({{ section.settings.columns_desktop }}, 1fr);
-    }
-  }
+	@media (min-width: 750px) {
+		#shopify-section-{{ section.id }} .block-marketing-brands__grid {
+			grid-template-columns: repeat({{ section.settings.columns_tablet | default: 4 }}, 1fr);
+		}
+	}
 
-  .block-marketing-brands__item {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #e5e5e5;
-    border-radius: {{ section.settings.border_radius }}px;
-    overflow: hidden;
-    background: #fff;
-  }
+	@media (min-width: 990px) {
+		#shopify-section-{{ section.id }} .block-marketing-brands__grid {
+			grid-template-columns: repeat({{ section.settings.columns_desktop | default: 6 }}, 1fr);
+		}
+	}
 
-  .block-marketing-brands__item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
+	.block-marketing-brands__item {
+		margin: 0;
+	}
 
-  .block-marketing-brands__image {
-    width: 100%;
-    aspect-ratio: {{ section.settings.image_ratio }};
-    overflow: hidden;
-    background: #f5f5f5;
-  }
+	.block-marketing-brands__link {
+		display: block;
+		text-decoration: none;
+		color: inherit;
+		background-color: {{ section.settings.card_background | default: '#ffffff' }};
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		overflow: hidden;
+		transition: transform 200ms ease, box-shadow 200ms ease;
+	}
 
-  .block-marketing-brands__image img {
-    width: 100%;
-    height: 100%;
-    object-fit: {{ section.settings.image_fit }};
-  }
+	.block-marketing-brands__link:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
 
-  .block-marketing-brands__title {
-    padding: 20px;
-    text-align: center;
-  }
+	.block-marketing-brands__image {
+		width: 100%;
+		aspect-ratio: {{ ratio }};
+		overflow: hidden;
+		background-color: {{ section.settings.card_background | default: '#ffffff' }};
+		margin: 0;
+		padding: 0.25em;
+	}
 
-  .block-marketing-brands__title h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin: 0;
-  }
+	.block-marketing-brands__image img {
+		width: 100%;
+		height: calc(100% - 0.5em);
+		object-fit: {{ section.settings.image_fit }};
+	}
 
-  .block-marketing-brands__empty {
-    text-align: center;
-    padding: 40px 20px;
-    color: #666;
-  }
-{%- endstyle -%}
+	.block-marketing-brands__name {
+		display: block;
+		padding: 1em;
+		text-align: center;
+		font-weight: 600;
+	}
+
+	.block-marketing-brands__actions {
+		display: flex;
+		justify-content: center;
+		margin-block-start: 2em;
+	}
+
+	.block-marketing-brands__actions .marketing-cta {
+		padding: 0;
+	}
+{% endstyle %}
 
 {% schema %}
 {
-  "name": "Marketing Brands",
-  "tag": "section",
-  "class": "block-marketing-brands",
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  },
-  "settings": [
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Onze Merken"
-    },
-    {
-      "type": "header",
-      "content": "Layout Settings"
-    },
-    {
-      "type": "range",
-      "id": "columns_mobile",
-      "label": "Columns (Mobile)",
-      "min": 1,
-      "max": 3,
-      "step": 1,
-      "default": 2
-    },
-    {
-      "type": "range",
-      "id": "columns_tablet",
-      "label": "Columns (Tablet)",
-      "min": 2,
-      "max": 4,
-      "step": 1,
-      "default": 3
-    },
-    {
-      "type": "range",
-      "id": "columns_desktop",
-      "label": "Columns (Desktop)",
-      "min": 2,
-      "max": 6,
-      "step": 1,
-      "default": 4
-    },
-    {
-      "type": "range",
-      "id": "gap",
-      "label": "Grid Gap",
-      "min": 0,
-      "max": 60,
-      "step": 4,
-      "unit": "px",
-      "default": 20
-    },
-    {
-      "type": "header",
-      "content": "Image Settings"
-    },
-    {
-      "type": "select",
-      "id": "image_ratio",
-      "label": "Image Aspect Ratio",
-      "options": [
-        {
-          "value": "1 / 1",
-          "label": "Square (1:1)"
-        },
-        {
-          "value": "4 / 3",
-          "label": "Landscape (4:3)"
-        },
-        {
-          "value": "16 / 9",
-          "label": "Wide (16:9)"
-        },
-        {
-          "value": "3 / 4",
-          "label": "Portrait (3:4)"
-        }
-      ],
-      "default": "1 / 1"
-    },
-    {
-      "type": "select",
-      "id": "image_fit",
-      "label": "Image Fit",
-      "options": [
-        {
-          "value": "cover",
-          "label": "Cover"
-        },
-        {
-          "value": "contain",
-          "label": "Contain"
-        }
-      ],
-      "default": "contain"
-    },
-    {
-      "type": "header",
-      "content": "Styling"
-    },
-    {
-      "type": "range",
-      "id": "border_radius",
-      "label": "Border Radius",
-      "min": 0,
-      "max": 20,
-      "step": 2,
-      "unit": "px",
-      "default": 0
-    },
-    {
-      "type": "header",
-      "content": "Spacing"
-    },
-    {
-      "type": "range",
-      "id": "container_width",
-      "label": "Container Width",
-      "min": 1000,
-      "max": 1600,
-      "step": 100,
-      "unit": "px",
-      "default": 1400
-    },
-    {
-      "type": "range",
-      "id": "padding_top",
-      "label": "Padding Top",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "default": 60
-    },
-    {
-      "type": "range",
-      "id": "padding_bottom",
-      "label": "Padding Bottom",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "default": 60
-    }
-  ],
-  "presets": [
-    {
-      "name": "Marketing Brands",
-      "category": "Theme Marketing"
-    }
-  ]
+	"name": "Marketing brands",
+	"tag": "section",
+	"class": "block-marketing-brands",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading"
+		},
+		{
+			"type": "link_list",
+			"id": "menu",
+			"label": "Menu",
+			"info": "Select a menu containing links to brand collections"
+		},
+		{
+			"type": "text",
+			"id": "button_text",
+			"label": "Button text",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "url",
+			"id": "button_url",
+			"label": "Button link"
+		},
+		{
+			"type": "select",
+			"id": "button_style",
+			"label": "Button style",
+			"options": [
+				{ "value": "primary", "label": "Primary" },
+				{ "value": "secondary", "label": "Secondary" },
+				{ "value": "outline", "label": "Outline" }
+			],
+			"default": "primary"
+		},
+		{
+			"type": "header",
+			"content": "Collection card"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_titles",
+			"label": "Show brand titles",
+			"default": true
+		},
+		{
+			"type": "select",
+			"id": "image_ratio",
+			"label": "Image ratio",
+			"options": [
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" }
+			],
+			"default": "square"
+		},
+		{
+			"type": "select",
+			"id": "image_fit",
+			"label": "Image fit",
+			"options": [
+				{ "value": "cover", "label": "Cover" },
+				{ "value": "contain", "label": "Contain" }
+			],
+			"default": "contain"
+		},
+		{
+			"type": "color",
+			"id": "card_background",
+			"label": "Card background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "alignsmall", "label": "Narrow" },
+				{ "value": "align", "label": "Regular" },
+				{ "value": "alignwide", "label": "Wide" },
+				{ "value": "alignfull", "label": "Full" }
+			],
+			"default": "alignwide"
+		},
+		{
+			"type": "range",
+			"id": "columns_desktop",
+			"label": "Columns (desktop)",
+			"min": 2,
+			"max": 8,
+			"step": 1,
+			"default": 6
+		},
+		{
+			"type": "range",
+			"id": "columns_tablet",
+			"label": "Columns (tablet)",
+			"min": 2,
+			"max": 6,
+			"step": 1,
+			"default": 4
+		},
+		{
+			"type": "range",
+			"id": "columns_mobile",
+			"label": "Columns (mobile)",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background",
+			"default": "#ffffff"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text",
+			"default": "#111111"
+		},
+		{
+			"type": "color",
+			"id": "button_color",
+			"label": "Button color"
+		},
+		{
+			"type": "color",
+			"id": "button_text_color",
+			"label": "Button text color"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"presets": [
+		{
+			"name": "Brands",
+			"category": "Marketing"
+		}
+	]
 }
 {% endschema %}

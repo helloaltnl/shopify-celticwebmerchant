@@ -92,11 +92,11 @@
 
         {%- if paginate.pages > 1 -%}
           {%- if paginate.parts.size > 0 -%}
-            <nav class="pagination" role="navigation" aria-label="{{ 'general.pagination.label' | t }}">
+            <nav class="pagination" role="navigation" aria-label="{{ 'pagination.label' | t }}">
               <ul role="list">
                 {%- if paginate.previous -%}
                   <li>
-                    <a href="{{ paginate.previous.url }}" aria-label="{{ 'general.pagination.previous' | t }}">
+                    <a href="{{ paginate.previous.url }}" aria-label="{{ 'pagination.previous' | t }}">
                       <span class="svg-wrapper">
                         {{- 'icon-caret.svg' | inline_asset_content -}}
                       </span>
@@ -107,7 +107,7 @@
                 {%- for part in paginate.parts -%}
                   <li>
                     {%- if part.is_link -%}
-                      <a href="{{ part.url }}" aria-label="{{ 'general.pagination.page' | t: number: part.title }}">
+                      <a href="{{ part.url }}" aria-label="{{ 'pagination.page' | t: number: part.title }}">
                         {{- part.title -}}
                       </a>
                     {%- else -%}
@@ -124,7 +124,7 @@
 
                 {%- if paginate.next -%}
                   <li>
-                    <a href="{{ paginate.next.url }}" aria-label="{{ 'general.pagination.next' | t }}">
+                    <a href="{{ paginate.next.url }}" aria-label="{{ 'pagination.next' | t }}">
                       <span class="svg-wrapper">
                         {{- 'icon-caret.svg' | inline_asset_content -}}
                       </span>

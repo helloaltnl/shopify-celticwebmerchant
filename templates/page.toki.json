@@ -10,54 +10,24 @@
 {
   "sections": {
     "main": {
-      "type": "main-page",
-      "settings": {
-        "padding_top": 28,
-        "padding_bottom": 28
-      }
-    },
-    "175818517441e2b963": {
-      "type": "apps",
+      "type": "main-page-toki",
       "blocks": {
-        "toki_loyalty_block_landing_page_sections_FNktAt": {
-          "type": "shopify://apps/toki-loyalty/blocks/block-landing-page-sections/22635295-e17c-4ef6-b61c-f95d0a982eaf",
+        "toki_loyalty_block_activities_4CaieQ": {
+          "type": "shopify://apps/toki-loyalty/blocks/block-activities/22635295-e17c-4ef6-b61c-f95d0a982eaf",
           "settings": {
-            "designId": "52932361-3e5a-48f9-b9f9-a90f179c80d2",
-            "moduleType": "how_it_works"
+            "designId": ""
           }
         }
       },
       "block_order": [
-        "toki_loyalty_block_landing_page_sections_FNktAt"
+        "toki_loyalty_block_activities_4CaieQ"
       ],
-      "name": "How it works",
       "settings": {
-        "include_margins": true
-      }
-    },
-    "17581851950c093d41": {
-      "type": "apps",
-      "blocks": {
-        "toki_loyalty_block_landing_page_sections_cmNP6J": {
-          "type": "shopify://apps/toki-loyalty/blocks/block-landing-page-sections/22635295-e17c-4ef6-b61c-f95d0a982eaf",
-          "settings": {
-            "designId": "f5215bf4-cbfd-4dde-a2bb-530869b250a6",
-            "moduleType": "faq_section"
-          }
-        }
-      },
-      "block_order": [
-        "toki_loyalty_block_landing_page_sections_cmNP6J"
-      ],
-      "name": "FAQ",
-      "settings": {
-        "include_margins": true
+        "width": "alignwide"
       }
     }
   },
   "order": [
-    "main",
-    "175818517441e2b963",
-    "17581851950c093d41"
+    "main"
   ]
 }
