@@ -12,7 +12,7 @@ FEATURES:
 - Optional heading and subheading
 
 DEPENDENCIES:
-- html-theme-icons snippet (optional, for arrow)
+- html-theme-card snippet
 ============================================================================
 {%- endcomment -%}
 
@@ -23,7 +23,7 @@ DEPENDENCIES:
 	endif
 -%}
 
-<div class="block-marketing-blogs__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+<div class="block-marketing-blogs__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	{%- if section.settings.show_header -%}
 		<header class="block-marketing-blogs__header">
 			<h2 class="block-marketing-blogs__title">{{ heading_text }}</h2>
@@ -34,31 +34,25 @@ DEPENDENCIES:
 	{%- endif -%}
 
 	{%- if section.blocks.size > 0 -%}
-		<ul class="block-marketing-blogs__grid" style="--grid-columns: {{ section.settings.columns_desktop | default: 4 }}; --grid-columns-tablet: {{ section.settings.columns_tablet | default: 3 }}; --grid-columns-mobile: {{ section.settings.columns_mobile | default: 2 }};">
+		<ul class="block-marketing-blogs__grid" role="list" style="--grid-columns: {{ section.settings.columns_desktop | default: 4 }}; --grid-columns-tablet: {{ section.settings.columns_tablet | default: 3 }}; --grid-columns-mobile: {{ section.settings.columns_mobile | default: 2 }}; --grid-gap: {{ section.settings.grid_gap | default: 0.5 }}em;">
 			{%- for block in section.blocks -%}
 				{%- assign blog = block.settings.blog -%}
 				{%- if blog != blank -%}
-					{%- assign blog_image = blog.metafields.custom.featured_image -%}
 					<li class="block-marketing-blogs__item" {{ block.shopify_attributes }}>
-						<a href="{{ blog.url }}" class="block-marketing-blogs__card" style="--card-bg: {{ section.settings.card_background_color | default: '#ffffff' }}; --card-text: {{ section.settings.card_text_color | default: '#111111' }};">
-							{%- if section.settings.show_image and blog_image -%}
-								<figure class="block-marketing-blogs__image">
-									{{ blog_image | image_url: width: 800 | image_tag:
-										loading: 'lazy',
-										widths: '400, 600, 800',
-										sizes: '(max-width: 47.5em) 50vw, 25vw'
-									}}
-								</figure>
-							{%- endif -%}
-							<div class="block-marketing-blogs__info">
-								<h3 class="block-marketing-blogs__name">{{ blog.title }}</h3>
-								{%- if section.settings.show_article_count -%}
-									<span class="block-marketing-blogs__count">
-										{{ 'blog.articles_count' | t: count: blog.articles_count }}
-									</span>
-								{%- endif -%}
-							</div>
-						</a>
+						{%- render 'html-theme-card',
+							blog: blog,
+							layout: section.settings.card_layout,
+							image_ratio: section.settings.image_ratio,
+							image_loading: 'lazy',
+							columns_desktop: section.settings.columns_desktop,
+							columns_tablet: section.settings.columns_tablet,
+							columns_mobile: section.settings.columns_mobile,
+							columns_width: section.settings.width,
+							columns_gap: section.settings.grid_gap,
+							show_image: section.settings.show_image,
+							show_count: section.settings.show_article_count,
+							heading_level: 'h3'
+						-%}
 					</li>
 				{%- endif -%}
 			{%- endfor -%}
@@ -70,9 +64,15 @@ DEPENDENCIES:
 
 {% style %}
 	#shopify-section-{{ section.id }}.block-marketing-blogs {
-		background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
-		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: 3em;
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {{ section.settings.padding_block }}em;
+	}
+
+	/* Card colors */
+	#shopify-section-{{ section.id }} .card {
+		--card-bg: {{ section.settings.card_background_color | default: 'transparent' }};
+		--card-text: {{ section.settings.card_text_color | default: 'inherit' }};
 	}
 
 	#shopify-section-{{ section.id }} .block-marketing-blogs__header {
@@ -95,7 +95,7 @@ DEPENDENCIES:
 	.block-marketing-blogs__grid {
 		display: grid;
 		grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
-		gap: 0.5em;
+		gap: var(--grid-gap, 0.5em);
 		list-style: none;
 		margin: 0;
 		padding: 0;
@@ -106,64 +106,19 @@ DEPENDENCIES:
 		min-width: 0;
 	}
 
-	.block-marketing-blogs__card {
-		display: flex;
-		flex-direction: column;
-		width: 100%;
-		text-decoration: none;
-		color: var(--card-text, inherit);
-		background-color: var(--card-bg, #fff);
-		transition: transform 150ms ease, box-shadow 150ms ease;
-	}
-
-	.block-marketing-blogs__card:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-blogs__image {
-		margin: 0;
-		aspect-ratio: {{ section.settings.image_ratio | replace: 'portrait', '2/3' | replace: 'landscape', '3/2' | replace: 'square', '1/1' | replace: 'adapt', 'auto' }};
-		overflow: hidden;
-	}
-
-	.block-marketing-blogs__image img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.block-marketing-blogs__info {
-		padding: 1em;
-	}
-
-	.block-marketing-blogs__name {
-		font-family: var(--theme-font-family-serif);
-		font-size: 1.1em;
-		font-weight: 500;
-		margin: 0;
-	}
-
-	.block-marketing-blogs__count {
-		display: block;
-		margin-top: 0.25em;
-		font-size: 0.875em;
-		opacity: 0.7;
-	}
-
 	.block-marketing-blogs__empty {
 		text-align: center;
 		opacity: 0.6;
 		padding: 3em 1em;
 	}
 
-	@media (max-width: 64em) {
+	@media (max-width: 60em) {
 		.block-marketing-blogs__grid {
 			grid-template-columns: repeat(var(--grid-columns-tablet, 3), 1fr);
 		}
 	}
 
-	@media (max-width: 47.5em) {
+	@media (max-width: 40em) {
 		.block-marketing-blogs__grid {
 			grid-template-columns: repeat(var(--grid-columns-mobile, 2), 1fr);
 		}
@@ -175,6 +130,9 @@ DEPENDENCIES:
 	"name": "Blogs",
 	"tag": "section",
 	"class": "block-marketing-blogs",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
 	"settings": [
 		{
 			"type": "header",
@@ -198,8 +156,28 @@ DEPENDENCIES:
 			"label": "Subheading"
 		},
 		{
+			"type": "select",
+			"id": "text_align",
+			"label": "Header alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" }
+			],
+			"default": "center"
+		},
+		{
 			"type": "header",
 			"content": "Blog card"
+		},
+		{
+			"type": "select",
+			"id": "card_layout",
+			"label": "Card layout",
+			"options": [
+				{ "value": "vertical", "label": "Vertical" },
+				{ "value": "horizontal", "label": "Horizontal" }
+			],
+			"default": "vertical"
 		},
 		{
 			"type": "checkbox",
@@ -213,11 +191,11 @@ DEPENDENCIES:
 			"label": "Image ratio",
 			"options": [
 				{ "value": "adapt", "label": "Adapt" },
-				{ "value": "square", "label": "Square (1:1)" },
 				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "square", "label": "Square (1:1)" },
 				{ "value": "landscape", "label": "Landscape (3:2)" }
 			],
-			"default": "landscape"
+			"default": "portrait"
 		},
 		{
 			"type": "checkbox",
@@ -234,52 +212,60 @@ DEPENDENCIES:
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
-		},
-		{
-			"type": "select",
-			"id": "text_align",
-			"label": "Header alignment",
-			"options": [
-				{ "value": "left", "label": "Left" },
-				{ "value": "center", "label": "Center" }
-			],
-			"default": "center"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "range",
 			"id": "columns_desktop",
 			"label": "Columns (desktop)",
 			"min": 1,
-			"max": 4,
+			"max": 6,
 			"step": 1,
 			"default": 4
 		},
 		{
-			"type": "select",
+			"type": "range",
 			"id": "columns_tablet",
 			"label": "Columns (tablet)",
-			"options": [
-				{ "value": "1", "label": "1" },
-				{ "value": "2", "label": "2" },
-				{ "value": "3", "label": "3" }
-			],
-			"default": "3"
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 3
 		},
 		{
-			"type": "select",
+			"type": "range",
 			"id": "columns_mobile",
 			"label": "Columns (mobile)",
-			"options": [
-				{ "value": "1", "label": "1" },
-				{ "value": "2", "label": "2" }
-			],
-			"default": "2"
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "grid_gap",
+			"label": "Grid gap",
+			"min": 0,
+			"max": 2,
+			"step": 0.1,
+			"default": 0.5,
+			"unit": "em"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
 		},
 		{
 			"type": "header",
@@ -288,30 +274,32 @@ DEPENDENCIES:
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Section background",
-			"default": "#f8f8f8"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Section text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "color",
 			"id": "card_background_color",
-			"label": "Card background",
-			"default": "#ffffff"
+			"label": "Card background"
 		},
 		{
 			"type": "color",
 			"id": "card_text_color",
-			"label": "Card text",
-			"default": "#111111"
+			"label": "Card text"
 		},
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",

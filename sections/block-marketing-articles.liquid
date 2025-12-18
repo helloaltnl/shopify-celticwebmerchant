@@ -2,19 +2,27 @@
 ============================================================================
 BLOCK-MARKETING-ARTICLES
 ============================================================================
-Article grid section showing latest articles from selected blogs.
+Article grid/slider section showing latest articles from selected blogs.
 Marketing block for use on any page.
 
 FEATURES:
 - Select specific blogs to include via blocks
 - Configurable number of articles per blog
 - Combined display from multiple blogs sorted by date
-- Grid layout with article cards
+- Display mode: Grid or Slider (Swiper)
+- Slider options: navigation, pagination, loop, autoplay
+- Random mode for varied article selection
 - Optional heading and subheading
 
+ACCESSIBILITY:
+- Grid mode: <ul role="list"> with <li> for proper list semantics
+- Slider mode: <div> elements (Swiper manipulates DOM, breaking list semantics)
+
 DEPENDENCIES:
-- html-articles-grid snippet
-- html-article-card snippet
+- html-theme-card snippet
+- html-theme-icons snippet (for slider navigation)
+- Swiper.js (loaded in theme head)
+- Global .swiper utilities from theme-ux.scss
 ============================================================================
 {%- endcomment -%}
 
@@ -23,9 +31,21 @@ DEPENDENCIES:
 	if heading_text == blank
 		assign heading_text = 'blog.heading' | t
 	endif
+	
+	assign articles_per_blog = section.settings.articles_per_blog | default: 5
+	assign max_articles = section.settings.max_articles | default: 12
+	assign random_mode = section.settings.random_mode
+	assign columns_desktop = section.settings.columns_desktop | default: 4
+	assign columns_tablet = section.settings.columns_tablet | default: 3
+	assign columns_mobile = section.settings.columns_mobile | default: 2
+	assign display_mode = section.settings.display_mode | default: 'grid'
+	assign is_slider = false
+	if display_mode == 'slider'
+		assign is_slider = true
+	endif
 -%}
 
-<div class="block-marketing-articles__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+<div class="block-marketing-articles__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	<header class="block-marketing-articles__header">
 		<h2 class="block-marketing-articles__title">{{ heading_text }}</h2>
 		{%- if section.settings.subheading != blank -%}
@@ -33,97 +53,388 @@ DEPENDENCIES:
 		{%- endif -%}
 	</header>
 
-	{%- capture articles_html -%}
-		{%- render 'html-articles-grid',
-			blocks: section.blocks,
-			articles_per_blog: section.settings.articles_per_blog,
-			max_articles: section.settings.max_articles,
-			card_layout: section.settings.card_layout,
-			show_image: section.settings.show_image,
-			show_blog_title: section.settings.show_blog_title,
-			show_date: section.settings.show_date,
-			show_excerpt: section.settings.show_excerpt,
-			show_cta: section.settings.show_cta,
-			image_ratio: section.settings.image_ratio,
-			class_prefix: 'block-marketing-articles',
-			card_background: section.settings.card_background_color,
-			card_text_color: section.settings.card_text_color
-		-%}
-	{%- endcapture -%}
+	{%- comment -%}
+	========================================
+	Collect articles from selected blogs
+	========================================
+	{%- endcomment -%}
+	
+	{%- assign all_articles = '' -%}
+	{%- assign random_seed = 'now' | date: '%s' -%}
 
-	{%- assign has_articles = articles_html | strip | size -%}
+	{%- if random_mode -%}
+		{%- comment -%} Random mode: collect up to 20 articles per blog with random keys {%- endcomment -%}
+		{%- assign random_pool = '' -%}
+		{%- for block in section.blocks -%}
+			{%- if block.type == 'blog' and block.settings.blog != blank -%}
+				{%- assign selected_blog = block.settings.blog -%}
+				{%- for article in selected_blog.articles limit: 20 -%}
+					{%- assign random_key = article.id | times: 31 | plus: random_seed | modulo: 10000 -%}
+					{%- capture entry -%}{{ random_key }}|{{ article.published_at | date: '%s' }}|{{ selected_blog.handle }}|{{ article.handle }}{%- endcapture -%}
+					{%- if random_pool == '' -%}
+						{%- assign random_pool = entry -%}
+					{%- else -%}
+						{%- assign random_pool = random_pool | append: ',' | append: entry -%}
+					{%- endif -%}
+				{%- endfor -%}
+			{%- endif -%}
+		{%- endfor -%}
+		
+		{%- comment -%} Sort by random key and select articles_per_blog per blog {%- endcomment -%}
+		{%- assign sorted_pool = random_pool | split: ',' | sort -%}
+		{%- assign blog_counts = '' -%}
+		
+		{%- for entry in sorted_pool -%}
+			{%- assign parts = entry | split: '|' -%}
+			{%- assign blog_handle = parts[2] -%}
+			
+			{%- assign current_count = 0 -%}
+			{%- assign count_entries = blog_counts | split: ',' -%}
+			{%- for count_entry in count_entries -%}
+				{%- assign count_parts = count_entry | split: ':' -%}
+				{%- if count_parts[0] == blog_handle -%}
+					{%- assign current_count = count_parts[1] | plus: 0 -%}
+					{%- break -%}
+				{%- endif -%}
+			{%- endfor -%}
+			
+			{%- if current_count < articles_per_blog -%}
+				{%- capture final_entry -%}{{ parts[1] }}|{{ parts[2] }}|{{ parts[3] }}{%- endcapture -%}
+				{%- if all_articles == '' -%}
+					{%- assign all_articles = final_entry -%}
+				{%- else -%}
+					{%- assign all_articles = all_articles | append: ',' | append: final_entry -%}
+				{%- endif -%}
+				
+				{%- assign new_count = current_count | plus: 1 -%}
+				{%- capture new_count_entry -%}{{ blog_handle }}:{{ new_count }}{%- endcapture -%}
+				{%- if current_count == 0 -%}
+					{%- if blog_counts == '' -%}
+						{%- assign blog_counts = new_count_entry -%}
+					{%- else -%}
+						{%- assign blog_counts = blog_counts | append: ',' | append: new_count_entry -%}
+					{%- endif -%}
+				{%- else -%}
+					{%- capture old_count_entry -%}{{ blog_handle }}:{{ current_count }}{%- endcapture -%}
+					{%- assign blog_counts = blog_counts | replace: old_count_entry, new_count_entry -%}
+				{%- endif -%}
+			{%- endif -%}
+		{%- endfor -%}
+	{%- else -%}
+		{%- comment -%} Normal mode: take first X articles per blog {%- endcomment -%}
+		{%- for block in section.blocks -%}
+			{%- if block.type == 'blog' and block.settings.blog != blank -%}
+				{%- assign selected_blog = block.settings.blog -%}
+				{%- for article in selected_blog.articles limit: articles_per_blog -%}
+					{%- capture entry -%}{{ article.published_at | date: '%s' }}|{{ selected_blog.handle }}|{{ article.handle }}{%- endcapture -%}
+					{%- if all_articles == '' -%}
+						{%- assign all_articles = entry -%}
+					{%- else -%}
+						{%- assign all_articles = all_articles | append: ',' | append: entry -%}
+					{%- endif -%}
+				{%- endfor -%}
+			{%- endif -%}
+		{%- endfor -%}
+	{%- endif -%}
+
+	{%- assign sorted_entries = all_articles | split: ',' | sort | reverse -%}
+	{%- assign has_articles = sorted_entries.size -%}
 
 	{%- if has_articles > 0 -%}
-		<ul class="block-marketing-articles__grid" style="--grid-columns: {{ section.settings.columns_desktop | default: 4 }}; --grid-columns-tablet: {{ section.settings.columns_tablet | default: 3 }}; --grid-columns-mobile: {{ section.settings.columns_mobile | default: 2 }};">
-			{{ articles_html }}
-		</ul>
+		{%- if is_slider -%}
+			{%- comment -%} Slider mode: use divs (Swiper manipulates DOM) {%- endcomment -%}
+			<div class="block-marketing-articles__slider swiper" id="swiper-{{ section.id }}" style="--grid-gap: {{ section.settings.grid_gap | default: 0.5 }}em;">
+				<div class="swiper-wrapper">
+					{%- assign article_count = 0 -%}
+					{%- for entry in sorted_entries -%}
+						{%- if entry != blank and article_count < max_articles -%}
+							{%- assign parts = entry | split: '|' -%}
+							{%- assign blog_handle = parts[1] -%}
+							{%- assign article_handle = parts[2] -%}
+							{%- assign current_blog = blogs[blog_handle] -%}
+							
+							{%- assign current_article = nil -%}
+							{%- for article in current_blog.articles -%}
+								{%- if article.handle == article_handle -%}
+									{%- assign current_article = article -%}
+									{%- break -%}
+								{%- endif -%}
+							{%- endfor -%}
+							
+							{%- if current_article -%}
+								{%- liquid
+									if article_count < 4
+										assign card_loading = 'eager'
+										assign card_priority = 'high'
+									else
+										assign card_loading = 'lazy'
+										assign card_priority = 'auto'
+									endif
+								-%}
+								<div class="block-marketing-articles__item swiper-slide">
+									{%- render 'html-theme-card',
+										type: 'article',
+										article: current_article,
+										blog_title: current_blog.title,
+										layout: section.settings.card_layout,
+										image_ratio: section.settings.image_ratio,
+										columns_desktop: columns_desktop,
+										columns_tablet: columns_tablet,
+										columns_mobile: columns_mobile,
+										columns_width: section.settings.width,
+										columns_gap: section.settings.grid_gap,
+										image_loading: card_loading,
+										image_priority: card_priority,
+										show_image: section.settings.show_image,
+										show_blog: section.settings.show_blog_title,
+										show_date: section.settings.show_date,
+										show_excerpt: section.settings.show_excerpt,
+										show_cta: section.settings.show_cta
+									-%}
+								</div>
+								{%- assign article_count = article_count | plus: 1 -%}
+							{%- endif -%}
+						{%- endif -%}
+					{%- endfor -%}
+				</div>
+				{%- if section.settings.slider_navigation -%}
+					<button class="swiper-nav swiper-nav--prev swiper-nav--chevron" aria-label="{{ 'accessibility.previous' | t }}">
+						{%- render 'html-theme-icons', icon: 'chevron-left' -%}
+					</button>
+					<button class="swiper-nav swiper-nav--next swiper-nav--chevron" aria-label="{{ 'accessibility.next' | t }}">
+						{%- render 'html-theme-icons', icon: 'chevron-right' -%}
+					</button>
+				{%- endif -%}
+				{%- if section.settings.slider_pagination -%}
+					<div class="swiper-pagination"></div>
+				{%- endif -%}
+			</div>
+		{%- else -%}
+			{%- comment -%} Grid mode: use semantic list {%- endcomment -%}
+			<ul class="block-marketing-articles__grid" role="list" style="--grid-columns: {{ columns_desktop }}; --grid-columns-tablet: {{ columns_tablet }}; --grid-columns-mobile: {{ columns_mobile }}; --grid-gap: {{ section.settings.grid_gap | default: 0.5 }}em;">
+				{%- assign article_count = 0 -%}
+				{%- for entry in sorted_entries -%}
+					{%- if entry != blank and article_count < max_articles -%}
+						{%- assign parts = entry | split: '|' -%}
+						{%- assign blog_handle = parts[1] -%}
+						{%- assign article_handle = parts[2] -%}
+						{%- assign current_blog = blogs[blog_handle] -%}
+						
+						{%- assign current_article = nil -%}
+						{%- for article in current_blog.articles -%}
+							{%- if article.handle == article_handle -%}
+								{%- assign current_article = article -%}
+								{%- break -%}
+							{%- endif -%}
+						{%- endfor -%}
+						
+						{%- if current_article -%}
+							{%- liquid
+								if article_count < 4
+									assign card_loading = 'eager'
+									assign card_priority = 'high'
+								else
+									assign card_loading = 'lazy'
+									assign card_priority = 'auto'
+								endif
+							-%}
+							<li class="block-marketing-articles__item">
+								{%- render 'html-theme-card',
+									type: 'article',
+									article: current_article,
+									blog_title: current_blog.title,
+									layout: section.settings.card_layout,
+									image_ratio: section.settings.image_ratio,
+									columns_desktop: columns_desktop,
+									columns_tablet: columns_tablet,
+									columns_mobile: columns_mobile,
+									columns_width: section.settings.width,
+									columns_gap: section.settings.grid_gap,
+									image_loading: card_loading,
+									image_priority: card_priority,
+									show_image: section.settings.show_image,
+									show_blog: section.settings.show_blog_title,
+									show_date: section.settings.show_date,
+									show_excerpt: section.settings.show_excerpt,
+									show_cta: section.settings.show_cta
+								-%}
+							</li>
+							{%- assign article_count = article_count | plus: 1 -%}
+						{%- endif -%}
+					{%- endif -%}
+				{%- endfor -%}
+			</ul>
+		{%- endif -%}
 	{%- else -%}
 		<p class="block-marketing-articles__empty">{{ 'blog.no_articles' | t | default: 'No articles found.' }}</p>
 	{%- endif -%}
 </div>
 
 {% style %}
-	#shopify-section-{{ section.id }}.block-marketing-articles {
-		background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
-		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: 3em;
-	}
+#shopify-section-{{ section.id }}.block-marketing-articles {
+	background-color: {{ section.settings.background_color }};
+	color: {{ section.settings.text_color }};
+	padding-block: {{ section.settings.padding_block }}em;
+}
 
-	#shopify-section-{{ section.id }} .block-marketing-articles__header {
-		margin-bottom: 2em;
-		text-align: {{ section.settings.text_align | default: 'center' }};
-	}
+/* Card colors */
+#shopify-section-{{ section.id }} .card {
+	--card-bg: {{ section.settings.card_background_color | default: 'transparent' }};
+	--card-text: {{ section.settings.card_text_color | default: 'inherit' }};
+}
 
-	.block-marketing-articles__title {
-		font-family: var(--theme-font-family-serif);
-		font-size: clamp(1.6em, 4vw, 2em);
-		font-weight: 400;
-		margin: 0;
-	}
+#shopify-section-{{ section.id }} .block-marketing-articles__header {
+	margin-bottom: 2em;
+	text-align: {{ section.settings.text_align | default: 'center' }};
+}
 
-	.block-marketing-articles__subheading {
-		margin: 0.5em 0 0;
-		opacity: 0.8;
-	}
+.block-marketing-articles__title {
+	font-family: var(--theme-font-family-serif);
+	font-size: clamp(1.6em, 4vw, 2em);
+	font-weight: 400;
+	margin: 0;
+}
 
+.block-marketing-articles__subheading {
+	margin: 0.5em 0 0;
+	opacity: 0.8;
+}
+
+.block-marketing-articles__grid {
+	display: grid;
+	grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+	gap: var(--grid-gap, 0.5em);
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.block-marketing-articles__item {
+	display: flex;
+	min-width: 0;
+}
+
+.block-marketing-articles__empty {
+	text-align: center;
+	opacity: 0.6;
+	padding: 3em 1em;
+}
+
+@media (max-width: 60em) {
 	.block-marketing-articles__grid {
-		display: grid;
-		grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
-		gap: 0.5em;
-		list-style: none;
-		margin: 0;
-		padding: 0;
+		grid-template-columns: repeat(var(--grid-columns-tablet, 3), 1fr);
 	}
+}
 
-	.block-marketing-articles__item {
-		display: flex;
-		min-width: 0;
+@media (max-width: 40em) {
+	.block-marketing-articles__grid {
+		grid-template-columns: repeat(var(--grid-columns-mobile, 2), 1fr);
 	}
+}
 
-	.block-marketing-articles__empty {
-		text-align: center;
-		opacity: 0.6;
-		padding: 3em 1em;
-	}
+/* Slider */
+.block-marketing-articles__slider .swiper-wrapper {
+	align-items: stretch;
+}
 
-	@media (max-width: 64em) {
-		.block-marketing-articles__grid {
-			grid-template-columns: repeat(var(--grid-columns-tablet, 3), 1fr);
-		}
-	}
-
-	@media (max-width: 47.5em) {
-		.block-marketing-articles__grid {
-			grid-template-columns: repeat(var(--grid-columns-mobile, 2), 1fr);
-		}
-	}
+.block-marketing-articles__slider .swiper-slide {
+	height: auto;
+}
 {% endstyle %}
+
+{%- if is_slider -%}
+<script>
+(function() {
+	function initArticlesSwiper() {
+		const swiperEl = document.getElementById('swiper-{{ section.id }}');
+		if (!swiperEl || typeof Swiper === 'undefined') return;
+		
+		if (swiperEl.swiper) swiperEl.swiper.destroy();
+
+		// Convert em to px using computed font-size
+		const fontSize = parseFloat(getComputedStyle(swiperEl).fontSize);
+		const gapEm = parseFloat('{{ section.settings.grid_gap | default: 0.5 }}');
+		const gapPx = gapEm * fontSize;
+
+		const config = {
+			slidesPerView: {{ columns_mobile }},
+			spaceBetween: gapPx,
+			{%- if section.settings.slider_navigation -%}
+			navigation: {
+				prevEl: swiperEl.querySelector('.swiper-nav--prev'),
+				nextEl: swiperEl.querySelector('.swiper-nav--next')
+			},
+			{%- endif -%}
+			{%- if section.settings.slider_pagination -%}
+			pagination: {
+				el: swiperEl.querySelector('.swiper-pagination'),
+				clickable: true
+			},
+			{%- endif -%}
+			{%- if section.settings.slider_autoplay -%}
+			autoplay: {
+				delay: {{ section.settings.slider_autoplay_speed | default: 5 | times: 1000 }},
+				disableOnInteraction: false,
+				pauseOnMouseEnter: true
+			},
+			rewind: true,
+			{%- endif -%}
+			breakpoints: {
+				640: {
+					slidesPerView: {{ columns_tablet }}
+				},
+				960: {
+					slidesPerView: {{ columns_desktop }}
+				}
+			},
+			on: {
+				init: updateSliderState,
+				resize: updateSliderState
+			}
+		};
+
+		function updateSliderState(swiper) {
+			const slidesCount = swiper.slides.length;
+			const slidesPerView = swiper.params.slidesPerView;
+			const allFit = slidesCount <= slidesPerView;
+			
+			swiperEl.classList.toggle('swiper--all-visible', allFit);
+			
+			if (allFit) {
+				if (swiper.autoplay && swiper.autoplay.running) {
+					swiper.autoplay.stop();
+				}
+			} else {
+				swiper.params.slidesPerGroup = Math.floor(slidesPerView);
+				{%- if section.settings.slider_autoplay -%}
+				if (swiper.autoplay && !swiper.autoplay.running) {
+					swiper.autoplay.start();
+				}
+				{%- endif -%}
+				swiper.update();
+			}
+		}
+
+		new Swiper(swiperEl, config);
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initArticlesSwiper);
+	} else {
+		initArticlesSwiper();
+	}
+})();
+</script>
+{%- endif -%}
 
 {% schema %}
 {
 	"name": "Articles",
 	"tag": "section",
 	"class": "block-marketing-articles",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
 	"settings": [
 		{
 			"type": "header",
@@ -141,26 +452,14 @@ DEPENDENCIES:
 			"label": "Subheading"
 		},
 		{
-			"type": "header",
-			"content": "Display"
-		},
-		{
-			"type": "range",
-			"id": "articles_per_blog",
-			"label": "Articles per blog",
-			"min": 1,
-			"max": 10,
-			"step": 1,
-			"default": 5
-		},
-		{
-			"type": "range",
-			"id": "max_articles",
-			"label": "Maximum total articles",
-			"min": 2,
-			"max": 24,
-			"step": 2,
-			"default": 12
+			"type": "select",
+			"id": "text_align",
+			"label": "Header alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" }
+			],
+			"default": "center"
 		},
 		{
 			"type": "header",
@@ -187,12 +486,13 @@ DEPENDENCIES:
 			"id": "image_ratio",
 			"label": "Image ratio",
 			"options": [
-				{ "value": "adapt", "label": "Adapt" },
-				{ "value": "square", "label": "Square (1:1)" },
 				{ "value": "portrait", "label": "Portrait (2:3)" },
-				{ "value": "landscape", "label": "Landscape (3:2)" }
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" },
+				{ "value": "adapt", "label": "Adapt (original)" }
 			],
-			"default": "landscape"
+			"default": "landscape",
+			"info": "Use a fixed ratio for consistent heights in grids/sliders"
 		},
 		{
 			"type": "checkbox",
@@ -220,6 +520,35 @@ DEPENDENCIES:
 		},
 		{
 			"type": "header",
+			"content": "Filters"
+		},
+		{
+			"type": "range",
+			"id": "articles_per_blog",
+			"label": "Articles per blog",
+			"min": 1,
+			"max": 10,
+			"step": 1,
+			"default": 5
+		},
+		{
+			"type": "range",
+			"id": "max_articles",
+			"label": "Maximum articles",
+			"min": 2,
+			"max": 24,
+			"step": 2,
+			"default": 12
+		},
+		{
+			"type": "checkbox",
+			"id": "random_mode",
+			"label": "Random mode",
+			"info": "Random selection from last 20 per blog, changes per cache session",
+			"default": false
+		},
+		{
+			"type": "header",
 			"content": "Layout"
 		},
 		{
@@ -227,52 +556,106 @@ DEPENDENCIES:
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
-		},
-		{
-			"type": "select",
-			"id": "text_align",
-			"label": "Header alignment",
-			"options": [
-				{ "value": "left", "label": "Left" },
-				{ "value": "center", "label": "Center" }
-			],
-			"default": "center"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "range",
 			"id": "columns_desktop",
 			"label": "Columns (desktop)",
 			"min": 1,
-			"max": 4,
+			"max": 6,
 			"step": 1,
 			"default": 4
 		},
 		{
-			"type": "select",
+			"type": "range",
 			"id": "columns_tablet",
 			"label": "Columns (tablet)",
-			"options": [
-				{ "value": "1", "label": "1" },
-				{ "value": "2", "label": "2" },
-				{ "value": "3", "label": "3" }
-			],
-			"default": "3"
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "columns_mobile",
+			"label": "Columns (mobile)",
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "grid_gap",
+			"label": "Grid gap",
+			"min": 0,
+			"max": 2,
+			"step": 0.1,
+			"default": 0.5,
+			"unit": "em"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Display"
 		},
 		{
 			"type": "select",
-			"id": "columns_mobile",
-			"label": "Columns (mobile)",
+			"id": "display_mode",
+			"label": "Display mode",
 			"options": [
-				{ "value": "1", "label": "1" },
-				{ "value": "2", "label": "2" }
+				{ "value": "grid", "label": "Grid" },
+				{ "value": "slider", "label": "Slider" }
 			],
-			"default": "1"
+			"default": "grid"
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_navigation",
+			"label": "Show navigation",
+			"info": "Slider only",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_pagination",
+			"label": "Show pagination",
+			"info": "Slider only",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_autoplay",
+			"label": "Autoplay",
+			"info": "Slider only. Includes rewind.",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "slider_autoplay_speed",
+			"label": "Autoplay speed",
+			"info": "Slider only",
+			"min": 2,
+			"max": 10,
+			"step": 1,
+			"default": 5,
+			"unit": "s"
 		},
 		{
 			"type": "header",
@@ -281,30 +664,32 @@ DEPENDENCIES:
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Section background",
-			"default": "#f8f8f8"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Section text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "color",
 			"id": "card_background_color",
-			"label": "Card background",
-			"default": "#ffffff"
+			"label": "Card background"
 		},
 		{
 			"type": "color",
 			"id": "card_text_color",
-			"label": "Card text",
-			"default": "#111111"
+			"label": "Card text"
 		},
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",

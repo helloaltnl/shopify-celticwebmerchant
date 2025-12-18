@@ -11,22 +11,8 @@
   "current": {
     "logo": "shopify://shop_images/logo-white.png",
     "favicon": "shopify://shop_images/CWM_Favicon_2_a5e67390-f3d6-4b46-9083-89e3db9a57b7.png",
-    "cart_type": "page",
+    "cart_type": "drawer",
     "price_show_tax_notice": true,
-    "sections": {
-      "main-password-header": {
-        "type": "main-password-header",
-        "settings": {
-          "color_scheme": "scheme-1"
-        }
-      },
-      "main-password-footer": {
-        "type": "main-password-footer",
-        "settings": {
-          "color_scheme": "scheme-1"
-        }
-      }
-    },
     "content_for_index": [],
     "blocks": {
       "8183701962187534751": {
@@ -70,6 +56,13 @@
         "type": "shopify://apps/klaviyo-email-marketing-sms/blocks/klaviyo-onsite-embed/2632fe16-c075-4321-a88b-50b567f42507",
         "disabled": false,
         "settings": {}
+      },
+      "5644523865317795868": {
+        "type": "shopify://apps/toki-loyalty/blocks/embed-wallet-v2/22635295-e17c-4ef6-b61c-f95d0a982eaf",
+        "disabled": false,
+        "settings": {
+          "designId": ""
+        }
       }
     },
     "color_schemes": {

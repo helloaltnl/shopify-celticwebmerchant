@@ -11,7 +11,7 @@
   - Responsive grid layout
   
   DEPENDENCIES:
-  - html-product-card snippet
+  - html-theme-card snippet
   - Product metafield: custom.recommended-products (list of product references)
   ============================================================================
 {%- endcomment -%}
@@ -37,10 +37,15 @@
           {%- assign recommended_product_ids = recommended_product_ids | append: rec_product.id | append: ',' -%}
           {%- assign product_count = product_count | plus: 1 -%}
           <li class="block-product-recommended__item">
-            {%- render 'html-product-card', 
+            {%- render 'html-theme-card', 
               product: rec_product,
               layout: section.settings.card_layout,
               image_ratio: section.settings.image_ratio,
+              columns_desktop: section.settings.grid_columns,
+              columns_tablet: section.settings.grid_columns_tablet,
+              columns_mobile: section.settings.grid_columns_mobile,
+              columns_width: section.settings.width,
+              columns_gap: 0.2,
               show_secondary_image: section.settings.show_secondary_image,
               show_rating: section.settings.show_rating,
               show_vendor: section.settings.show_vendor,
@@ -73,10 +78,15 @@
             {%- assign recommended_product_ids = recommended_product_ids | append: rec_product.id | append: ',' -%}
             {%- assign product_count = product_count | plus: 1 -%}
             <li class="block-product-recommended__item">
-              {%- render 'html-product-card', 
+              {%- render 'html-theme-card', 
                 product: rec_product,
                 layout: section.settings.card_layout,
                 image_ratio: section.settings.image_ratio,
+                columns_desktop: section.settings.grid_columns,
+                columns_tablet: section.settings.grid_columns_tablet,
+                columns_mobile: section.settings.grid_columns_mobile,
+                columns_width: section.settings.width,
+                columns_gap: 0.2,
                 show_secondary_image: section.settings.show_secondary_image,
                 show_rating: section.settings.show_rating,
                 show_vendor: section.settings.show_vendor,
@@ -95,7 +105,7 @@
 {%- endcapture -%}
 
 {%- if recommended_products_html != blank -%}
-  <div class="block-product-recommended__content {{ section.settings.width }}">
+  <div class="block-product-recommended__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %} style="padding-block: {{ section.settings.padding_block }}em;">
     <header class="block-product-recommended__header">
       <h2 class="block-product-recommended__heading">
         {%- if section.settings.heading != blank -%}
@@ -114,13 +124,13 @@
 
 <style>
   .block-product-recommended {
-    background-color: #f8f8f8;
-    color: {{ section.settings.text_color }};
+    background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
+    color: {{ section.settings.text_color | default: '#111111' }};
     
   }
   
   .block-product-recommended__content {
-    padding-block: 4em 2em;
+    /* padding controlled by inline style */
   }
 
   .block-product-recommended__header {
@@ -151,17 +161,13 @@
     width: calc((100% - (var(--grid-columns, 4) - 1) * 0.2em) / var(--grid-columns, 4));
   }
 
-  .block-product-recommended__item > .product-card {
-    height: 100%;
-  }
-
-  @media (max-width: 64em) {
+  @media (max-width: 60em) {
     .block-product-recommended__item {
       width: calc((100% - (var(--grid-columns-tablet, 3) - 1) * 0.2em) / var(--grid-columns-tablet, 3));
     }
   }
 
-  @media (max-width: 47.5em) {
+  @media (max-width: 40em) {
     .block-product-recommended__item {
       width: calc((100% - (var(--grid-columns-mobile, 2) - 1) * 0.2em) / var(--grid-columns-mobile, 2));
     }
@@ -190,6 +196,10 @@
 			"id": "heading",
 			"label": "Heading",
 			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "header",
+			"content": "Filters"
 		},
 		{
 			"type": "range",
@@ -225,12 +235,13 @@
 			"id": "image_ratio",
 			"label": "Image ratio",
 			"options": [
-				{ "value": "adapt", "label": "Adapt" },
-				{ "value": "square", "label": "Square (1:1)" },
 				{ "value": "portrait", "label": "Portrait (2:3)" },
-				{ "value": "landscape", "label": "Landscape (3:2)" }
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" },
+				{ "value": "adapt", "label": "Adapt (original)" }
 			],
-			"default": "portrait"
+			"default": "portrait",
+			"info": "Use a fixed ratio for consistent heights in grids"
 		},
 		{
 			"type": "checkbox",
@@ -271,42 +282,50 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "range",
 			"id": "grid_columns",
 			"label": "Columns (desktop)",
 			"min": 1,
-			"max": 4,
+			"max": 6,
 			"step": 1,
 			"default": 4
 		},
 		{
-			"type": "select",
+			"type": "range",
 			"id": "grid_columns_tablet",
 			"label": "Columns (tablet)",
-			"options": [
-				{ "value": "1", "label": "1" },
-				{ "value": "2", "label": "2" },
-				{ "value": "3", "label": "3" }
-			],
-			"default": "3"
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 3
 		},
 		{
-			"type": "select",
+			"type": "range",
 			"id": "grid_columns_mobile",
 			"label": "Columns (mobile)",
-			"options": [
-				{ "value": "1", "label": "1" },
-				{ "value": "2", "label": "2" }
-			],
-			"default": "2"
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 4,
+			"unit": "em"
 		},
 		{
 			"type": "header",
@@ -315,22 +334,36 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#f8f8f8"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "header",
-			"content": "How to use"
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
 		},
 		{
 			"type": "paragraph",
-			"content": "On product pages: shows products from custom.recommended-products metafield. On cart page: combines recommendations from all cart items."
+			"content": "Product pages: shows custom.recommended-products metafield. Cart page: combines recommendations from all cart items."
 		}
 	],
 	"presets": [

@@ -5,7 +5,7 @@
 	endif
 -%}
 
-<div class="block-marketing-features__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+<div class="block-marketing-features__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	{%- if section.settings.heading != blank -%}
 		{%- render 'html-marketing-headline',
 			heading: section.settings.heading,
@@ -23,7 +23,7 @@
 	{%- endif -%}
 	
 	{%- if section.blocks.size > 0 -%}
-		<ul class="block-marketing-features__grid{% if has_heading %} block-marketing-features__grid--has-heading{% endif %}" role="list">
+		<ul class="block-marketing-features__grid{% if has_heading %} block-marketing-features__grid--has-heading{% endif %}" role="list" style="--grid-columns: {{ section.settings.columns_desktop | default: 3 }}; --grid-columns-tablet: {{ section.settings.columns_tablet | default: 2 }}; --grid-columns-mobile: {{ section.settings.columns_mobile | default: 1 }};">
 			{%- for block in section.blocks -%}
 				<li class="block-marketing-features__item" {{ block.shopify_attributes }}>
 					{%- if block.settings.icon != blank -%}
@@ -49,14 +49,14 @@
 
 {% style %}
 	#shopify-section-{{ section.id }}.block-marketing-features {
-		background-color: {{ section.settings.background_color | default: '#ffffff' }};
-		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: 3em;
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {{ section.settings.padding_block }}em;
 	}
 
 	#shopify-section-{{ section.id }} .block-marketing-features__grid {
 		display: grid;
-		grid-template-columns: repeat({{ section.settings.columns_desktop | default: 3 }}, 1fr);
+		grid-template-columns: repeat(var(--grid-columns, 3), 1fr);
 		gap: 2em;
 		list-style: none;
 		margin: 0;
@@ -124,15 +124,15 @@
 		opacity: 0.7;
 	}
 
-	@media (max-width: 989px) {
+	@media (max-width: 60em) {
 		#shopify-section-{{ section.id }} .block-marketing-features__grid {
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: repeat(var(--grid-columns-tablet, 2), 1fr);
 		}
 	}
 
-	@media (max-width: 749px) {
+	@media (max-width: 40em) {
 		#shopify-section-{{ section.id }} .block-marketing-features__grid {
-			grid-template-columns: 1fr;
+			grid-template-columns: repeat(var(--grid-columns-mobile, 1), 1fr);
 		}
 	}
 {% endstyle %}
@@ -174,21 +174,40 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "range",
 			"id": "columns_desktop",
 			"label": "Columns (desktop)",
-			"min": 2,
-			"max": 4,
+			"min": 1,
+			"max": 6,
 			"step": 1,
 			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "columns_tablet",
+			"label": "Columns (tablet)",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "columns_mobile",
+			"label": "Columns (mobile)",
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 1
 		},
 		{
 			"type": "select",
@@ -213,24 +232,38 @@
 			"default": "circle"
 		},
 		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
 			"type": "header",
 			"content": "Colors"
 		},
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",

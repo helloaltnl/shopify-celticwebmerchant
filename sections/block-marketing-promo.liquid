@@ -1,4 +1,26 @@
-<div class="block-marketing-promo__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+{%- comment -%}
+============================================================================
+BLOCK-MARKETING-PROMO
+============================================================================
+Promotional section with headline, countdown timer, text, and CTA.
+
+FEATURES:
+- Headline with optional subheading
+- Countdown timer with customizable end date
+- Rich text content
+- CTA button with color options
+- Trust badges/USPs
+- Layout styles: Default, Boxed, Bordered
+
+DEPENDENCIES:
+- html-marketing-headline snippet
+- html-marketing-countdown snippet
+- html-marketing-text snippet
+- html-marketing-cta snippet
+============================================================================
+{%- endcomment -%}
+
+<div class="block-marketing-promo__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	<div class="block-marketing-promo__inner block-marketing-promo__inner--{{ section.settings.layout }}">
 		{%- if section.settings.heading != blank -%}
 			{%- render 'html-marketing-headline',
@@ -65,40 +87,38 @@
 
 {% style %}
 	#shopify-section-{{ section.id }}.block-marketing-promo {
-		background-color: {{ section.settings.background_color | default: '#ffffff' }};
-		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: 3em;
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {{ section.settings.padding_block }}em;
 	}
 
-	.block-marketing-promo__inner--boxed {
+	#shopify-section-{{ section.id }} .block-marketing-promo__inner--boxed {
 		background-color: rgba(0, 0, 0, 0.03);
-		padding: 0em;
-		border-radius: 0em;
+		padding: 2em;
 	}
 
-	.block-marketing-promo__inner--bordered {
+	#shopify-section-{{ section.id }} .block-marketing-promo__inner--bordered {
 		border: 2px solid rgba(0, 0, 0, 0.1);
 		padding: 2em;
-		border-radius: 0.5em;
 	}
 
 	#shopify-section-{{ section.id }} .marketing-headline {
 		text-align: center;
 	}
 
-	.block-marketing-promo__countdown {
+	#shopify-section-{{ section.id }} .block-marketing-promo__countdown {
 		margin-block-start: 1.5em;
 	}
 
-	.block-marketing-promo__text {
+	#shopify-section-{{ section.id }} .block-marketing-promo__text {
 		margin-block-start: 1.5em;
 	}
 
-	.block-marketing-promo__actions {
+	#shopify-section-{{ section.id }} .block-marketing-promo__actions {
 		margin-block-start: 0em;
 	}
 
-	.block-marketing-promo__usp {
+	#shopify-section-{{ section.id }} .block-marketing-promo__usp {
 		display: flex;
 		justify-content: center;
 		gap: 2em;
@@ -111,31 +131,31 @@
 		border-top: 1px solid rgba(0, 0, 0, 0.1);
 	}
 
-	.block-marketing-promo__usp-item {
+	#shopify-section-{{ section.id }} .block-marketing-promo__usp-item {
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
 		margin: 0;
 	}
 
-	.block-marketing-promo__usp-icon {
+	#shopify-section-{{ section.id }} .block-marketing-promo__usp-icon {
 		width: 1.5em;
 		height: 1.5em;
 		flex-shrink: 0;
 	}
 
-	.block-marketing-promo__usp-icon svg {
+	#shopify-section-{{ section.id }} .block-marketing-promo__usp-icon svg {
 		width: 100%;
 		height: 100%;
 	}
 
-	.block-marketing-promo__usp-text {
+	#shopify-section-{{ section.id }} .block-marketing-promo__usp-text {
 		font-size: 0.875em;
 		font-weight: 600;
 	}
 
-	@media (max-width: 749px) {
-		.block-marketing-promo__usp {
+	@media (max-width: 40em) {
+		#shopify-section-{{ section.id }} .block-marketing-promo__usp {
 			flex-direction: column;
 			align-items: center;
 			gap: 1em;
@@ -170,6 +190,10 @@
 			"type": "richtext",
 			"id": "text",
 			"label": "Description"
+		},
+		{
+			"type": "header",
+			"content": "Button"
 		},
 		{
 			"type": "text",
@@ -260,12 +284,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "select",
@@ -279,20 +304,28 @@
 			"default": "default"
 		},
 		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
 			"type": "header",
 			"content": "Colors"
 		},
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "color",
@@ -307,6 +340,12 @@
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",

@@ -5,14 +5,16 @@ BLOCK-MARKETING-MEDIA-USPS
 Media + USP list section combining visual media with feature highlights.
 
 FEATURES:
-- Image or video background (image acts as poster for video)
-- Left/right media positioning
-- Configurable media width (40%, 50%, 60%)
+- Mobile-first: media always renders first in HTML
+- Desktop: CSS order controls left/right positioning
+- Image or native video (autoplays muted)
 - USP blocks with icon, heading, and description
-- Vertical alignment options
+- Retina-optimized images (×3 multiplier)
 
 DEPENDENCIES:
-- html-theme-icons snippet (for check icon)
+- html-theme-media-image snippet
+- html-theme-icons snippet
+- html-marketing-cta snippet
 ============================================================================
 {%- endcomment -%}
 
@@ -29,26 +31,80 @@ DEPENDENCIES:
 	
 	assign focus_x = section.settings.focus_x | default: 50
 	assign focus_y = section.settings.focus_y | default: 50
+	assign media_position = section.settings.media_position | default: 'left'
+	assign media_width = section.settings.media_width | default: '50'
+	assign media_height = section.settings.media_height | default: 'adapt'
+	assign vertical_alignment = section.settings.vertical_alignment | default: 'center'
 	
-	case section.settings.vertical_alignment
-		when 'top'
-			assign align_items = 'flex-start'
-		when 'bottom'
-			assign align_items = 'flex-end'
+	comment
+		Calculate sizes for retina (×3 multiplier)
+	endcomment
+	case section.settings.width
+		when 'is-align-narrow'
+			assign container_px = 600
+		when 'is-align-small'
+			assign container_px = 800
+		when 'is-align'
+			assign container_px = 1000
+		when 'is-align-wide'
+			assign container_px = 1400
+		when 'is-align-full'
+			assign container_px = 1600
 		else
-			assign align_items = 'center'
+			assign container_px = 1000
 	endcase
+	
+	assign media_fraction = media_width | divided_by: 100.0
+	assign desktop_px = container_px | times: media_fraction | times: 3 | round
+	assign mobile_px = 640 | times: 3
+	
+	assign img_sizes = '(min-width: 40em) ' | append: desktop_px | append: 'px, ' | append: mobile_px | append: 'px'
+	
+	comment
+		Srcset widths
+	endcomment
+	assign base_width = container_px | times: media_fraction | round
+	if base_width < 400
+		assign base_width = 400
+	endif
+	
+	assign w1 = base_width | round
+	assign w2 = base_width | times: 1.5 | round
+	assign w3 = base_width | times: 2 | round
+	assign w4 = base_width | times: 2.5 | round
+	assign w5 = base_width | times: 3 | round
+	if w5 > 2048
+		assign w5 = 2048
+	endif
 -%}
 
-<div class="block-marketing-media-usps__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
-	<div class="block-marketing-media-usps__layout block-marketing-media-usps__layout--{{ section.settings.media_position | default: 'left' }}{% if section.settings.media_height == 'fill' %} block-marketing-media-usps__layout--fill{% endif %}">
+<div class="block-marketing-media-usps__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+	<article class="media-usps media-usps--{{ media_position }} media-usps--width-{{ media_width }} media-usps--align-{{ vertical_alignment }}{% if media_height == 'fill' %} media-usps--fill{% endif %}">
+		
+		{%- comment -%} Media - always first in HTML (mobile-first) {%- endcomment -%}
 		{%- if has_media -%}
-			<div class="block-marketing-media-usps__media block-marketing-media-usps__media--{{ section.settings.media_height | default: 'adapt' }}">
+			<div class="media-usps__media media-usps__media--{{ media_height }}">
 				{%- if section.settings.video != blank -%}
-					<div class="block-marketing-media-usps__video-wrapper"{% if section.settings.image %} style="background-image: url('{{ section.settings.image | image_url: width: 1200 }}'); background-size: cover; background-position: {{ focus_x }}% {{ focus_y }}%;"{% endif %}>
+					<div class="media-usps__video-wrapper">
+						{%- if section.settings.image != blank -%}
+							<div class="media-usps__poster">
+								{%- render 'html-theme-media-image',
+								image: section.settings.image,
+								alt: section.settings.image.alt | default: section.settings.heading,
+								w1: w1,
+								w2: w2,
+								w3: w3,
+								w4: w4,
+								w5: w5,
+								sizes: img_sizes,
+								image_loading: 'lazy',
+								focus_x: focus_x,
+								focus_y: focus_y
+								-%}
+								</div>
+								{%- endif -%}
 						<video
-							class="block-marketing-media-usps__video"
-							loading="lazy"
+							class="media-usps__video"
 							autoplay
 							muted
 							loop
@@ -56,60 +112,61 @@ DEPENDENCIES:
 							style="object-position: {{ focus_x }}% {{ focus_y }}%;"
 						>
 							{%- for source in section.settings.video.sources -%}
-								<source data-src="{{ source.url }}" type="{{ source.mime_type }}">
+								<source src="{{ source.url }}" type="{{ source.mime_type }}">
 							{%- endfor -%}
 						</video>
 					</div>
 				{%- elsif section.settings.image != blank -%}
-					<img
-						class="block-marketing-media-usps__image"
-						src="{{ section.settings.image | image_url: width: 1200 }}"
-						srcset="
-							{{ section.settings.image | image_url: width: 600 }} 600w,
-							{{ section.settings.image | image_url: width: 900 }} 900w,
-							{{ section.settings.image | image_url: width: 1200 }} 1200w
-						"
-						sizes="(max-width: 989px) 100vw, {{ section.settings.media_width | default: '50' }}vw"
-						alt="{{ section.settings.image.alt | escape }}"
-						width="{{ section.settings.image.width }}"
-						height="{{ section.settings.image.height }}"
-						loading="lazy"
-						style="object-position: {{ focus_x }}% {{ focus_y }}%;"
-					>
+					<figure class="media-usps__figure">
+						{%- render 'html-theme-media-image',
+							image: section.settings.image,
+							alt: section.settings.image.alt | default: section.settings.heading,
+							w1: w1,
+							w2: w2,
+							w3: w3,
+							w4: w4,
+							w5: w5,
+							sizes: img_sizes,
+							image_loading: 'lazy',
+							focus_x: focus_x,
+							focus_y: focus_y
+						-%}
+					</figure>
 				{%- endif -%}
 			</div>
 		{%- endif -%}
 
-		<div class="block-marketing-media-usps__body">
+		{%- comment -%} Content - always second in HTML {%- endcomment -%}
+		<div class="media-usps__body">
 			{%- if has_heading -%}
-				<header class="block-marketing-media-usps__header">
+				<header class="media-usps__header">
 					{%- if section.settings.heading != blank -%}
-						<h2 class="block-marketing-media-usps__title">{{ section.settings.heading }}</h2>
+						<h2 class="media-usps__title">{{ section.settings.heading }}</h2>
 					{%- endif -%}
 					{%- if section.settings.text != blank -%}
-						<div class="block-marketing-media-usps__text">{{ section.settings.text }}</div>
+						<div class="media-usps__text rte">{{ section.settings.text }}</div>
 					{%- endif -%}
 				</header>
 			{%- endif -%}
 
 			{%- if section.blocks.size > 0 -%}
-				<ul class="block-marketing-media-usps__list{% if has_heading %} block-marketing-media-usps__list--has-heading{% endif %}" role="list">
+				<ul class="media-usps__list{% if has_heading %} media-usps__list--has-heading{% endif %}" role="list">
 					{%- for block in section.blocks -%}
 						{%- if block.type == 'usp' -%}
-							<li class="block-marketing-media-usps__item" {{ block.shopify_attributes }}>
-								<div class="block-marketing-media-usps__icon">
+							<li class="media-usps__item" {{ block.shopify_attributes }}>
+								<div class="media-usps__icon">
 									{%- if block.settings.icon != blank -%}
 										{{ block.settings.icon }}
 									{%- else -%}
 										{%- render 'html-theme-icons', icon: 'checkmark', size: 24 -%}
 									{%- endif -%}
 								</div>
-								<div class="block-marketing-media-usps__item-content">
+								<div class="media-usps__item-content">
 									{%- if block.settings.heading != blank -%}
-										<h3 class="block-marketing-media-usps__item-title">{{ block.settings.heading | escape }}</h3>
+										<h3 class="media-usps__item-title">{{ block.settings.heading | escape }}</h3>
 									{%- endif -%}
 									{%- if block.settings.text != blank -%}
-										<p class="block-marketing-media-usps__item-text">{{ block.settings.text }}</p>
+										<p class="media-usps__item-text">{{ block.settings.text }}</p>
 									{%- endif -%}
 								</div>
 							</li>
@@ -119,7 +176,7 @@ DEPENDENCIES:
 			{%- endif -%}
 
 			{%- if section.settings.cta_url != blank -%}
-				<div class="block-marketing-media-usps__actions">
+				<div class="media-usps__actions">
 					{%- render 'html-marketing-cta',
 						text: section.settings.cta_text,
 						url: section.settings.cta_url,
@@ -131,199 +188,253 @@ DEPENDENCIES:
 				</div>
 			{%- endif -%}
 		</div>
-	</div>
+	</article>
 </div>
 
 {% style %}
-	#shopify-section-{{ section.id }}.block-marketing-media-usps {
-		background-color: {{ section.settings.background_color | default: '#ffffff' }};
-		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: 3em;
-	}
+#shopify-section-{{ section.id }}.block-marketing-media-usps {
+	background-color: {{ section.settings.background_color }};
+	color: {{ section.settings.text_color }};
+	padding-block: {{ section.settings.padding_block }}em;
+}
 
-	#shopify-section-{{ section.id }} .block-marketing-media-usps__layout {
-		display: grid;
-		grid-template-columns: {{ section.settings.media_width | default: '50' }}% 1fr;
+/* ===========================================
+   Media + USPs Layout
+   =========================================== */
+
+.media-usps {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 2em;
+}
+
+.media-usps > * {
+	min-width: 0;
+}
+
+/* Desktop: side-by-side */
+@media (min-width: 40em) {
+	.media-usps {
 		gap: 3em;
-		align-items: {{ align_items }};
 	}
+	
+	/* Width variations */
+	.media-usps--width-40 { grid-template-columns: 40% 1fr; }
+	.media-usps--width-50 { grid-template-columns: 50% 1fr; }
+	.media-usps--width-60 { grid-template-columns: 60% 1fr; }
+	
+	/* Position right: media moves to second column via order */
+	.media-usps--right .media-usps__media { order: 2; }
+	.media-usps--right .media-usps__body { order: 1; }
+	
+	/* Flip grid columns when media is on right */
+	.media-usps--right.media-usps--width-40 { grid-template-columns: 1fr 40%; }
+	.media-usps--right.media-usps--width-60 { grid-template-columns: 1fr 60%; }
+}
 
-	#shopify-section-{{ section.id }} .block-marketing-media-usps__layout--fill {
-		align-items: stretch;
-	}
+/* Vertical alignment */
+.media-usps--align-top { align-items: flex-start; }
+.media-usps--align-center { align-items: center; }
+.media-usps--align-bottom { align-items: flex-end; }
 
-	#shopify-section-{{ section.id }} .block-marketing-media-usps__layout--right {
-		grid-template-columns: 1fr {{ section.settings.media_width | default: '50' }}%;
-	}
+/* Fill mode: stretch both columns */
+.media-usps--fill { align-items: stretch; }
 
-	#shopify-section-{{ section.id }} .block-marketing-media-usps__layout--right .block-marketing-media-usps__media {
-		order: 2;
-	}
+/* ===========================================
+   Media Container
+   =========================================== */
 
-	.block-marketing-media-usps__media {
-		position: relative;
-		overflow: hidden;
-		border-radius: 0;
-	}
+.media-usps__media {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+}
 
-	.block-marketing-media-usps__media--adapt {
-		aspect-ratio: auto;
-	}
+.media-usps__figure {
+	margin: 0;
+	width: 100%;
+	height: 100%;
+}
 
-	.block-marketing-media-usps__media--fill {
-		aspect-ratio: unset;
-		height: 100%;
-		min-height: 20em;
-	}
+.media-usps__figure .theme-media__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
 
-	.block-marketing-media-usps__media--square {
-		aspect-ratio: 1 / 1;
-	}
+/* Height: adapt (natural aspect ratio) */
+.media-usps__media--adapt .theme-media__img {
+	height: auto;
+	object-fit: contain;
+}
 
-	.block-marketing-media-usps__media--portrait {
-		aspect-ratio: 2 / 3;
-	}
+/* Height: fill (stretch to content height) */
+.media-usps__media--fill {
+	min-height: 20em;
+}
 
-	.block-marketing-media-usps__media--landscape {
-		aspect-ratio: 3 / 2;
-	}
+.media-usps__media--fill .media-usps__figure,
+.media-usps__media--fill .media-usps__video-wrapper {
+	position: absolute;
+	inset: 0;
+}
 
-	.block-marketing-media-usps__video-wrapper {
-		width: 100%;
-		height: 100%;
-		background-color: #111;
-	}
+/* Height: fixed ratios */
+.media-usps__media--square { aspect-ratio: 1 / 1; }
+.media-usps__media--portrait { aspect-ratio: 2 / 3; }
+.media-usps__media--landscape { aspect-ratio: 3 / 2; }
 
-	.block-marketing-media-usps__image,
-	.block-marketing-media-usps__video {
-		width: 100%;
-		height: 100%;
-		display: block;
-		object-fit: cover;
-	}
+/* ===========================================
+   Video
+   =========================================== */
 
-	.block-marketing-media-usps__video.is-loading {
-		opacity: 0;
-	}
+.media-usps__video-wrapper {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	background-color: #111;
+}
 
-	.block-marketing-media-usps__video.is-loaded {
-		opacity: 1;
-		transition: opacity 0.3s ease;
-	}
+.media-usps__poster {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	transition: opacity 0.3s ease;
+}
 
-	.block-marketing-media-usps__media--adapt .block-marketing-media-usps__image,
-	.block-marketing-media-usps__media--adapt .block-marketing-media-usps__video {
-		height: auto;
-		object-fit: contain;
-	}
+.media-usps__poster .theme-media__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
 
-	.block-marketing-media-usps__media--fill .block-marketing-media-usps__image,
-	.block-marketing-media-usps__media--fill .block-marketing-media-usps__video {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
+.media-usps__video-wrapper.is-playing .media-usps__poster {
+	opacity: 0;
+	pointer-events: none;
+}
 
-	.block-marketing-media-usps__body {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-	}
+.media-usps__video {
+	position: relative;
+	z-index: 2;
+	width: 100%;
+	height: 100%;
+	display: block;
+	object-fit: cover;
+}
 
-	.block-marketing-media-usps__title {
-		font-family: var(--theme-font-family-serif);
-		font-size: clamp(1.6em, 4vw, 2.25em);
-		font-weight: 400;
-		margin: 0;
-		line-height: 1.2;
-	}
+/* ===========================================
+   Body Content
+   =========================================== */
 
-	.block-marketing-media-usps__text {
-		margin-top: 1em;
-		font-size: 1em;
-		line-height: 1.6;
-		opacity: 0.8;
-	}
+.media-usps__body {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
 
-	.block-marketing-media-usps__list {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5em;
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
+.media-usps__title {
+	font-family: var(--theme-font-family-serif);
+	font-size: clamp(1.6em, 4vw, 2.25em);
+	font-weight: 400;
+	margin: 0;
+	line-height: 1.2;
+}
 
-	.block-marketing-media-usps__list--has-heading {
-		margin-block-start: 2em;
-	}
+.media-usps__text {
+	margin-top: 1em;
+	font-size: 1em;
+	line-height: 1.6;
+	opacity: 0.8;
+}
 
-	.block-marketing-media-usps__item {
-		display: flex;
-		gap: 1em;
-		align-items: flex-start;
-		margin: 0;
-	}
+/* ===========================================
+   USP List
+   =========================================== */
 
-	.block-marketing-media-usps__icon {
-		flex-shrink: 0;
-		width: 2em;
-		height: 2em;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background-color: {{ section.settings.icon_background | default: 'rgba(0, 0, 0, 0.05)' }};
-		border-radius: 50%;
-		color: {{ section.settings.icon_color | default: 'currentColor' }};
-	}
+.media-usps__list {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5em;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
 
-	.block-marketing-media-usps__icon svg {
-		width: 1em;
-		height: 1em;
-	}
+.media-usps__list--has-heading {
+	margin-block-start: 2em;
+}
 
-	.block-marketing-media-usps__item-content {
-		flex: 1;
-		min-width: 0;
-	}
+.media-usps__item {
+	display: flex;
+	gap: 1em;
+	align-items: flex-start;
+	margin: 0;
+}
 
-	.block-marketing-media-usps__item-title {
-		font-family: var(--theme-font-family-sans);
-		font-size: 1.1em;
-		font-weight: 600;
-		margin: 0;
-		line-height: 1.3;
-	}
+.media-usps__icon {
+	flex-shrink: 0;
+	width: 2em;
+	height: 2em;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: {{ section.settings.icon_background | default: 'rgba(0, 0, 0, 0.05)' }};
+	border-radius: 50%;
+	color: {{ section.settings.icon_color | default: 'currentColor' }};
+}
 
-	.block-marketing-media-usps__item-text {
-		margin: 0.25em 0 0;
-		font-size: 0.9375em;
-		line-height: 1.5;
-		opacity: 0.75;
-	}
+.media-usps__icon svg {
+	width: 1em;
+	height: 1em;
+}
 
-	.block-marketing-media-usps__actions {
-		margin-block-start: 2em;
-	}
+.media-usps__item-content {
+	flex: 1;
+	min-width: 0;
+}
 
-	.block-marketing-media-usps__actions .marketing-cta {
-		padding: 0;
-	}
+.media-usps__item-title {
+	font-family: var(--theme-font-family-sans);
+	font-size: 1.1em;
+	font-weight: 600;
+	margin: 0;
+	line-height: 1.3;
+}
 
-	@media (max-width: 989px) {
-		#shopify-section-{{ section.id }} .block-marketing-media-usps__layout,
-		#shopify-section-{{ section.id }} .block-marketing-media-usps__layout--right {
-			grid-template-columns: 1fr;
-			gap: 2em;
-		}
+.media-usps__item-text {
+	margin: 0.25em 0 0;
+	font-size: 0.9375em;
+	line-height: 1.5;
+	opacity: 0.75;
+}
 
-		#shopify-section-{{ section.id }} .block-marketing-media-usps__layout--right .block-marketing-media-usps__media {
-			order: unset;
-		}
-	}
+/* ===========================================
+   Actions
+   =========================================== */
+
+.media-usps__actions {
+	margin-block-start: 2em;
+}
+
+.media-usps__actions .marketing-cta {
+	padding: 0;
+}
 {% endstyle %}
+
+<script>
+(function() {
+	var section = document.getElementById('shopify-section-{{ section.id }}');
+	if (!section) return;
+	
+	var wrapper = section.querySelector('.media-usps__video-wrapper');
+	var video = section.querySelector('.media-usps__video');
+	if (!wrapper || !video) return;
+	
+	video.addEventListener('playing', function() {
+		wrapper.classList.add('is-playing');
+	});
+})();
+</script>
 
 {% schema %}
 {
@@ -392,7 +503,7 @@ DEPENDENCIES:
 			"label": "Media height",
 			"options": [
 				{ "value": "adapt", "label": "Adapt to media" },
-				{ "value": "fill", "label": "Adapt to content" },
+				{ "value": "fill", "label": "Fill to content" },
 				{ "value": "square", "label": "Square (1:1)" },
 				{ "value": "portrait", "label": "Portrait (2:3)" },
 				{ "value": "landscape", "label": "Landscape (3:2)" }
@@ -428,12 +539,13 @@ DEPENDENCIES:
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "select",
@@ -468,20 +580,28 @@ DEPENDENCIES:
 			"default": "center"
 		},
 		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
 			"type": "header",
 			"content": "Colors"
 		},
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "color",
@@ -506,6 +626,12 @@ DEPENDENCIES:
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",

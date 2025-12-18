@@ -1,3 +1,32 @@
+{%- comment -%}
+============================================================================
+BLOCK-MARKETING-GALLERY
+============================================================================
+Image gallery with grid or slider layout.
+
+FEATURES:
+- Configurable columns per breakpoint
+- Display mode: Grid or Slider (Swiper)
+- Optional lightbox
+- Optional captions
+- Fixed aspect ratios (portrait/square/landscape/adapt)
+- Correct responsive image sizing
+- Slider options: navigation, pagination, loop, autoplay
+
+ACCESSIBILITY:
+- Grid mode: <ul role="list"> with <li> for proper list semantics
+- Slider mode: <div> elements (Swiper manipulates DOM, breaking list semantics)
+
+DEPENDENCIES:
+- html-theme-media-image snippet
+- html-marketing-headline snippet
+- html-marketing-text snippet
+- html-marketing-cta snippet
+- html-theme-icons snippet (for slider navigation)
+- Swiper.js (loaded conditionally for slider mode)
+============================================================================
+{%- endcomment -%}
+
 {%- liquid
 	assign has_heading = false
 	if section.settings.heading != blank or section.settings.subheading != blank or section.settings.text != blank
@@ -7,6 +36,12 @@
 	assign has_button = false
 	if section.settings.cta_text != blank and section.settings.cta_url != blank
 		assign has_button = true
+	endif
+	
+	assign display_mode = section.settings.layout | default: 'grid'
+	assign is_slider = false
+	if display_mode == 'slider'
+		assign is_slider = true
 	endif
 	
 	case section.settings.image_ratio
@@ -19,9 +54,78 @@
 		else
 			assign ratio = false
 	endcase
+	
+	comment
+		Container width in pixels (match theme-ui.scss)
+	endcomment
+	case section.settings.width
+		when 'is-align-narrow'
+			assign container_px = 480
+		when 'is-align-small'
+			assign container_px = 640
+		when 'is-align'
+			assign container_px = 960
+		when 'is-align-wide'
+			assign container_px = 1280
+		when 'is-align-full'
+			assign container_px = 1600
+		else
+			assign container_px = 1280
+	endcase
+	
+	assign columns_desktop = section.settings.columns_desktop | default: 3
+	assign columns_tablet = section.settings.columns_tablet | default: 2
+	assign columns_mobile = section.settings.columns_mobile | default: 1
+	assign layout_gap_em = section.settings.grid_gap | default: 0.5
+	
+	comment
+		Gap in pixels
+	endcomment
+	assign gap_px = layout_gap_em | times: 16
+	
+	comment
+		Calculate actual display sizes per breakpoint
+	endcomment
+	assign desktop_gaps = columns_desktop | minus: 1 | times: gap_px
+	assign desktop_available = container_px | minus: desktop_gaps
+	assign desktop_image = desktop_available | divided_by: columns_desktop | round
+	
+	assign tablet_gaps = columns_tablet | minus: 1 | times: gap_px
+	assign tablet_available = 960 | minus: tablet_gaps
+	assign tablet_image = tablet_available | divided_by: columns_tablet | round
+	
+	assign mobile_gaps = columns_mobile | minus: 1 | times: gap_px
+	assign mobile_available = 480 | minus: mobile_gaps
+	assign mobile_image = mobile_available | divided_by: columns_mobile | round
+	
+	comment
+		Build sizes attribute (actual display sizes)
+	endcomment
+	assign img_sizes = '(min-width: 60em) ' | append: desktop_image | append: 'px, (min-width: 40em) ' | append: tablet_image | append: 'px, ' | append: mobile_image | append: 'px'
+	
+	comment
+		Srcset widths based on desktop (largest display)
+		Provides 1x, 1.5x, 2x, 2.5x, 3x for retina
+	endcomment
+	assign base = desktop_image
+	if base < 200
+		assign base = 200
+	endif
+	
+	assign w1 = base | round
+	assign w2 = base | times: 1.5 | round
+	assign w3 = base | times: 2 | round
+	assign w4 = base | times: 2.5 | round
+	assign w5 = base | times: 3 | round
+	if w5 > 2048
+		assign w5 = 2048
+	endif
+	if w4 > 2048
+		assign w4 = 2048
+	endif
 -%}
 
-<div class="block-marketing-gallery__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+<div class="block-marketing-gallery__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	{%- if section.settings.heading != blank -%}
 		{%- render 'html-marketing-headline',
 			heading: section.settings.heading,
@@ -39,49 +143,102 @@
 	{%- endif -%}
 	
 	{%- if section.blocks.size > 0 -%}
-		<ul class="block-marketing-gallery__grid block-marketing-gallery__grid--{{ section.settings.layout }}{% if has_heading %} block-marketing-gallery__grid--has-heading{% endif %}{% if has_button %} block-marketing-gallery__grid--has-button{% endif %}" role="list">
-			{%- for block in section.blocks -%}
-				{%- if block.type == 'image' -%}
-					<li class="block-marketing-gallery__item" {{ block.shopify_attributes }}>
-						{%- if block.settings.image -%}
-							{%- if section.settings.enable_lightbox -%}
-								<a href="{{ block.settings.image | image_url: width: 2000 }}" class="block-marketing-gallery__link" data-lightbox="gallery">
-							{%- elsif block.settings.link -%}
-								<a href="{{ block.settings.link }}" class="block-marketing-gallery__link">
-							{%- endif -%}
-							
-							<img
-								src="{{ block.settings.image | image_url: width: 800 }}"
-								srcset="
-									{{ block.settings.image | image_url: width: 400 }} 400w,
-									{{ block.settings.image | image_url: width: 600 }} 600w,
-									{{ block.settings.image | image_url: width: 800 }} 800w,
-									{{ block.settings.image | image_url: width: 1200 }} 1200w
-								"
-								sizes="(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw"
-								alt="{{ block.settings.image.alt | default: block.settings.caption | escape }}"
-								width="{{ block.settings.image.width }}"
-								height="{{ block.settings.image.height }}"
-								loading="lazy"
-								class="block-marketing-gallery__image"
-							>
-							
-							{%- if block.settings.caption != blank and section.settings.show_captions -%}
-								<span class="block-marketing-gallery__caption">{{ block.settings.caption | escape }}</span>
-							{%- endif -%}
-							
-							{%- if section.settings.enable_lightbox or block.settings.link -%}
-								</a>
-							{%- endif -%}
-						{%- else -%}
-							<div class="block-marketing-gallery__placeholder">
-								{{ 'image' | placeholder_svg_tag }}
-							</div>
-						{%- endif -%}
-					</li>
+		{%- if is_slider -%}
+			{%- comment -%} Slider mode: use divs (Swiper manipulates DOM) {%- endcomment -%}
+			<div class="block-marketing-gallery__slider swiper{% if has_heading %} block-marketing-gallery__slider--has-heading{% endif %}{% if has_button %} block-marketing-gallery__slider--has-button{% endif %}" id="swiper-{{ section.id }}" style="--grid-gap: {{ layout_gap_em }}em;">
+				<div class="swiper-wrapper">
+					{%- for block in section.blocks -%}
+						{%- if block.type == 'image' -%}
+							<div class="block-marketing-gallery__item swiper-slide" {{ block.shopify_attributes }}>
+								{%- if block.settings.image -%}
+									{%- if section.settings.enable_lightbox -%}
+										<a href="{{ block.settings.image | image_url: width: 2000 }}" class="block-marketing-gallery__link" data-lightbox="gallery">
+									{%- elsif block.settings.link -%}
+										<a href="{{ block.settings.link }}" class="block-marketing-gallery__link">
+									{%- endif -%}
+									
+									{%- render 'html-theme-media-image',
+									image: block.settings.image,
+									alt: block.settings.image.alt | default: block.settings.caption,
+									w1: w1,
+									w2: w2,
+									w3: w3,
+									w4: w4,
+									w5: w5,
+									sizes: img_sizes,
+									image_loading: 'lazy'
+									-%}
+									
+									{%- if block.settings.caption != blank and section.settings.show_captions -%}
+									<span class="block-marketing-gallery__caption">{{ block.settings.caption | escape }}</span>
+									{%- endif -%}
+									
+									{%- if section.settings.enable_lightbox or block.settings.link -%}
+									</a>
+									{%- endif -%}
+									{%- else -%}
+									<div class="block-marketing-gallery__placeholder">
+									{{ 'image' | placeholder_svg_tag }}
+									</div>
+									{%- endif -%}
+									</div>
+									{%- endif -%}
+									{%- endfor -%}
+									</div>
+									{%- if section.settings.slider_navigation -%}
+					<button class="swiper-nav swiper-nav--prev swiper-nav--chevron" aria-label="{{ 'accessibility.previous' | t }}">
+						{%- render 'html-theme-icons', icon: 'chevron-left' -%}
+					</button>
+					<button class="swiper-nav swiper-nav--next swiper-nav--chevron" aria-label="{{ 'accessibility.next' | t }}">
+						{%- render 'html-theme-icons', icon: 'chevron-right' -%}
+					</button>
 				{%- endif -%}
-			{%- endfor -%}
-		</ul>
+				{%- if section.settings.slider_pagination -%}
+					<div class="swiper-pagination"></div>
+				{%- endif -%}
+			</div>
+		{%- else -%}
+			{%- comment -%} Grid mode: use semantic list {%- endcomment -%}
+			<ul class="block-marketing-gallery__grid{% if has_heading %} block-marketing-gallery__grid--has-heading{% endif %}{% if has_button %} block-marketing-gallery__grid--has-button{% endif %}" role="list" style="--grid-columns: {{ columns_desktop }}; --grid-columns-tablet: {{ columns_tablet }}; --grid-columns-mobile: {{ columns_mobile }}; --grid-gap: {{ layout_gap_em }}em;">
+				{%- for block in section.blocks -%}
+					{%- if block.type == 'image' -%}
+						<li class="block-marketing-gallery__item" {{ block.shopify_attributes }}>
+							{%- if block.settings.image -%}
+								{%- if section.settings.enable_lightbox -%}
+									<a href="{{ block.settings.image | image_url: width: 2000 }}" class="block-marketing-gallery__link" data-lightbox="gallery">
+								{%- elsif block.settings.link -%}
+									<a href="{{ block.settings.link }}" class="block-marketing-gallery__link">
+								{%- endif -%}
+								
+								{%- render 'html-theme-media-image',
+								image: block.settings.image,
+								alt: block.settings.image.alt | default: block.settings.caption,
+								w1: w1,
+								w2: w2,
+								w3: w3,
+								w4: w4,
+								w5: w5,
+								sizes: img_sizes,
+								image_loading: 'lazy'
+								-%}
+								
+								{%- if block.settings.caption != blank and section.settings.show_captions -%}
+								<span class="block-marketing-gallery__caption">{{ block.settings.caption | escape }}</span>
+								{%- endif -%}
+								
+								{%- if section.settings.enable_lightbox or block.settings.link -%}
+								</a>
+								{%- endif -%}
+								{%- else -%}
+								<div class="block-marketing-gallery__placeholder">
+								{{ 'image' | placeholder_svg_tag }}
+								</div>
+								{%- endif -%}
+								</li>
+								{%- endif -%}
+								{%- endfor -%}
+								</ul>
+								{%- endif -%}
 	{%- endif -%}
 	
 	{%- if has_button -%}
@@ -98,38 +255,28 @@
 
 {% style %}
 	#shopify-section-{{ section.id }}.block-marketing-gallery {
-		background-color: {{ section.settings.background_color | default: '#ffffff' }};
-		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: 3em;
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {{ section.settings.padding_block }}em;
 	}
 
 	#shopify-section-{{ section.id }} .block-marketing-gallery__grid {
 		display: grid;
-		grid-template-columns: repeat({{ section.settings.columns_desktop | default: 3 }}, 1fr);
-		gap: 0.5em;
+		grid-template-columns: repeat(var(--grid-columns, 3), 1fr);
+		gap: var(--grid-gap, 0.5em);
 		list-style: none;
 		margin: 0;
 		padding: 0;
 	}
 
-	.block-marketing-gallery__grid--has-heading {
+	.block-marketing-gallery__grid--has-heading,
+	.block-marketing-gallery__slider--has-heading {
 		margin-block-start: 2em;
 	}
 
-	.block-marketing-gallery__grid--has-button {
+	.block-marketing-gallery__grid--has-button,
+	.block-marketing-gallery__slider--has-button {
 		margin-block-end: 2em;
-	}
-
-	.block-marketing-gallery__grid--carousel {
-		display: flex;
-		overflow-x: auto;
-		scroll-snap-type: x mandatory;
-		-webkit-overflow-scrolling: touch;
-	}
-
-	.block-marketing-gallery__grid--carousel .block-marketing-gallery__item {
-		flex: 0 0 80%;
-		scroll-snap-align: start;
 	}
 
 	.block-marketing-gallery__item {
@@ -143,7 +290,7 @@
 		position: relative;
 	}
 
-	.block-marketing-gallery__image {
+	.block-marketing-gallery__item .theme-media__img {
 		width: 100%;
 		height: 100%;
 		display: block;
@@ -154,7 +301,7 @@
 		{%- endif -%}
 	}
 
-	.block-marketing-gallery__link:hover .block-marketing-gallery__image {
+	.block-marketing-gallery__link:hover .theme-media__img {
 		transform: scale(1.05);
 	}
 
@@ -188,30 +335,127 @@
 		text-align: center;
 	}
 
-	@media (min-width: 750px) {
-		.block-marketing-gallery__grid--carousel .block-marketing-gallery__item {
-			flex: 0 0 50%;
+	@media (max-width: 60em) {
+		#shopify-section-{{ section.id }} .block-marketing-gallery__grid {
+			grid-template-columns: repeat(var(--grid-columns-tablet, 2), 1fr);
 		}
 	}
 
-	@media (min-width: 990px) {
-		.block-marketing-gallery__grid--carousel .block-marketing-gallery__item {
-			flex: 0 0 33.333%;
+	@media (max-width: 40em) {
+		#shopify-section-{{ section.id }} .block-marketing-gallery__grid {
+			grid-template-columns: repeat(var(--grid-columns-mobile, 1), 1fr);
 		}
 	}
 
-	@media (max-width: 989px) {
-		#shopify-section-{{ section.id }} .block-marketing-gallery__grid:not(.block-marketing-gallery__grid--carousel) {
-			grid-template-columns: repeat(2, 1fr);
-		}
+	/* Slider styles */
+	.block-marketing-gallery__slider {
+		position: relative;
+		overflow: hidden;
 	}
 
-	@media (max-width: 749px) {
-		#shopify-section-{{ section.id }} .block-marketing-gallery__grid:not(.block-marketing-gallery__grid--carousel) {
-			grid-template-columns: 1fr;
-		}
+	.block-marketing-gallery__slider .swiper-wrapper {
+		align-items: stretch;
+	}
+
+	.block-marketing-gallery__slider .swiper-slide {
+		height: auto;
+	}
+
+	/* When all slides fit: center and hide controls */
+	.block-marketing-gallery__slider.swiper--all-visible .swiper-wrapper {
+		justify-content: center;
+	}
+
+	.block-marketing-gallery__slider.swiper--all-visible .swiper-nav,
+	.block-marketing-gallery__slider.swiper--all-visible .swiper-pagination {
+		display: none;
 	}
 {% endstyle %}
+
+{%- if is_slider -%}
+<script>
+	(function() {
+		function initGallerySwiper() {
+			const swiperEl = document.getElementById('swiper-{{ section.id }}');
+			if (!swiperEl || typeof Swiper === 'undefined') return;
+			
+			if (swiperEl.swiper) swiperEl.swiper.destroy();
+
+			// Convert em to px using computed font-size
+			const fontSize = parseFloat(getComputedStyle(swiperEl).fontSize);
+			const gapEm = parseFloat('{{ layout_gap_em }}');
+			const gapPx = gapEm * fontSize;
+
+			const config = {
+				slidesPerView: {{ columns_mobile }},
+				spaceBetween: gapPx,
+				{%- if section.settings.slider_navigation -%}
+				navigation: {
+					prevEl: swiperEl.querySelector('.swiper-nav--prev'),
+					nextEl: swiperEl.querySelector('.swiper-nav--next')
+				},
+				{%- endif -%}
+				{%- if section.settings.slider_pagination -%}
+				pagination: {
+					el: swiperEl.querySelector('.swiper-pagination'),
+					clickable: true
+				},
+				{%- endif -%}
+				{%- if section.settings.slider_autoplay -%}
+				autoplay: {
+					delay: {{ section.settings.slider_autoplay_speed | default: 5 | times: 1000 }},
+					disableOnInteraction: false,
+					pauseOnMouseEnter: true
+				},
+				rewind: true,
+				{%- endif -%}
+				breakpoints: {
+					640: {
+						slidesPerView: {{ columns_tablet }}
+					},
+					960: {
+						slidesPerView: {{ columns_desktop }}
+					}
+				},
+				on: {
+					init: updateSliderState,
+					resize: updateSliderState
+				}
+			};
+
+			function updateSliderState(swiper) {
+				const slidesCount = swiper.slides.length;
+				const slidesPerView = swiper.params.slidesPerView;
+				const allFit = slidesCount <= slidesPerView;
+				
+				swiperEl.classList.toggle('swiper--all-visible', allFit);
+				
+				if (allFit) {
+					if (swiper.autoplay && swiper.autoplay.running) {
+						swiper.autoplay.stop();
+					}
+				} else {
+					swiper.params.slidesPerGroup = Math.floor(slidesPerView);
+					{%- if section.settings.slider_autoplay -%}
+					if (swiper.autoplay && !swiper.autoplay.running) {
+						swiper.autoplay.start();
+					}
+					{%- endif -%}
+					swiper.update();
+				}
+			}
+
+			new Swiper(swiperEl, config);
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initGallerySwiper);
+		} else {
+			initGallerySwiper();
+		}
+	})();
+</script>
+{%- endif -%}
 
 {% schema %}
 {
@@ -272,11 +516,11 @@
 			"label": "Image ratio",
 			"options": [
 				{ "value": "adapt", "label": "Adapt" },
-				{ "value": "square", "label": "Square (1:1)" },
 				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "square", "label": "Square (1:1)" },
 				{ "value": "landscape", "label": "Landscape (3:2)" }
 			],
-			"default": "square"
+			"default": "portrait"
 		},
 		{
 			"type": "checkbox",
@@ -299,31 +543,106 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
-		},
-		{
-			"type": "select",
-			"id": "layout",
-			"label": "Grid layout",
-			"options": [
-				{ "value": "grid", "label": "Grid" },
-				{ "value": "carousel", "label": "Carousel" }
-			],
-			"default": "grid"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "range",
 			"id": "columns_desktop",
 			"label": "Columns (desktop)",
-			"min": 2,
-			"max": 4,
+			"min": 1,
+			"max": 6,
 			"step": 1,
 			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "columns_tablet",
+			"label": "Columns (tablet)",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "columns_mobile",
+			"label": "Columns (mobile)",
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 1
+		},
+		{
+			"type": "range",
+			"id": "grid_gap",
+			"label": "Grid gap",
+			"min": 0,
+			"max": 2,
+			"step": 0.1,
+			"default": 0.5,
+			"unit": "em"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Display"
+		},
+		{
+			"type": "select",
+			"id": "layout",
+			"label": "Display mode",
+			"options": [
+				{ "value": "grid", "label": "Grid" },
+				{ "value": "slider", "label": "Slider" }
+			],
+			"default": "grid"
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_navigation",
+			"label": "Show navigation",
+			"info": "Slider only",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_pagination",
+			"label": "Show pagination",
+			"info": "Slider only",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_autoplay",
+			"label": "Autoplay",
+			"info": "Slider only. Includes rewind.",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "slider_autoplay_speed",
+			"label": "Autoplay speed",
+			"info": "Slider only",
+			"min": 2,
+			"max": 10,
+			"step": 1,
+			"default": 5,
+			"unit": "s"
 		},
 		{
 			"type": "header",
@@ -332,18 +651,22 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",

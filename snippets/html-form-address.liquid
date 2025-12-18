@@ -1,0 +1,210 @@
+{%- comment -%}
+  Address form fields snippet for account addresses
+  
+  Parameters:
+  - form: The Shopify form object
+  - id: Unique identifier for the form (e.g., 'New' or address.id)
+{%- endcomment -%}
+
+<div class="main-account-addresses__field">
+  <label for="AddressFirstName{{ id }}" class="main-account-addresses__label">{{ 'customer.addresses.first_name' | t }}</label>
+  <input
+    type="text"
+    id="AddressFirstName{{ id }}"
+    name="address[first_name]"
+    class="main-account-addresses__input"
+    value="{{ form.first_name }}"
+    autocomplete="given-name"
+  >
+</div>
+
+<div class="main-account-addresses__field">
+  <label for="AddressLastName{{ id }}" class="main-account-addresses__label">{{ 'customer.addresses.last_name' | t }}</label>
+  <input
+    type="text"
+    id="AddressLastName{{ id }}"
+    name="address[last_name]"
+    class="main-account-addresses__input"
+    value="{{ form.last_name }}"
+    autocomplete="family-name"
+  >
+</div>
+
+<div class="main-account-addresses__field main-account-addresses__field--full">
+  <label for="AddressCompany{{ id }}" class="main-account-addresses__label">{{ 'customer.addresses.company' | t }}</label>
+  <input
+    type="text"
+    id="AddressCompany{{ id }}"
+    name="address[company]"
+    class="main-account-addresses__input"
+    value="{{ form.company }}"
+    autocomplete="organization"
+  >
+</div>
+
+<div class="main-account-addresses__field main-account-addresses__field--full">
+  <label for="AddressAddress1{{ id }}" class="main-account-addresses__label">{{ 'customer.addresses.address1' | t }}</label>
+  <input
+    type="text"
+    id="AddressAddress1{{ id }}"
+    name="address[address1]"
+    class="main-account-addresses__input"
+    value="{{ form.address1 }}"
+    autocomplete="address-line1"
+  >
+</div>
+
+<div class="main-account-addresses__field main-account-addresses__field--full">
+  <label for="AddressAddress2{{ id }}" class="main-account-addresses__label">{{ 'customer.addresses.address2' | t }}</label>
+  <input
+    type="text"
+    id="AddressAddress2{{ id }}"
+    name="address[address2]"
+    class="main-account-addresses__input"
+    value="{{ form.address2 }}"
+    autocomplete="address-line2"
+  >
+</div>
+
+<div class="main-account-addresses__field">
+  <label for="AddressCity{{ id }}" class="main-account-addresses__label">{{ 'customer.addresses.city' | t }}</label>
+  <input
+    type="text"
+    id="AddressCity{{ id }}"
+    name="address[city]"
+    class="main-account-addresses__input"
+    value="{{ form.city }}"
+    autocomplete="address-level2"
+  >
+</div>
+
+<div class="main-account-addresses__field">
+  <label for="AddressZip{{ id }}" class="main-account-addresses__label">{{ 'customer.addresses.zip' | t }}</label>
+  <input
+    type="text"
+    id="AddressZip{{ id }}"
+    name="address[zip]"
+    class="main-account-addresses__input"
+    value="{{ form.zip }}"
+    autocapitalize="characters"
+    autocomplete="postal-code"
+  >
+</div>
+
+<div class="main-account-addresses__field">
+  <label for="AddressCountry{{ id }}" class="main-account-addresses__label">{{ 'customer.addresses.country' | t }}</label>
+  <div class="main-account-addresses__select-wrapper">
+    <select
+      id="AddressCountry{{ id }}"
+      name="address[country]"
+      class="main-account-addresses__select"
+      data-address-country-select
+      data-default="{{ form.country }}"
+      data-form-id="{{ id }}"
+      autocomplete="country"
+    >
+      {{ all_country_option_tags }}
+    </select>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="main-account-addresses__select-icon" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+</div>
+
+<div class="main-account-addresses__field" id="AddressProvinceContainer{{ id }}" style="display: none;">
+  <label for="AddressProvince{{ id }}" class="main-account-addresses__label">{{ 'customer.addresses.province' | t }}</label>
+  <div class="main-account-addresses__select-wrapper">
+    <select
+      id="AddressProvince{{ id }}"
+      name="address[province]"
+      class="main-account-addresses__select"
+      data-default="{{ form.province }}"
+      autocomplete="address-level1"
+    ></select>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="main-account-addresses__select-icon" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+</div>
+
+<div class="main-account-addresses__field">
+  <label for="AddressPhone{{ id }}" class="main-account-addresses__label">{{ 'customer.addresses.phone' | t }}</label>
+  <input
+    type="tel"
+    id="AddressPhone{{ id }}"
+    name="address[phone]"
+    class="main-account-addresses__input"
+    value="{{ form.phone }}"
+    autocomplete="tel"
+  >
+</div>
+
+<div class="main-account-addresses__field main-account-addresses__field--checkbox">
+  {{ form.set_as_default_checkbox }}
+  <label for="address_default_address_{{ id }}">{{ 'customer.addresses.set_default' | t }}</label>
+</div>
+
+<style>
+  .main-account-addresses__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .main-account-addresses__field--full {
+    grid-column: 1 / -1;
+  }
+
+  .main-account-addresses__field--checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    grid-column: 1 / -1;
+  }
+
+  .main-account-addresses__field--checkbox input[type="checkbox"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    accent-color: var(--account-text);
+  }
+
+  .main-account-addresses__label {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .main-account-addresses__input,
+  .main-account-addresses__select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--account-background);
+    border-radius: 0.25rem;
+    background-color: var(--account-background);
+    color: var(--account-text);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .main-account-addresses__input:focus,
+  .main-account-addresses__select:focus {
+    outline: none;
+    border-color: var(--account-text);
+  }
+
+  .main-account-addresses__select-wrapper {
+    position: relative;
+    display: flex;
+  }
+
+  .main-account-addresses__select {
+    width: 100%;
+    appearance: none;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+
+  .main-account-addresses__select-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0.5;
+  }
+</style>

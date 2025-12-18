@@ -12,19 +12,19 @@
     "block_marketing_cover_EyVVzr": {
       "type": "block-marketing-cover",
       "blocks": {
-        "button_iA3nah": {
+        "button_nXdQMm": {
           "type": "button",
           "settings": {
-            "text": "Winkel nu",
+            "text": "Shop nu",
             "url": "shopify://collections/all",
-            "style": "primary",
+            "style": "outline",
             "button_color": "#ffffff",
-            "button_text_color": "#243406"
+            "button_text_color": ""
           }
         }
       },
       "block_order": [
-        "button_iA3nah"
+        "button_nXdQMm"
       ],
       "name": "Cover",
       "settings": {
@@ -34,35 +34,14 @@
         "video": "shopify://files/videos/Home Banner.mp4",
         "focus_x": 50,
         "focus_y": 50,
-        "overlay": "medium",
-        "width": "alignfull",
+        "overlay": "light",
+        "loading": "eager",
+        "fetchpriority": "high",
+        "width": "is-align-full",
         "height": "large",
         "text_position": "center",
         "text_alignment": "center",
-        "custom_class": ""
-      }
-    },
-    "best-products": {
-      "type": "block-marketing-products",
-      "settings": {
-        "collection": "kleding",
-        "heading": "",
-        "max_products": 4,
-        "only_available": false,
-        "image_ratio": "portrait",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_rating": true,
-        "quick_add": false,
-        "width": "alignwide",
-        "columns_desktop": 4,
-        "columns_tablet": "3",
-        "columns_mobile": "2",
-        "visible_rows": 1,
-        "show_more_text": "",
-        "show_less_text": "",
-        "background_color": "#f5f5f5",
-        "text_color": "#111111",
+        "anchor": "",
         "custom_class": ""
       }
     },
@@ -72,101 +51,414 @@
         "banner_Hriiii": {
           "type": "banner",
           "settings": {
-            "image": "shopify://shop_images/DSC07683_163ea61f-c4a6-4c1f-a7d9-c9783ce9c453.jpg",
             "label": "",
             "heading": "Ontsnap aan The Matrix",
-            "text": "Ga naar onze blog & kennisbank",
+            "text": "<p>Ga naar onze blog & kennisbank</p>",
             "link_url": "shopify://pages/blog-lookbook",
+            "image": "shopify://shop_images/DSC07683_163ea61f-c4a6-4c1f-a7d9-c9783ce9c453.jpg",
+            "focus_x": 50,
+            "focus_y": 50,
+            "overlay": "light",
+            "design": "green"
+          }
+        },
+        "banner_VqjtKq": {
+          "type": "banner",
+          "settings": {
+            "label": "Nieuw!",
+            "heading": "Join the Tribe",
+            "text": "<p>Welkom bij de community</p>",
+            "link_url": "shopify://pages/the-tribe",
+            "image": "shopify://shop_images/DSC04048_482e352a-7582-44f6-b68f-34a6fd09da78.jpg",
+            "focus_x": 50,
+            "focus_y": 50,
+            "overlay": "light",
             "design": "green"
           }
         },
         "banner_KjHxcU": {
           "type": "banner",
           "settings": {
-            "image": "shopify://shop_images/DSC09467_1.jpg",
             "label": "",
             "heading": "Schrijf je in voor onze nieuwsbrief!",
-            "text": "Ontvang een kortingscode & maandelijks kans op € 100 shoptegoed",
+            "text": "<p>Ontvang een kortingscode & maandelijks kans op € 100 shoptegoed</p>",
             "link_url": "shopify://blogs/algemeen",
-            "design": "blue"
+            "image": "shopify://shop_images/DSC09467_1.jpg",
+            "focus_x": 50,
+            "focus_y": 50,
+            "overlay": "light",
+            "design": "green"
           }
         },
-        "banner_VqjtKq": {
+        "banner_UngyJ4": {
           "type": "banner",
           "settings": {
-            "image": "shopify://shop_images/DSC04048_482e352a-7582-44f6-b68f-34a6fd09da78.jpg",
-            "label": "Nieuw!",
-            "heading": "Ontdek the Tribe",
-            "text": "Welkom bij de community",
-            "link_url": "shopify://pages/the-tribe",
+            "label": "",
+            "heading": "Pagan & lifestyle",
+            "text": "<p>Leef het natuurlijke leven met jouw goden en voorouders. Ontdek onze collectie.</p>",
+            "link_url": "shopify://collections/middeleeuwse-viking-decoratie",
+            "image": "shopify://shop_images/DSC03162_809185a0-b605-4735-ad31-b04743fa8e7e.jpg",
+            "focus_x": 50,
+            "focus_y": 50,
+            "overlay": "light",
             "design": "green"
           }
         }
       },
       "block_order": [
         "banner_Hriiii",
+        "banner_VqjtKq",
         "banner_KjHxcU",
-        "banner_VqjtKq"
+        "banner_UngyJ4"
       ],
       "name": "Marketing Grid",
       "settings": {
         "heading": "",
         "subtext": "",
-        "width": "align",
-        "view": "slider",
-        "enable_gaps": false,
-        "background_color": "#ffffff",
+        "width": "is-align-wide",
+        "header_align": "center",
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": 1,
+        "grid_gap": 0.5,
+        "padding_block": 0.5,
+        "display_mode": "slider",
+        "slider_navigation": true,
+        "slider_pagination": true,
+        "slider_loop": false,
+        "slider_autoplay": false,
+        "slider_autoplay_speed": 5,
+        "background_color": "#f8f8f8",
         "text_color": "#111111",
+        "anchor": "",
         "custom_class": ""
       }
     },
-    "block_marketing_products_tEzFwW": {
+    "block_marketing_collections_KLibTG": {
+      "type": "block-marketing-collections",
+      "blocks": {
+        "collection_fdRdrt": {
+          "type": "collection",
+          "settings": {
+            "collection": "zwaard-kopen"
+          }
+        },
+        "collection_cNpndW": {
+          "type": "collection",
+          "settings": {
+            "collection": "pantser"
+          }
+        },
+        "collection_dqeer8": {
+          "type": "collection",
+          "settings": {
+            "collection": "kleding"
+          }
+        },
+        "collection_pyGpQ6": {
+          "type": "collection",
+          "settings": {
+            "collection": "pauldrons"
+          }
+        },
+        "collection_GehP6L": {
+          "type": "collection",
+          "settings": {
+            "collection": "reenactment"
+          }
+        },
+        "collection_PGiGfP": {
+          "type": "collection",
+          "settings": {
+            "collection": "sieraden"
+          }
+        },
+        "collection_CjaJ7i": {
+          "type": "collection",
+          "settings": {
+            "collection": "middeleeuwse-viking-decoratie"
+          }
+        },
+        "collection_KExnNE": {
+          "type": "collection",
+          "settings": {
+            "collection": "larp"
+          }
+        }
+      },
+      "block_order": [
+        "collection_fdRdrt",
+        "collection_cNpndW",
+        "collection_dqeer8",
+        "collection_pyGpQ6",
+        "collection_GehP6L",
+        "collection_PGiGfP",
+        "collection_CjaJ7i",
+        "collection_KExnNE"
+      ],
+      "name": "Collections",
+      "settings": {
+        "heading": "",
+        "subheading": "",
+        "card_layout": "vertical",
+        "image_ratio": "portrait",
+        "show_product_count": false,
+        "card_text_align": "center",
+        "show_all_collections": false,
+        "sort": "alphabetical",
+        "hide_empty_collections": false,
+        "hide_all_collection": false,
+        "width": "is-align",
+        "text_align": "center",
+        "columns_desktop": 6,
+        "columns_tablet": 3,
+        "columns_mobile": 3,
+        "grid_gap": 0.2,
+        "display_mode": "slider",
+        "slider_navigation": true,
+        "slider_pagination": false,
+        "slider_loop": true,
+        "slider_autoplay": true,
+        "slider_autoplay_speed": 5,
+        "background_color": "#f8f8f8",
+        "text_color": "#111111",
+        "card_background_color": "",
+        "card_text_color": "",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_media_text_Hm8CcF": {
+      "type": "block-marketing-media-text",
+      "blocks": {
+        "image_text_xUKR96": {
+          "type": "image_text",
+          "settings": {
+            "image": "shopify://shop_images/DSC08032.jpg",
+            "image_height": "square",
+            "focus_x": 25,
+            "focus_y": 30,
+            "heading": "Laat vrienden voelen dat ze geliefd zijn, geef elkaar cadeautjes!",
+            "text": "",
+            "cta_text": "Bekijk onze cadeautips!",
+            "cta_url": "shopify://collections/cadeaus",
+            "cta_style": "outline",
+            "image_position": "left",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "background_color": "#0f1f38",
+            "text_color": "#f8f8f8",
+            "button_color": "#ffffff",
+            "button_text_color": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_text_xUKR96"
+      ],
+      "name": "Media & text",
+      "settings": {
+        "heading": "",
+        "subheading": "",
+        "width": "is-align",
+        "padding_block": 3,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "best-products": {
       "type": "block-marketing-products",
-      "name": "Products",
+      "settings": {
+        "collection": "kleding",
+        "heading": "",
+        "card_layout": "vertical",
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": true,
+        "quick_add": false,
+        "max_products": 4,
+        "only_available": false,
+        "width": "is-align-wide",
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": 2,
+        "grid_gap": 0.2,
+        "visible_rows": 1,
+        "show_more_text": "",
+        "show_less_text": "",
+        "padding_block": 3,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_articles_xMBTMb": {
+      "type": "block-marketing-articles",
+      "blocks": {
+        "blog_xMzMGR": {
+          "type": "blog",
+          "settings": {
+            "blog": "challenges"
+          }
+        }
+      },
+      "block_order": [
+        "blog_xMzMGR"
+      ],
+      "name": "Articles",
+      "settings": {
+        "heading": "Doe mee met onze challenges",
+        "subheading": "",
+        "card_layout": "horizontal",
+        "show_image": true,
+        "image_ratio": "adapt",
+        "show_blog_title": true,
+        "show_date": false,
+        "show_excerpt": true,
+        "show_cta": true,
+        "articles_per_blog": 3,
+        "max_articles": 8,
+        "random_mode": true,
+        "width": "is-align",
+        "text_align": "center",
+        "columns_desktop": 3,
+        "columns_tablet": 2,
+        "columns_mobile": 1,
+        "grid_gap": 0.5,
+        "padding_block": 3,
+        "display_mode": "grid",
+        "slider_navigation": false,
+        "slider_pagination": false,
+        "slider_loop": false,
+        "slider_autoplay": false,
+        "slider_autoplay_speed": 5,
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff",
+        "card_background_color": "#ffffff",
+        "card_text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "17653968662b835c7e": {
+      "type": "apps",
+      "blocks": {
+        "klaviyo_email_marketing_sms_form_embed_block_FXLUc7": {
+          "type": "shopify://apps/klaviyo-email-marketing-sms/blocks/form-embed-block/2632fe16-c075-4321-a88b-50b567f42507",
+          "settings": {
+            "formId": ""
+          }
+        }
+      },
+      "block_order": [
+        "klaviyo_email_marketing_sms_form_embed_block_FXLUc7"
+      ],
+      "settings": {
+        "width": "align",
+        "padding_block": 0,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_products_EaRW4A": {
+      "type": "block-marketing-products",
       "settings": {
         "collection": "zwaard-kopen",
         "heading": "",
-        "max_products": 12,
-        "only_available": true,
+        "card_layout": "vertical",
         "image_ratio": "portrait",
         "show_secondary_image": true,
         "show_vendor": false,
         "show_rating": true,
         "quick_add": false,
-        "width": "alignwide",
+        "max_products": 4,
+        "only_available": false,
+        "width": "is-align-wide",
         "columns_desktop": 4,
-        "columns_tablet": "3",
-        "columns_mobile": "2",
+        "columns_tablet": 3,
+        "columns_mobile": 2,
+        "grid_gap": 0.2,
         "visible_rows": 1,
         "show_more_text": "",
         "show_less_text": "",
-        "background_color": "#f5f5f5",
+        "padding_block": 3,
+        "background_color": "#ffffff",
         "text_color": "#111111",
+        "anchor": "",
         "custom_class": ""
       }
     },
-    "block_marketing_products_V46emx": {
+    "block_marketing_media_text_iDhD8j": {
+      "type": "block-marketing-media-text",
+      "blocks": {
+        "image_text_G9gzXM": {
+          "type": "image_text",
+          "settings": {
+            "image": "shopify://shop_images/DSC08248_f0cec56f-f9b1-496a-b27c-46ec117feddb.jpg",
+            "image_height": "square",
+            "focus_x": 50,
+            "focus_y": 50,
+            "heading": "Ontvang een kortingscode & maandelijks kans op € 100 shoptegoed",
+            "text": "<p>Schrijf je gratis in voor onze nieuwsbrief!</p>",
+            "cta_text": "Meld me aan!",
+            "cta_url": "https://shopify.com/89128927560/account/orders?locale=nl&region_country=NO",
+            "cta_style": "outline",
+            "image_position": "right",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "background_color": "#0f1f38",
+            "text_color": "#f8f8f8",
+            "button_color": "#ffffff",
+            "button_text_color": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_text_G9gzXM"
+      ],
+      "name": "Media & text",
+      "settings": {
+        "heading": "",
+        "subheading": "",
+        "width": "is-align",
+        "padding_block": 3,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_products_pXat79": {
       "type": "block-marketing-products",
-      "name": "Products",
       "settings": {
         "collection": "pantser",
         "heading": "",
-        "max_products": 12,
-        "only_available": true,
+        "card_layout": "vertical",
         "image_ratio": "portrait",
         "show_secondary_image": true,
         "show_vendor": false,
         "show_rating": true,
         "quick_add": false,
-        "width": "alignwide",
+        "max_products": 4,
+        "only_available": false,
+        "width": "is-align-wide",
         "columns_desktop": 4,
-        "columns_tablet": "3",
-        "columns_mobile": "2",
+        "columns_tablet": 3,
+        "columns_mobile": 2,
+        "grid_gap": 0.2,
         "visible_rows": 1,
         "show_more_text": "",
         "show_less_text": "",
-        "background_color": "#f5f5f5",
+        "padding_block": 3,
+        "background_color": "#ffffff",
         "text_color": "#111111",
+        "anchor": "",
         "custom_class": ""
       }
     },
@@ -249,24 +541,50 @@
         "image_ratio": "1 / 1",
         "image_fit": "contain",
         "card_background": "#ffffff",
-        "width": "alignsmall",
-        "columns_desktop": 6,
+        "width": "is-align-narrow",
+        "columns_desktop": 5,
         "columns_tablet": 6,
-        "columns_mobile": 4,
-        "background_color": "#ffffff",
+        "columns_mobile": 3,
+        "grid_gap": 0.5,
+        "padding_block": 3,
+        "display_mode": "grid",
+        "slider_navigation": true,
+        "slider_pagination": false,
+        "slider_loop": false,
+        "slider_autoplay": false,
+        "slider_autoplay_speed": 5,
+        "background_color": "#f8f8f8",
         "text_color": "#111111",
         "button_color": "",
         "button_text_color": "",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "1765396664e68351eb": {
+      "type": "apps",
+      "settings": {
+        "width": "align",
+        "padding_block": 0,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
         "custom_class": ""
       }
     }
   },
   "order": [
     "block_marketing_cover_EyVVzr",
-    "best-products",
     "block_marketing_grid_93tkDC",
-    "block_marketing_products_tEzFwW",
-    "block_marketing_products_V46emx",
-    "block_marketing_brands_small_gekrHy"
+    "block_marketing_collections_KLibTG",
+    "block_marketing_media_text_Hm8CcF",
+    "best-products",
+    "block_marketing_articles_xMBTMb",
+    "17653968662b835c7e",
+    "block_marketing_products_EaRW4A",
+    "block_marketing_media_text_iDhD8j",
+    "block_marketing_products_pXat79",
+    "block_marketing_brands_small_gekrHy",
+    "1765396664e68351eb"
   ]
 }

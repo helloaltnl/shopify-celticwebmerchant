@@ -18,7 +18,9 @@
       "blocks": {
         "trust_payments_Lra8px": {
           "settings": {
-            "method_1": "shop_pay"
+            "method_1": "apple_pay",
+            "method_5": "paypal",
+            "method_4": "klarna"
           }
         }
       }

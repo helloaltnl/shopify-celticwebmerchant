@@ -98,6 +98,7 @@
                 {% render 'html-cart-subtotal', 
                   cart: cart,
                   show_cart_note: block.settings.show_cart_note,
+                  show_discount_code: block.settings.show_discount_code,
                   context: 'drawer'
                 %}
               </div>
@@ -204,7 +205,7 @@
     font-size: 1.125rem;
   }
 
-  @media screen and (max-width: 749px) {
+  @media (max-width: 40em) {
     .block-cart-preview__content {
       max-width: 100%;
     }
@@ -270,14 +271,14 @@
   },
   "settings": [
     {
+      "type": "header",
+      "content": "Content"
+    },
+    {
       "type": "checkbox",
       "id": "show_view_cart",
       "label": "Show view cart link",
       "default": true
-    },
-    {
-      "type": "header",
-      "content": "Layout"
     },
     {
       "type": "checkbox",
@@ -291,7 +292,7 @@
     },
     {
       "type": "paragraph",
-      "content": "This drawer opens when customers click the cart icon. Add it to a header or footer group."
+      "content": "Slide-out drawer triggered by cart icon. Add to header or footer group."
     }
   ],
   "blocks": [
@@ -349,6 +350,12 @@
         },
         {
           "type": "checkbox",
+          "id": "show_discount_code",
+          "label": "Show discount code field",
+          "default": false
+        },
+        {
+          "type": "checkbox",
           "id": "show_cart_note",
           "label": "Show cart note field",
           "default": false
@@ -368,13 +375,18 @@
           "type": "text",
           "id": "button_text",
           "label": "Button text",
-          "placeholder": "Checkout"
+          "info": "Leave empty to use locale default"
         },
         {
           "type": "checkbox",
           "id": "show_additional_buttons",
           "label": "Show dynamic checkout buttons",
+          "info": "Apple Pay, Google Pay, etc.",
           "default": true
+        },
+        {
+          "type": "header",
+          "content": "Terms"
         },
         {
           "type": "checkbox",
@@ -386,15 +398,7 @@
           "type": "textarea",
           "id": "terms_text",
           "label": "Terms text",
-          "default": "By creating an account, you agree to our <a href=\"/policies/terms-of-service\">Terms of Service</a>."
-        },
-        {
-          "type": "header",
-          "content": "Howto"
-        },
-        {
-          "type": "paragraph",
-          "content": "Dynamic checkout buttons (Apple Pay, Google Pay, etc.) are configured in your Shopify payment settings."
+          "info": "Leave empty to use locale default. Supports HTML."
         }
       ]
     },

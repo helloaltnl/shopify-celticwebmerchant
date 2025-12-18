@@ -1,340 +1,196 @@
-{% comment %}
-  HTML Marketing Grid Component: Collection Item
-  Collection card with image and details for grid layouts
-  
-  Parameters:
-  - collection: {Object} Shopify collection object (required)
-  - show_description: {Boolean} Show collection description - default: true
-  - design: {String} blue | red | green - default: blue
-  - block_id: {String} Unique block ID for styling
-  
-  Usage:
-  {% render 'html-marketing-grid-collection',
-    collection: block.settings.collection,
-    show_description: block.settings.show_description,
-    design: block.settings.design,
-    block_id: block.id
-  %}
-{% endcomment %}
+{%- comment -%}
+============================================================================
+HTML-MARKETING-GRID-COLLECTION
+============================================================================
+Collection card with image and details for grid layouts.
+Uses global .is-marketing-card utilities from theme-ux.scss.
+
+PARAMETERS:
+- collection       : Shopify collection object (required)
+- show_description : Show collection description (default: true)
+- design           : 'blue' | 'red' | 'green' (default: 'blue')
+- block_id         : Unique block ID for styling
+- columns_desktop  : Number of columns on desktop (default 3)
+- columns_tablet   : Number of columns on tablet (default 2)
+- columns_mobile   : Number of columns on mobile (default 1)
+- columns_width    : Container width class (default 'is-align-wide')
+- columns_gap      : Gap between grid items in em (default 1)
+
+NOTES:
+- Sizes = actual display size, srcset = 1x-3x for retina
+- Quality default 70% via html-theme-media-image
+
+DEPENDENCIES:
+- html-theme-media-image snippet
+- Global .is-marketing-card utilities from theme-ux.scss
+============================================================================
+{%- endcomment -%}
 
 {%- liquid
-  assign show_description = show_description | default: true
-  assign design = design | default: 'blue'
+	assign show_description = show_description | default: true
+	assign design = design | default: 'blue'
+	assign columns_desktop = columns_desktop | default: 3
+	assign columns_tablet = columns_tablet | default: 2
+	assign columns_mobile = columns_mobile | default: 1
+	assign columns_width = columns_width | default: 'is-align-wide'
+	assign columns_gap = columns_gap | default: 1
+	
+	comment
+		Container width in pixels (match theme-ui.scss)
+	endcomment
+	case columns_width
+		when 'is-align-narrow'
+			assign container_px = 480
+		when 'is-align-small'
+			assign container_px = 640
+		when 'is-align'
+			assign container_px = 960
+		when 'is-align-wide'
+			assign container_px = 1280
+		when 'is-align-full'
+			assign container_px = 1600
+		else
+			assign container_px = 1280
+	endcase
+	
+	comment
+		Gap in pixels
+	endcomment
+	assign gap_px = columns_gap | times: 16
+	
+	comment
+		Calculate actual display sizes per breakpoint
+	endcomment
+	assign desktop_gaps = columns_desktop | minus: 1 | times: gap_px
+	assign desktop_available = container_px | minus: desktop_gaps
+	assign desktop_image = desktop_available | divided_by: columns_desktop | round
+	
+	assign tablet_gaps = columns_tablet | minus: 1 | times: gap_px
+	assign tablet_available = 960 | minus: tablet_gaps
+	assign tablet_image = tablet_available | divided_by: columns_tablet | round
+	
+	assign mobile_gaps = columns_mobile | minus: 1 | times: gap_px
+	assign mobile_available = 480 | minus: mobile_gaps
+	assign mobile_image = mobile_available | divided_by: columns_mobile | round
+	
+	comment
+		Build sizes attribute (actual display sizes, not ×3)
+	endcomment
+	assign img_sizes = '(min-width: 60em) ' | append: desktop_image | append: 'px, (min-width: 40em) ' | append: tablet_image | append: 'px, ' | append: mobile_image | append: 'px'
+	
+	comment
+		Srcset widths based on desktop (largest display)
+		Provides 1x, 1.5x, 2x, 2.5x, 3x for retina
+	endcomment
+	assign base = desktop_image
+	if base < 200
+		assign base = 200
+	endif
+	
+	assign w1 = base | round
+	assign w2 = base | times: 1.5 | round
+	assign w3 = base | times: 2 | round
+	assign w4 = base | times: 2.5 | round
+	assign w5 = base | times: 3 | round
+	if w5 > 2048
+		assign w5 = 2048
+	endif
+	if w4 > 2048
+		assign w4 = 2048
+	endif
+	
+	comment
+		Determine image source
+	endcomment
+	assign collection_image = collection.featured_image | default: collection.products.first.featured_media
 -%}
 
-<div class="marketing-grid-collection is-design-{{ design }}">
-  {%- if collection -%}
-    <a 
-      href="{{ collection.url }}" 
-      class="marketing-grid-collection__link"
-      aria-label="{{ collection.title | escape }}"
-    ></a>
-    
-    <div class="marketing-grid-collection__image">
-      {%- if collection.featured_image -%}
-        <img
-          srcset="
-            {%- if collection.featured_image.width >= 165 -%}{{ collection.featured_image | image_url: width: 165 }} 165w,{%- endif -%}
-            {%- if collection.featured_image.width >= 330 -%}{{ collection.featured_image | image_url: width: 330 }} 330w,{%- endif -%}
-            {%- if collection.featured_image.width >= 535 -%}{{ collection.featured_image | image_url: width: 535 }} 535w,{%- endif -%}
-            {%- if collection.featured_image.width >= 750 -%}{{ collection.featured_image | image_url: width: 750 }} 750w,{%- endif -%}
-            {%- if collection.featured_image.width >= 1000 -%}{{ collection.featured_image | image_url: width: 1000 }} 1000w,{%- endif -%}
-            {%- if collection.featured_image.width >= 1500 -%}{{ collection.featured_image | image_url: width: 1500 }} 1500w,{%- endif -%}
-            {{ collection.featured_image | image_url }} {{ collection.featured_image.width }}w
-          "
-          src="{{ collection.featured_image | image_url: width: 750 }}"
-          sizes="(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw"
-          alt="{{ collection.featured_image.alt | escape }}"
-          height="{{ collection.featured_image.height }}"
-          width="{{ collection.featured_image.width }}"
-          loading="lazy"
-        >
-      {%- else -%}
-        {%- comment -%} Fallback to first product image if collection has no featured image {%- endcomment -%}
-        {%- if collection.products.first.featured_media -%}
-          <img
-            src="{{ collection.products.first.featured_media | image_url: width: 750 }}"
-            alt="{{ collection.title | escape }}"
-            loading="lazy"
-          >
-        {%- endif -%}
-      {%- endif -%}
-    </div>
-    
-    <div class="marketing-grid-collection__content">
-      <div class="marketing-grid-collection__info">
-        <h3 class="marketing-grid-collection__title">
-          {{ collection.title | escape }}
-          {%- if collection.description == blank or show_description == false -%}
-            <span class="marketing-grid-collection__arrow">
-              {{- 'icon-arrow.svg' | inline_asset_content -}}
-            </span>
-          {%- endif -%}
-        </h3>
-        
-        {%- if show_description and collection.description != blank -%}
-          <p class="marketing-grid-collection__description">
-            {{ collection.description | strip_html | truncatewords: 12 }}
-            <span class="marketing-grid-collection__arrow">
-              {{- 'icon-arrow.svg' | inline_asset_content -}}
-            </span>
-          </p>
-        {%- endif -%}
-      </div>
-    </div>
-  {%- else -%}
-    <div class="marketing-grid-collection__placeholder">
-      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="80" height="80" rx="8" fill="#e0e0e0"/>
-        <rect x="12" y="12" width="24" height="24" rx="4" fill="#ccc"/>
-        <rect x="40" y="12" width="28" height="28" rx="4" fill="#ccc"/>
-        <rect x="12" y="40" width="28" height="28" rx="4" fill="#ccc"/>
-        <rect x="44" y="44" width="24" height="24" rx="4" fill="#ccc"/>
-      </svg>
-      <p>Select a collection</p>
-    </div>
-  {%- endif -%}
+<div class="is-marketing-card is-design-{{ design }}">
+	{%- if collection -%}
+		<a 
+			href="{{ collection.url }}" 
+			class="is-marketing-card__link"
+			aria-label="{{ collection.title | escape }}"
+		></a>
+		
+		<div class="is-marketing-card__image">
+			{%- if collection_image -%}
+				{%- render 'html-theme-media-image',
+					image: collection_image,
+					alt: collection_image.alt | default: collection.title,
+					w1: w1,
+					w2: w2,
+					w3: w3,
+					w4: w4,
+					w5: w5,
+					sizes: img_sizes,
+					image_loading: 'lazy'
+				-%}
+			{%- endif -%}
+		</div>
+		
+		<div class="is-marketing-card__content">
+			<h3 class="is-marketing-card__title">
+				{{ collection.title | escape }}
+				{%- if collection.description == blank or show_description == false -%}
+					<span class="marketing-grid-collection__arrow">
+						{{- 'icon-arrow.svg' | inline_asset_content -}}
+					</span>
+				{%- endif -%}
+			</h3>
+			
+			{%- if show_description and collection.description != blank -%}
+				<p class="is-marketing-card__text">
+					{{ collection.description | strip_html | truncatewords: 12 }}
+					<span class="marketing-grid-collection__arrow">
+						{{- 'icon-arrow.svg' | inline_asset_content -}}
+					</span>
+				</p>
+			{%- endif -%}
+		</div>
+	{%- else -%}
+		<div class="marketing-grid-collection__placeholder">
+			<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<rect width="80" height="80" rx="8" fill="#e0e0e0"/>
+				<rect x="12" y="12" width="24" height="24" rx="4" fill="#ccc"/>
+				<rect x="40" y="12" width="28" height="28" rx="4" fill="#ccc"/>
+				<rect x="12" y="40" width="28" height="28" rx="4" fill="#ccc"/>
+				<rect x="44" y="44" width="24" height="24" rx="4" fill="#ccc"/>
+			</svg>
+			<p>Select a collection</p>
+		</div>
+	{%- endif -%}
 </div>
 
 <style>
-  .marketing-grid-collection {
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    background-color: #f5f5f5;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: flex-start;
-    height:100%;
-  }
-  
-  .marketing-grid-collection__link {
-    position: absolute;
-    display:block!important;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 5;
-    text-decoration: none;
-  }
-  
-  .marketing-grid-collection__image {
-    position: absolute;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background-color: #000;
-    z-index: -1;
-  }
-  
-  .marketing-grid-collection__image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s ease, opacity 0.3s ease;
-    opacity: 0.9;
-  }
-  
-  .marketing-grid-collection:hover .marketing-grid-collection__image img {
-    transform: scale(1.05);
-    opacity: 1;
-  }
-  
-  .marketing-grid-collection__content {
-    position: relative;
-    z-index: 2;
-    color: #fff;
-    width: 100%;
-    padding: 1.5em;
-    pointer-events: none;
-  }
-  
-  .marketing-grid-collection__info {
-    position: relative;
-  }
-  
-  .marketing-grid-collection__title {
-    color: inherit;
-    font-size: 1.5em;
-    font-weight: 500;
-    margin: 0;
-    line-height: 1.2;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-align: center;
-  }
-  
-  .marketing-grid-collection__description {
-    color: inherit;
-    font-size: 1em;
-    margin: 0.5rem 0 0 0;
-    opacity: 0.95;
-    line-height: 1.5;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-  
-  .marketing-grid-collection__arrow {
-    display: inline-flex;
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    margin-top: 0.15em;
-  }
-  
-  .marketing-grid-collection__arrow svg {
-    width: 100%;
-    height: 100%;
-  }
-  
-  /* Design variants */
-  .marketing-grid-collection.is-design-blue .marketing-grid-collection__content {
-    position: relative;
-    isolation: isolate;
-    padding-bottom: 2.5em;
-    background: linear-gradient(180deg, rgba(15,31,56,0) 0%, rgba(15,31,56,1) calc(100% - 1em));
-    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) calc(100% - 1em));
-  }
-  
-  .marketing-grid-collection.is-design-blue .marketing-grid-collection__content::before {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -1;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 0;
-    height: 1em;
-    background: var(--theme-color-blue, #1e40af);
-  }
-  
-  .marketing-grid-collection.is-design-blue .marketing-grid-collection__content::after {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -2;
-    left: 0;
-    top: 1em;
-    right: 0;
-    bottom: 0;
-    background: var(--theme-color-blue, #1e40af);
-    transform: scaleX(-1);
-    mask-image: url('data:image/svg+xml;utf8,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 4 4" style="enable-background:new 0 0 4 4;" xml:space="preserve" opacity="1" stroke-width="0.5"> <line stroke="black" class="st0" x1="0" y1="0" x2="4" y2="4"/> <line stroke="black" x1="-0.4" y1="3.6" x2="0.4" y2="4.4"/> <line stroke="black" x1="3.6" y1="-0.4" x2="4.4" y2="0.4"/> </svg>');
-    mask-repeat: repeat;
-    mask-size: 16px;
-    mask-position: center center;
-  }
-  
-  .marketing-grid-collection.is-design-red .marketing-grid-collection__content {
-    position: relative;
-    isolation: isolate;
-    padding-bottom: 2.5em;
-    background: rgba(0, 0, 0, 0.7);
-    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) calc(100% - 1em));
-  }
-  
-  .marketing-grid-collection.is-design-red .marketing-grid-collection__content::before {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -1;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 0;
-    height: 1em;
-    background: var(--theme-color-red, #dc2626);
-  }
-  
-  .marketing-grid-collection.is-design-red .marketing-grid-collection__content::after {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -2;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 1em;
-    height: 1em;
-    background: var(--theme-color-red, #dc2626);
-    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 41 8"><polygon points="8.5 0 0 8 17 8 8.5 0"/></svg>');
-    mask-repeat: repeat-x;
-    mask-size: 41px;
-    mask-position: calc(50% - 30px) bottom;
-  }
-  
-  .marketing-grid-collection.is-design-green .marketing-grid-collection__content {
-    position: relative;
-    padding-bottom: 2.5em;
-    background: rgba(0, 0, 0, 0.7);
-    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) calc(100% - 1em));
-  }
-  
-  .marketing-grid-collection.is-design-green .marketing-grid-collection__content::before {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -1;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 0;
-    height: 1em;
-    background: var(--theme-color-green, #16a34a);
-  }
-  
-  .marketing-grid-collection.is-design-green .marketing-grid-collection__content::after {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: 0;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 1em;
-    height: 8px;
-    background: var(--theme-color-green, #16a34a);
-    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 11 8"><line stroke="black" stroke-width="4" x1="-.98" y1="11.78" x2="9.17" y2="2.22"/></svg>');
-    mask-repeat: repeat-x;
-    mask-size: 11px;
-    mask-position: left center;
-  }
-  
-  /* Placeholder */
-  .marketing-grid-collection__placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    background-color: #f5f5f5;
-    color: #666;
-    text-align: center;
-    padding: 2rem;
-  }
-  
-  .marketing-grid-collection__placeholder p {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-  }
-  
-  /* Responsive */
-  @media (max-width: 749px) {
-    .marketing-grid-collection__title {
-      font-size: 1.25em;
-    }
-    
-    .marketing-grid-collection__description {
-      font-size: 0.875em;
-    }
-  }
+.marketing-grid-collection__arrow {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	vertical-align: middle;
+	margin-left: 0.25em;
+}
+
+.marketing-grid-collection__arrow svg {
+	width: 100%;
+	height: 100%;
+}
+
+.marketing-grid-collection__placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	background-color: #f5f5f5;
+	color: #666;
+	text-align: center;
+	padding: 2rem;
+}
+
+.marketing-grid-collection__placeholder p {
+	margin-top: 1rem;
+	font-size: 0.875rem;
+}
 </style>

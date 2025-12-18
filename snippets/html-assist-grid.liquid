@@ -1,0 +1,112 @@
+{%- comment -%}
+============================================================================
+HTML-ASSIST-GRID
+============================================================================
+Renders the grid of assist items (subs, posts, knowledge).
+
+PARAMS:
+  ref      - The assist-reference metaobject
+  title    - Optional title for data attribute (used by JS)
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign has_subs = ref.subs.value.count | default: 0
+  assign has_posts = ref.posts.value.count | default: 0
+  assign has_knowledge = ref.knowledge.value.count | default: 0
+  assign total_items = has_subs | plus: has_posts | plus: has_knowledge
+-%}
+
+{% if total_items > 0 %}
+  <ul class="main-page-assist__grid" {% if title %}data-title="{{ title | escape }}"{% endif %}>
+    
+    {%- comment -%} Subs (assist-reference children) {%- endcomment -%}
+    {% for sub in ref.subs.value %}
+      {%- liquid
+        assign sub_count = 0
+        assign sub_count = sub_count | plus: sub.subs.value.count
+        assign sub_count = sub_count | plus: sub.posts.value.count
+        assign sub_count = sub_count | plus: sub.knowledge.value.count
+      -%}
+      <li class="main-page-assist__item" data-type="sub">
+        <article class="main-page-assist__card">
+          {% if sub_count > 0 %}
+            <a href="#" class="main-page-assist__card-link" data-handle="{{ sub.system.handle | escape }}"></a>
+          {% elsif sub.link %}
+            <a href="{{ sub.link }}" class="main-page-assist__card-link"></a>
+          {% endif %}
+          
+          {% if sub.image %}
+            <figure class="main-page-assist__card-image">
+              <img src="{{ sub.image | image_url: width: 496 }}" alt="{{ sub.title | escape }}" loading="lazy">
+            </figure>
+          {% endif %}
+          
+          <div class="main-page-assist__card-content">
+            <h3 class="main-page-assist__card-title">{{ sub.title }}</h3>
+            {% if sub_count > 0 %}
+              <span class="main-page-assist__card-count">{{ 'blog.articles_count.other' | t: count: sub_count }}</span>
+            {% endif %}
+          </div>
+        </article>
+      </li>
+    {% endfor %}
+    
+    {%- comment -%} Posts (reference-blogpost) {%- endcomment -%}
+    {% for post in ref.posts.value %}
+      <li class="main-page-assist__item" data-type="post">
+        <article class="main-page-assist__card">
+          {% if post.article.value %}
+            <a href="{{ post.article.value.url }}" class="main-page-assist__card-link"></a>
+          {% endif %}
+          
+          {% if post.thumb %}
+            <figure class="main-page-assist__card-image">
+              <img src="{{ post.thumb | image_url: width: 496 }}" alt="{{ post.title | escape }}" loading="lazy">
+            </figure>
+          {% endif %}
+          
+          <div class="main-page-assist__card-content">
+            <h3 class="main-page-assist__card-title">{{ post.title }}</h3>
+            {% if post.article.value %}
+              <span class="main-page-assist__card-cta">
+                <span>{{ 'general.read_more' | t | default: 'Lees meer' }}</span>
+                {%- render 'html-theme-icons', icon: 'arrow', size: 14 -%}
+              </span>
+            {% endif %}
+          </div>
+        </article>
+      </li>
+    {% endfor %}
+    
+    {%- comment -%} Knowledge (reference-blogpost) {%- endcomment -%}
+    {% for know in ref.knowledge.value %}
+      <li class="main-page-assist__item" data-type="knowledge">
+        <article class="main-page-assist__card">
+          {% if know.article.value %}
+            <a href="{{ know.article.value.url }}" class="main-page-assist__card-link"></a>
+          {% endif %}
+          
+          {% if know.thumb %}
+            <figure class="main-page-assist__card-image">
+              <img src="{{ know.thumb | image_url: width: 496 }}" alt="{{ know.title | escape }}" loading="lazy">
+            </figure>
+          {% endif %}
+          
+          <div class="main-page-assist__card-content">
+            <h3 class="main-page-assist__card-title">{{ know.title }}</h3>
+            {% if know.article.value %}
+              <span class="main-page-assist__card-cta">
+                <span>{{ 'general.read_more' | t | default: 'Lees meer' }}</span>
+                {%- render 'html-theme-icons', icon: 'arrow', size: 14 -%}
+              </span>
+            {% endif %}
+          </div>
+        </article>
+      </li>
+    {% endfor %}
+    
+  </ul>
+{% else %}
+  <p class="main-page-assist__empty"><em>{{ 'general.no_items' | t | default: 'Geen items' }}</em></p>
+{% endif %}

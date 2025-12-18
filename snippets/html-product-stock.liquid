@@ -18,6 +18,7 @@
   STOCK TYPES & CLASSES (x = low_stock_threshold):
   | Type                   | Class                                  | Color  |
   |------------------------|----------------------------------------|--------|
+  | no-inventory           | .product-stock--no-inventory           | groen  |
   | in-stock               | .product-stock--in-stock               | groen  |
   | in-stock-backorder     | .product-stock--in-stock-backorder     | groen  |
   | low-in-stock (qty <= x)| .product-stock--low-in-stock           | oranje |
@@ -87,11 +88,11 @@
   endif
 
   # Determine type based on actual stock status
-  # Types: in-stock, in-stock-backorder, low-in-stock, low-in-stock-backorder, out-of-stock, out-of-stock-backorder
+  # Types: no-inventory, in-stock, in-stock-backorder, low-in-stock, low-in-stock-backorder, out-of-stock, out-of-stock-backorder
   
   if has_inventory == false
     # No inventory tracking - treat as always in stock
-    assign stock_type = 'in-stock'
+    assign stock_type = 'no-inventory'
   elsif quantity <= 0
     # Out of stock
     if allows_backorder
@@ -120,6 +121,8 @@
   # The message may differ (e.g. backorder shows "In stock" but keeps its class)
   # This allows CSS targeting of specific states even when messages are identical
   case stock_type
+    when 'no-inventory'
+      assign stock_message = 'product.inventory.in_stock' | t
     when 'in-stock'
       if show_stock_count and has_inventory
         assign stock_message = 'product.inventory.in_stock_count' | t: quantity: quantity
@@ -147,49 +150,13 @@
     when 'out-of-stock'
       assign stock_message = 'product.inventory.out_of_stock' | t
     when 'out-of-stock-backorder'
-      assign stock_message = 'product.inventory.in_stock' | t
+      assign stock_message = ''
   endcase
 -%}
 
+{%- if stock_message != blank -%}
 <span class="product-stock product-stock--{{ stock_type }}" data-stock-status="{{ stock_type }}">
   <!-- <span class="product-stock__indicator"></span> -->
   <span class="product-stock__message">{{ stock_message }}</span>
 </span>
-
-<style>
-  .product-stock {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5em;
-    padding: 0.4em 0.8em;
-    font-size: 0.85em;
-    border: 1px solid currentColor;
-    border-radius: 0;
-  }
-
-  .product-stock__indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    background-color: currentColor;
-  }
-
-  /* Green: in-stock, all backorder variants */
-  .product-stock--in-stock,
-  .product-stock--in-stock-backorder,
-  .product-stock--low-in-stock-backorder,
-  .product-stock--out-of-stock-backorder {
-    color: #009922;
-  }
-
-  /* Orange: low stock without backorder */
-  .product-stock--low-in-stock {
-    color: #f05a22;
-  }
-
-  /* Red: out of stock without backorder */
-  .product-stock--out-of-stock {
-    color: #FF0000;
-  }
-</style>
+{%- endif -%}

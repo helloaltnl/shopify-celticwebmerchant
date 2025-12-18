@@ -14,6 +14,18 @@
     },
     "duitsland": {
       "parent": "@default"
+    },
+    "nl": {
+      "parent": "@default"
+    },
+    "frankrijk": {
+      "parent": "@default"
+    },
+    "europa": {
+      "parent": "@default"
+    },
+    "internationaal": {
+      "parent": "@default"
     }
   }
 }

@@ -57,7 +57,7 @@
         "> * .block-footer-usps__icon {color: #22c55e !important;}"
       ],
       "settings": {
-        "width": "alignwide",
+        "width": "is-align",
         "background_color": "#0f1f38",
         "text_color": "#ffffff"
       }
@@ -86,8 +86,11 @@
         "newsletter_iWfWmC": {
           "type": "newsletter",
           "settings": {
-            "heading": "",
-            "placeholder": ""
+            "heading": "Mis nooit meer korting!",
+            "text": "<p>Ontvang onze nieuwsbrief!</p>",
+            "placeholder": "Uw e-mailadres",
+            "use_external_form": true,
+            "external_form_code": "<div class=\"klaviyo-form-WyEYAw\"></div>"
           }
         }
       },
@@ -97,7 +100,7 @@
         "newsletter_iWfWmC"
       ],
       "settings": {
-        "width": "align",
+        "width": "is-align",
         "background_color": "#0f1f38",
         "text_color": "#ffffff"
       }
@@ -106,7 +109,7 @@
       "type": "block-footer-links",
       "settings": {
         "footer_menu": "footer-service",
-        "width": "align",
+        "width": "is-align-small",
         "background_color": "#0f1f38",
         "text_color": "#ffffff"
       }
@@ -115,7 +118,7 @@
       "type": "block-footer-payments",
       "settings": {
         "payment_enable": true,
-        "width": "align",
+        "width": "is-align-small",
         "background_color": "#0f1f38",
         "text_color": "#ffffff"
       }
@@ -124,9 +127,9 @@
       "type": "block-footer-copyright",
       "settings": {
         "copyright_text": "Celtic Webmerchant. Alle rechten voorbehouden.",
-        "developer_credit": "Theme ontwikkeld door HMWRK en totalli",
+        "developer_credit": "Theme ontwikkeld door HMWRK en totalli e-commerce",
         "show_policy": true,
-        "width": "align",
+        "width": "is-align-narrow",
         "background_color": "#0f1f38",
         "text_color": "#ffffff"
       }
@@ -137,22 +140,23 @@
         "popular_searches_ChJMVQ": {
           "type": "popular_searches",
           "settings": {
-            "heading": "Popular searches",
+            "heading": "",
             "search_terms": "Whisky, Gin, Rum, Vodka"
           }
         },
         "recent_searches_UjxzAj": {
           "type": "recent_searches",
           "settings": {
-            "heading": "Recent searches",
+            "heading": "",
             "limit": 5
           }
         },
         "product_results_9FwDyx": {
           "type": "product_results",
           "settings": {
-            "heading": "Products",
+            "heading": "",
             "limit": 6,
+            "columns": "2",
             "show_price": true,
             "show_vendor": false
           }
@@ -160,7 +164,7 @@
         "collection_results_nmECJM": {
           "type": "collection_results",
           "settings": {
-            "heading": "Collections",
+            "heading": "",
             "limit": 4
           }
         }
@@ -173,8 +177,8 @@
       ],
       "name": "t:sections.block-search-overlay.presets.name",
       "settings": {
-        "overlay_id": "search-overlay",
-        "enable_predictive": true
+        "enable_predictive": true,
+        "overlay_id": "search-overlay"
       }
     },
     "modal-region": {
@@ -194,9 +198,9 @@
       ],
       "settings": {
         "show_trigger": false,
-        "modal_id": "region-modal",
         "auto_submit": false,
-        "show_info_text": true
+        "show_info_text": true,
+        "modal_id": "region-modal"
       }
     },
     "cart-preview": {
@@ -206,7 +210,7 @@
           "type": "cart_items",
           "settings": {
             "show_vendor": false,
-            "show_recommended": true,
+            "show_recommended": false,
             "max_recommended": 4,
             "hide_out_of_stock": true
           }
@@ -227,18 +231,18 @@
         "disable_on_cart": true
       }
     },
-    "block_modal_share_kYTCmL": {
+    "block_modal_share_naUyNL": {
       "type": "block-modal-share",
-      "name": "Share",
+      "name": "Share modal",
       "settings": {
-        "modal_id": "share-modal",
         "heading": "",
         "show_facebook": true,
         "show_twitter": true,
         "show_pinterest": true,
         "show_whatsapp": true,
         "show_email": true,
-        "show_copy_link": true
+        "show_copy_link": true,
+        "modal_id": "share-modal"
       }
     },
     "block_page_menu_GJpUfD": {
@@ -248,7 +252,8 @@
         "primary_menu": "sale-menu",
         "product_menu": "product-menu",
         "secondary_menu": "tribe-menu",
-        "tertiary_menu": "extra-menu"
+        "tertiary_menu": "extra-menu",
+        "show_product_thumbs": true
       }
     }
   },
@@ -261,7 +266,7 @@
     "block_search_overlay_a6H9hj",
     "modal-region",
     "cart-preview",
-    "block_modal_share_kYTCmL",
+    "block_modal_share_naUyNL",
     "block_page_menu_GJpUfD"
   ]
 }

@@ -107,6 +107,9 @@
     "filtering": {
       "title": "Suodata ja lajittele",
       "button": "Suodata",
+      "filters": "Suodattimet",
+      "active_filters": "Aktiiviset suodattimet",
+      "remove_filter": "Poista suodatin",
       "apply": "Käytä",
       "clear": "Tyhjennä",
       "clear_all": "Tyhjennä kaikki",

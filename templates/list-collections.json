@@ -10,21 +10,29 @@
 {
   "sections": {
     "main": {
-      "type": "main-list-collections",
+      "type": "main-collection-list",
       "settings": {
         "heading": "",
         "subheading": "",
+        "image_ratio": "square",
+        "show_product_count": true,
+        "card_text_align": "center",
         "sort": "alphabetical",
         "hide_empty_collections": true,
         "hide_all_collection": true,
-        "show_product_count": true,
-        "image_ratio": "portrait",
-        "width": "alignwide",
+        "width": "is-align-wide",
+        "padding_block": 3,
         "text_align": "center",
-        "card_text_align": "center",
-        "card_min_width": 200,
-        "background_color": "#ffffff",
-        "text_color": "#111111"
+        "columns_desktop": 6,
+        "columns_tablet": 4,
+        "columns_mobile": 2,
+        "grid_gap": 0.2,
+        "background_color": "#f8f8f8",
+        "text_color": "#111111",
+        "card_background_color": "",
+        "card_text_color": "",
+        "anchor": "",
+        "custom_class": ""
       }
     }
   },

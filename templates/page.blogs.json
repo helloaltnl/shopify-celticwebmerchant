@@ -13,17 +13,95 @@
       "type": "block-marketing-cover",
       "name": "Cover",
       "settings": {
-        "subheading": "",
+        "subheading": "Ontdek onze blogs",
         "heading": "Know your heritage",
-        "text": "<p>Be like a History Rebel!</p>",
+        "text": "",
         "video": "shopify://files/videos/20251110 Blog Banner_V01_bew.mp4",
         "focus_x": 50,
         "focus_y": 50,
-        "overlay": "medium",
-        "width": "alignfull",
-        "height": "medium",
+        "overlay": "light",
+        "loading": "lazy",
+        "fetchpriority": "auto",
+        "width": "is-align-full",
+        "height": "large",
         "text_position": "center",
         "text_alignment": "center",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_grid_8qQV8w": {
+      "type": "block-marketing-grid",
+      "blocks": {
+        "banner_mniRBd": {
+          "type": "banner",
+          "settings": {
+            "label": "Viking & vroeg-middeleeuws",
+            "heading": "Viking processies & wiel sieraden",
+            "text": "",
+            "link_url": "shopify://blogs/vikingen/viking-processies-wiel-sieraden",
+            "image": "shopify://shop_images/dsc03313_af13b296-7547-4e8a-b075-2e0ab2aac23a.webp",
+            "focus_x": 50,
+            "focus_y": 30,
+            "overlay": "light",
+            "design": "green"
+          }
+        },
+        "banner_PwM3j3": {
+          "type": "banner",
+          "settings": {
+            "label": "Oudheid & Romeinen",
+            "heading": "Ocreae, scheenbeschermers in de klassieke oudheid",
+            "text": "",
+            "link_url": "shopify://blogs/oudheid-romeinen/ocreae-scheenbeschermers-in-de-klassieke-oudheid",
+            "image": "shopify://shop_images/dsc04440_bcec064a-0c04-4180-8275-9d9f69937a59.jpg",
+            "focus_x": 45,
+            "focus_y": 65,
+            "overlay": "light",
+            "design": "green"
+          }
+        },
+        "banner_46J9JW": {
+          "type": "banner",
+          "settings": {
+            "label": "Keltisch & IJzertijd",
+            "heading": "Introductie: De Kelten",
+            "text": "",
+            "link_url": "shopify://blogs/keltisch-ijzertijd/introductie-de-kelten",
+            "image": "shopify://shop_images/img-1747139648436_d2a9ad6f-f191-4b8d-aed8-53a8be711eff.webp",
+            "focus_x": 50,
+            "focus_y": 50,
+            "overlay": "light",
+            "design": "green"
+          }
+        }
+      },
+      "block_order": [
+        "banner_mniRBd",
+        "banner_PwM3j3",
+        "banner_46J9JW"
+      ],
+      "custom_css": [],
+      "name": "Grid",
+      "settings": {
+        "heading": "",
+        "subtext": "",
+        "width": "is-align-wide",
+        "header_align": "center",
+        "columns_desktop": 3,
+        "columns_tablet": 2,
+        "columns_mobile": 2,
+        "grid_gap": 0.5,
+        "padding_block": 0.5,
+        "display_mode": "creative",
+        "slider_navigation": true,
+        "slider_pagination": true,
+        "slider_loop": false,
+        "slider_autoplay": false,
+        "slider_autoplay_speed": 5,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
         "custom_class": ""
       }
     },
@@ -90,26 +168,125 @@
         "blog_mzazrb"
       ],
       "settings": {
-        "heading": "Nieuwe blogs!",
+        "heading": "Nieuwste blogs",
         "subheading": "",
-        "articles_per_blog": 1,
-        "max_articles": 4,
         "card_layout": "vertical",
         "show_image": true,
         "image_ratio": "portrait",
         "show_blog_title": true,
-        "show_date": true,
-        "show_excerpt": true,
+        "show_date": false,
+        "show_excerpt": false,
         "show_cta": true,
-        "width": "alignwide",
+        "articles_per_blog": 2,
+        "max_articles": 12,
+        "random_mode": false,
+        "width": "is-align",
+        "padding_block": 3,
         "text_align": "center",
         "columns_desktop": 4,
-        "columns_tablet": "2",
-        "columns_mobile": "2",
+        "columns_tablet": 2,
+        "columns_mobile": 2,
+        "grid_gap": 0.5,
+        "display_mode": "slider",
+        "slider_navigation": true,
+        "slider_pagination": false,
+        "slider_loop": true,
+        "slider_autoplay": true,
+        "slider_autoplay_speed": 5,
         "background_color": "#f8f8f8",
         "text_color": "#111111",
         "card_background_color": "#ffffff",
-        "card_text_color": "#111111"
+        "card_text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_media_text_tpLHAa": {
+      "type": "block-marketing-media-text",
+      "blocks": {
+        "image_text_f9CNzk": {
+          "type": "image_text",
+          "settings": {
+            "image": "shopify://shop_images/DSC03376.jpg",
+            "image_height": "square",
+            "focus_x": 50,
+            "focus_y": 15,
+            "heading": "Cadeaus geven tijdens de feestdagen: zo pagan!",
+            "text": "<p>Oude Europese volkeren deelden een Indo-Europese levensbeschouwing waarin geven en gastvrijheid centraal stonden. Voor wie zich verbonden voelt met traditionele Europese cultuur blijft het geven van cadeaus tijdens feestdagen belangrijk. </p>",
+            "cta_text": "",
+            "cta_url": "shopify://blogs/cultuur-spiritualiteit/cadeaus-geven-tijdens-de-feestdagen-zo-pagan",
+            "cta_style": "outline",
+            "image_position": "left",
+            "image_width": "50",
+            "vertical_alignment": "center",
+            "background_color": "",
+            "text_color": "#ffffff",
+            "button_color": "#ffffff",
+            "button_text_color": "#ffffff"
+          }
+        }
+      },
+      "block_order": [
+        "image_text_f9CNzk"
+      ],
+      "name": "Media & text",
+      "settings": {
+        "heading": "",
+        "subheading": "",
+        "width": "is-align",
+        "padding_block": 3,
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_articles_jGycHR": {
+      "type": "block-marketing-articles",
+      "blocks": {
+        "blog_nn4Eb8": {
+          "type": "blog",
+          "settings": {
+            "blog": "vikingen"
+          }
+        }
+      },
+      "block_order": [
+        "blog_nn4Eb8"
+      ],
+      "name": "Articles",
+      "settings": {
+        "heading": "Ontdek de wereld van onze voorouders",
+        "subheading": "",
+        "card_layout": "vertical",
+        "show_image": true,
+        "image_ratio": "portrait",
+        "show_blog_title": true,
+        "show_date": false,
+        "show_excerpt": false,
+        "show_cta": true,
+        "articles_per_blog": 4,
+        "max_articles": 12,
+        "random_mode": false,
+        "width": "is-align",
+        "text_align": "center",
+        "columns_desktop": 4,
+        "columns_tablet": 2,
+        "columns_mobile": 2,
+        "grid_gap": 0.5,
+        "padding_block": 3,
+        "display_mode": "slider",
+        "slider_navigation": true,
+        "slider_pagination": false,
+        "slider_loop": false,
+        "slider_autoplay": false,
+        "slider_autoplay_speed": 5,
+        "background_color": "#f8f8f8",
+        "text_color": "#111111",
+        "card_background_color": "#ffffff",
+        "card_text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
       }
     },
     "block_marketing_media_text_NPdp4g": {
@@ -118,21 +295,21 @@
         "image_text_iHXKQi": {
           "type": "image_text",
           "settings": {
-            "image": "shopify://shop_images/DSC03349-Verbeterd-NR_2.jpg",
+            "image": "shopify://shop_images/image_f955893d-39fc-4913-bf75-70c83c5fa47b.jpg",
             "image_height": "square",
             "focus_x": 50,
             "focus_y": 25,
             "heading": "Pagan symboliek: Drinkhoorns",
             "text": "<p>Tegenwoordig worden drinkhoorns vaak beschouwd als iconische accessoires van de Vikingen. In deze blog duiken we in de fascinerende geschiedenis van drinkhoorns en onthullen we de symbolische betekenis die eraan verbonden is.<br/><br/></p>",
-            "cta_text": "",
-            "cta_url": "",
-            "cta_style": "primary",
+            "cta_text": "Lees verder",
+            "cta_url": "shopify://blogs/cultuur-spiritualiteit/pagan-symboliek-drinkhoorns",
+            "cta_style": "outline",
             "image_position": "left",
             "image_width": "40",
             "vertical_alignment": "center",
             "background_color": "",
             "text_color": "",
-            "button_color": "",
+            "button_color": "#ffffff",
             "button_text_color": ""
           }
         }
@@ -144,155 +321,114 @@
       "settings": {
         "heading": "",
         "subheading": "",
-        "width": "align",
-        "background_color": "#243406",
+        "width": "is-align",
+        "padding_block": 3,
+        "background_color": "#0f1f38",
         "text_color": "#ffffff",
+        "anchor": "",
         "custom_class": ""
       }
     },
     "block_marketing_articles_hW9ytA": {
       "type": "block-marketing-articles",
       "blocks": {
+        "blog_teLK6L": {
+          "type": "blog",
+          "settings": {
+            "blog": "vroeg-modern"
+          }
+        },
+        "blog_tNyWgE": {
+          "type": "blog",
+          "settings": {
+            "blog": "vikingen"
+          }
+        },
+        "blog_pEDw4t": {
+          "type": "blog",
+          "settings": {
+            "blog": "steentijd-bronstijd"
+          }
+        },
+        "blog_XMkTTB": {
+          "type": "blog",
+          "settings": {
+            "blog": "migratieperiode-germaans"
+          }
+        },
+        "blog_8PWhGF": {
+          "type": "blog",
+          "settings": {
+            "blog": "larp-fantasy"
+          }
+        },
+        "blog_xQpz43": {
+          "type": "blog",
+          "settings": {
+            "blog": "cultuur-spiritualiteit"
+          }
+        },
+        "blog_EPPGJk": {
+          "type": "blog",
+          "settings": {
+            "blog": "keltisch-ijzertijd"
+          }
+        },
         "blog_Ai7Wbe": {
           "type": "blog",
           "settings": {
-            "blog": "middeleeuwen"
+            "blog": "oudheid-romeinen"
           }
         }
       },
       "block_order": [
+        "blog_teLK6L",
+        "blog_tNyWgE",
+        "blog_pEDw4t",
+        "blog_XMkTTB",
+        "blog_8PWhGF",
+        "blog_xQpz43",
+        "blog_EPPGJk",
         "blog_Ai7Wbe"
       ],
       "name": "Articles",
       "settings": {
-        "heading": "Ontdek de middeleeuwen",
+        "heading": "Dit lezen anderen nu:",
         "subheading": "",
-        "articles_per_blog": 4,
-        "max_articles": 4,
         "card_layout": "vertical",
         "show_image": true,
         "image_ratio": "portrait",
         "show_blog_title": true,
-        "show_date": true,
-        "show_excerpt": true,
+        "show_date": false,
+        "show_excerpt": false,
         "show_cta": true,
-        "width": "alignwide",
+        "articles_per_blog": 2,
+        "max_articles": 12,
+        "random_mode": true,
+        "width": "is-align",
         "text_align": "center",
         "columns_desktop": 4,
-        "columns_tablet": "2",
-        "columns_mobile": "2",
+        "columns_tablet": 2,
+        "columns_mobile": 2,
+        "grid_gap": 0.5,
+        "padding_block": 3,
+        "display_mode": "slider",
+        "slider_navigation": true,
+        "slider_pagination": false,
+        "slider_loop": false,
+        "slider_autoplay": false,
+        "slider_autoplay_speed": 5,
         "background_color": "#f8f8f8",
         "text_color": "#111111",
         "card_background_color": "#ffffff",
         "card_text_color": "#111111",
-        "custom_class": ""
-      }
-    },
-    "block_marketing_media_text_tpLHAa": {
-      "type": "block-marketing-media-text",
-      "blocks": {
-        "image_text_f9CNzk": {
-          "type": "image_text",
-          "settings": {
-            "image": "shopify://shop_images/DSC07261_5d2be9e2-f440-4585-b63e-3793892d7631.jpg",
-            "image_height": "square",
-            "focus_x": 50,
-            "focus_y": 15,
-            "heading": "Mannen in de Vikingwereld",
-            "text": "<p>Gender was heel bepalend voor het leven van mensen in de Vikingtijd. Iedereen werd beoordeeld op hoe goed ze zich aan deze verwachtingen hielden. Wie zich niet \"correct\" gedroeg, kon daar problemen mee krijgen. Maar, wat waren hun ‘regels’?</p>",
-            "cta_text": "",
-            "cta_url": "shopify://blogs/vikingen/mannen-in-de-vikingwereld",
-            "cta_style": "outline",
-            "image_position": "left",
-            "image_width": "50",
-            "vertical_alignment": "center",
-            "background_color": "",
-            "text_color": "",
-            "button_color": "",
-            "button_text_color": ""
-          }
-        },
-        "image_text_7e7Jer": {
-          "type": "image_text",
-          "settings": {
-            "image": "shopify://shop_images/DSC04329-bewerkt_e7fbbf16-8068-4a4e-a111-defacbe9a351.jpg",
-            "image_height": "square",
-            "focus_x": 50,
-            "focus_y": 25,
-            "heading": "Romeinse leger: Principaat",
-            "text": "<p>In deze blog duiken we in de wereld van het Romeinse leger tijdens het Principaat. Maar voordat we dieper ingaan op deze periode, kijken we eerst terug naar hoe het Romeinse beroepsleger is ontstaan.</p>",
-            "cta_text": "",
-            "cta_url": "shopify://blogs/oudheid-romeinen/romeinse-leger-principaat",
-            "cta_style": "outline",
-            "image_position": "right",
-            "image_width": "50",
-            "vertical_alignment": "center",
-            "background_color": "",
-            "text_color": "",
-            "button_color": "",
-            "button_text_color": ""
-          }
-        }
-      },
-      "block_order": [
-        "image_text_f9CNzk",
-        "image_text_7e7Jer"
-      ],
-      "name": "Media & text",
-      "settings": {
-        "heading": "",
-        "subheading": "",
-        "width": "align",
-        "background_color": "#ffffff",
-        "text_color": "#111111",
+        "anchor": "",
         "custom_class": ""
       }
     },
     "block_marketing_blogs_jjrd7Q": {
       "type": "block-marketing-blogs",
       "blocks": {
-        "blog_fqyn4e": {
-          "type": "blog",
-          "settings": {
-            "blog": "vroeg-modern"
-          }
-        },
-        "blog_LCLJim": {
-          "type": "blog",
-          "settings": {
-            "blog": "vikingen"
-          }
-        },
-        "blog_RznK8C": {
-          "type": "blog",
-          "settings": {
-            "blog": "steentijd-bronstijd"
-          }
-        },
-        "blog_Uxwpb7": {
-          "type": "blog",
-          "settings": {
-            "blog": "oudheid-romeinen"
-          }
-        },
-        "blog_fLQHBg": {
-          "type": "blog",
-          "settings": {
-            "blog": "migratieperiode-germaans"
-          }
-        },
-        "blog_fPwH3M": {
-          "type": "blog",
-          "settings": {
-            "blog": "middeleeuwen"
-          }
-        },
-        "blog_JEaACY": {
-          "type": "blog",
-          "settings": {
-            "blog": "larp-fantasy"
-          }
-        },
         "blog_LCpU3n": {
           "type": "blog",
           "settings": {
@@ -304,36 +440,151 @@
           "settings": {
             "blog": "keltisch-ijzertijd"
           }
+        },
+        "blog_JEaACY": {
+          "type": "blog",
+          "settings": {
+            "blog": "larp-fantasy"
+          }
+        },
+        "blog_fPwH3M": {
+          "type": "blog",
+          "settings": {
+            "blog": "middeleeuwen"
+          }
+        },
+        "blog_fLQHBg": {
+          "type": "blog",
+          "settings": {
+            "blog": "migratieperiode-germaans"
+          }
+        },
+        "blog_Uxwpb7": {
+          "type": "blog",
+          "settings": {
+            "blog": "oudheid-romeinen"
+          }
+        },
+        "blog_RznK8C": {
+          "type": "blog",
+          "settings": {
+            "blog": "steentijd-bronstijd"
+          }
+        },
+        "blog_LCLJim": {
+          "type": "blog",
+          "settings": {
+            "blog": "vikingen"
+          }
+        },
+        "blog_fqyn4e": {
+          "type": "blog",
+          "settings": {
+            "blog": "vroeg-modern"
+          }
+        },
+        "blog_pQiVRX": {
+          "type": "blog",
+          "settings": {
+            "blog": "community"
+          }
+        },
+        "blog_V466PU": {
+          "type": "blog",
+          "settings": {
+            "blog": "challenges"
+          }
+        },
+        "blog_EfaGkj": {
+          "type": "blog",
+          "settings": {
+            "blog": "kennisbank"
+          }
         }
       },
       "block_order": [
-        "blog_fqyn4e",
-        "blog_LCLJim",
-        "blog_RznK8C",
-        "blog_Uxwpb7",
-        "blog_fLQHBg",
-        "blog_fPwH3M",
-        "blog_JEaACY",
         "blog_LCpU3n",
-        "blog_6Acp4w"
+        "blog_6Acp4w",
+        "blog_JEaACY",
+        "blog_fPwH3M",
+        "blog_fLQHBg",
+        "blog_Uxwpb7",
+        "blog_RznK8C",
+        "blog_LCLJim",
+        "blog_fqyn4e",
+        "blog_pQiVRX",
+        "blog_V466PU",
+        "blog_EfaGkj"
       ],
       "name": "Blogs",
       "settings": {
         "show_header": true,
         "heading": "",
         "subheading": "",
-        "show_image": true,
+        "card_layout": "vertical",
+        "show_image": false,
         "image_ratio": "landscape",
-        "show_article_count": true,
-        "width": "alignwide",
+        "show_article_count": false,
+        "width": "is-align",
         "text_align": "center",
-        "columns_desktop": 4,
-        "columns_tablet": "3",
-        "columns_mobile": "2",
-        "background_color": "#243406",
+        "columns_desktop": 3,
+        "columns_tablet": 3,
+        "columns_mobile": 2,
+        "grid_gap": 0.5,
+        "padding_block": 3,
+        "background_color": "#0f1f38",
         "text_color": "#ffffff",
         "card_background_color": "#ffffff",
         "card_text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_articles_39wR4J": {
+      "type": "block-marketing-articles",
+      "blocks": {
+        "blog_hNfCMW": {
+          "type": "blog",
+          "settings": {
+            "blog": "oudheid-romeinen"
+          }
+        }
+      },
+      "block_order": [
+        "blog_hNfCMW"
+      ],
+      "name": "Articles",
+      "settings": {
+        "heading": "Oudheid & Romeinen",
+        "subheading": "",
+        "card_layout": "vertical",
+        "show_image": true,
+        "image_ratio": "portrait",
+        "show_blog_title": true,
+        "show_date": false,
+        "show_excerpt": false,
+        "show_cta": true,
+        "articles_per_blog": 4,
+        "max_articles": 12,
+        "random_mode": false,
+        "width": "is-align-wide",
+        "text_align": "center",
+        "columns_desktop": 4,
+        "columns_tablet": 2,
+        "columns_mobile": 2,
+        "grid_gap": 0.5,
+        "padding_block": 3,
+        "display_mode": "slider",
+        "slider_navigation": true,
+        "slider_pagination": false,
+        "slider_loop": false,
+        "slider_autoplay": false,
+        "slider_autoplay_speed": 5,
+        "background_color": "#f8f8f8",
+        "text_color": "#111111",
+        "card_background_color": "#ffffff",
+        "card_text_color": "#111111",
+        "anchor": "",
         "custom_class": ""
       }
     },
@@ -343,11 +594,11 @@
         "button_zEUdMd": {
           "type": "button",
           "settings": {
-            "text": "",
-            "url": "",
+            "text": "Doneer ook",
+            "url": "shopify://products/donatie",
             "style": "primary",
-            "button_color": "",
-            "button_text_color": ""
+            "button_color": "#ffffff",
+            "button_text_color": "#0f1f38"
           }
         }
       },
@@ -359,25 +610,31 @@
         "subheading": "",
         "heading": "Maak het verschil, doneer nu!",
         "text": "",
-        "image": "shopify://shop_images/DSC03349-Verbeterd-NR_2_83db5634-51b2-4e46-8162-50b740744b43.jpg",
-        "focus_x": 50,
+        "image": "shopify://shop_images/Dec2025_-_Banners_Donatie_1.webp",
+        "focus_x": 30,
         "focus_y": 50,
         "overlay": "medium",
-        "width": "alignfull",
+        "loading": "lazy",
+        "fetchpriority": "auto",
+        "width": "is-align-full",
         "height": "medium",
         "text_position": "center",
         "text_alignment": "center",
+        "anchor": "",
         "custom_class": ""
       }
     }
   },
   "order": [
     "block_marketing_cover_Gk3XRM",
+    "block_marketing_grid_8qQV8w",
     "main",
+    "block_marketing_media_text_tpLHAa",
+    "block_marketing_articles_jGycHR",
     "block_marketing_media_text_NPdp4g",
     "block_marketing_articles_hW9ytA",
-    "block_marketing_media_text_tpLHAa",
     "block_marketing_blogs_jjrd7Q",
+    "block_marketing_articles_39wR4J",
     "block_marketing_cover_bhqxBp"
   ]
 }

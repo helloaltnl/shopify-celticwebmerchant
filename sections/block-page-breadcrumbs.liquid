@@ -1,5 +1,5 @@
 <section class="block-breadcrumbs-content">
-	{% assign breadcrumb_menu = linklists['product-menu'].links %}
+	{% assign breadcrumb_menu = linklists[section.settings.menu].links %}
 	{% assign current_url = request.path | prepend: '' %}
 	{% assign clean_url = current_url | split: '?' | first %}
 		
@@ -57,7 +57,26 @@
   "enabled_on": {
     "templates": ["collection", "product", "page", "blog", "article", "search", "cart", "list-collections"]
   },
-  "settings": [],
+  "settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "link_list",
+			"id": "menu",
+			"label": "Menu",
+			"info": "Select menu for breadcrumb matching"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Displays breadcrumb trail based on menu structure. Matches current URL to menu links."
+		}
+	],
   "presets": [
 	{
 	  "name": "Breadcrumbs",

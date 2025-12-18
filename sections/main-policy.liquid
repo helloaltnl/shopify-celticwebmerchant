@@ -63,70 +63,23 @@
     margin: 0 0 1em;
   }
 
-  #shopify-section-{{ section.id }} .main-policy__body {
-    line-height: 1.7;
-  }
 
-  #shopify-section-{{ section.id }} .main-policy__body h2 {
-    font-family: var(--theme-font-family-serif);
-    font-size: 1.5em;
-    font-weight: 400;
-    margin: 1.5em 0 0.75em;
-  }
-
-  #shopify-section-{{ section.id }} .main-policy__body h3 {
-    font-size: 1.2em;
-    font-weight: 600;
-    margin: 1.5em 0 0.5em;
-  }
-
-  #shopify-section-{{ section.id }} .main-policy__body p {
-    margin: 0 0 1em;
-  }
-
-  #shopify-section-{{ section.id }} .main-policy__body ul,
-  #shopify-section-{{ section.id }} .main-policy__body ol {
-    margin: 0 0 1em;
-    padding-left: 1.5em;
-  }
-
-  #shopify-section-{{ section.id }} .main-policy__body li {
-    margin: 0 0 0.5em;
-  }
-
-  #shopify-section-{{ section.id }} .main-policy__body a {
-    color: inherit;
-    text-decoration: underline;
-  }
-
-  #shopify-section-{{ section.id }} .main-policy__body a:hover {
-    opacity: 0.7;
-  }
-
-  #shopify-section-{{ section.id }} .main-policy__body table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1em 0;
-  }
-
-  #shopify-section-{{ section.id }} .main-policy__body th,
-  #shopify-section-{{ section.id }} .main-policy__body td {
-    padding: 0.75em;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    text-align: left;
-    vertical-align: top;
-  }
-
-  #shopify-section-{{ section.id }} .main-policy__body th {
-    background-color: rgba(0, 0, 0, 0.03);
-    font-weight: 600;
-  }
 {% endstyle %}
 
 {% schema %}
 {
   "name": "Policy content",
   "tag": "section",
-  "class": "main-policy"
+  "class": "main-policy",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Howto"
+    },
+    {
+      "type": "paragraph",
+      "content": "Displays policy content based on URL. Content is managed in Settings > Policies."
+    }
+  ]
 }
 {% endschema %}

@@ -19,37 +19,40 @@
 
 <footer-usps class="block-footer-usps__content {{ section.settings.width }}">
 	{%- if section.blocks.size > 0 -%}
-		<div class="block-footer-usps__slider swiper" data-footer-usps-slider>
-			<ul class="block-footer-usps__list swiper-wrapper">
-				{%- for block in section.blocks -%}
-					{%- if block.type == 'usp' -%}
-						<li class="block-footer-usps__item swiper-slide" {{ block.shopify_attributes }}>
-							{%- if block.settings.link != blank -%}
-								<a href="{{ block.settings.link }}" class="block-footer-usps__link" title="{{ block.settings.text | escape }}">
-							{%- else -%}
-								<span class="block-footer-usps__link">
-							{%- endif -%}
-								<i class="block-footer-usps__icon">
-									{%- if block.settings.icon != 'none' -%}
-										{% render 'html-theme-icons', icon: block.settings.icon, size: 20 %}
-									{%- else -%}
-										{% render 'html-theme-icons', icon: 'check-mark', size: 20 %}
-									{%- endif -%}
-								</i>
-								<span class="block-footer-usps__text">{{ block.settings.text }}</span>
-							{%- if block.settings.link != blank -%}
-								</a>
-							{%- else -%}
-								</span>
-							{%- endif -%}
-						</li>
-					{%- endif -%}
-				{%- endfor -%}
-			</ul>
-
+		<div class="block-footer-usps__wrapper">
 			<button type="button" class="block-footer-usps__nav block-footer-usps__nav--prev" data-nav-prev aria-label="{{ 'accessibility.slider.previous' | t }}">
 				{% render 'html-theme-icons', icon: 'caret', size: 16 %}
 			</button>
+			
+			<div class="block-footer-usps__slider swiper" data-footer-usps-slider>
+				<div class="block-footer-usps__list swiper-wrapper">
+					{%- for block in section.blocks -%}
+						{%- if block.type == 'usp' -%}
+							<div class="block-footer-usps__item swiper-slide" {{ block.shopify_attributes }}>
+								{%- if block.settings.link != blank -%}
+									<a href="{{ block.settings.link }}" class="block-footer-usps__link" title="{{ block.settings.text | escape }}">
+								{%- else -%}
+									<span class="block-footer-usps__link">
+								{%- endif -%}
+									<i class="block-footer-usps__icon">
+										{%- if block.settings.icon != 'none' -%}
+											{% render 'html-theme-icons', icon: block.settings.icon, size: 20 %}
+										{%- else -%}
+											{% render 'html-theme-icons', icon: 'check-mark', size: 20 %}
+										{%- endif -%}
+									</i>
+									<span class="block-footer-usps__text">{{ block.settings.text }}</span>
+								{%- if block.settings.link != blank -%}
+									</a>
+								{%- else -%}
+									</span>
+								{%- endif -%}
+							</div>
+						{%- endif -%}
+					{%- endfor -%}
+				</div>
+			</div>
+			
 			<button type="button" class="block-footer-usps__nav block-footer-usps__nav--next" data-nav-next aria-label="{{ 'accessibility.slider.next' | t }}">
 				{% render 'html-theme-icons', icon: 'caret', size: 16 %}
 			</button>
@@ -59,8 +62,8 @@
 
 {% style %}
 	.block-footer-usps {
-		background-color: {{ section.settings.background_color }};
-		color: {{ section.settings.text_color }};
+		background-color: {{ section.settings.background_color | default: '#0f1f38' }};
+		color: {{ section.settings.text_color | default: '#ffffff' }};
 		padding: 1.5em 0;
 	}
 
@@ -68,13 +71,21 @@
 		display: block;
 	}
 
+	/* Wrapper: flexbox with buttons on sides */
+	.block-footer-usps__wrapper {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.5em;
+	}
+
 	.block-footer-usps__slider {
-		position: relative;
+		flex: 1 1 auto;
+		min-width: 0;
 		overflow: hidden;
 	}
 
 	.block-footer-usps__list {
-		list-style: none;
 		padding: 0;
 		margin: 0;
 		display: flex;
@@ -87,7 +98,9 @@
 	.block-footer-usps__item {
 		flex: 0 0 auto;
 		width: auto !important;
-		padding:0.5em;
+		display: flex;
+		align-items: center;
+		padding: 0 0.5em;
 	}
 
 	.block-footer-usps__link {
@@ -123,12 +136,9 @@
 		white-space: nowrap;
 	}
 
-	/* Navigation arrows */
+	/* Navigation buttons - flex items on sides */
 	.block-footer-usps__nav {
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		z-index: 10;
+		flex: 0 0 auto;
 		display: none;
 		align-items: center;
 		justify-content: center;
@@ -147,46 +157,41 @@
 		opacity: 1;
 	}
 
-	.block-footer-usps__nav--prev {
-		left: 0;
-	}
-
 	.block-footer-usps__nav--prev svg {
 		transform: rotate(90deg);
-	}
-
-	.block-footer-usps__nav--next {
-		right: 0;
 	}
 
 	.block-footer-usps__nav--next svg {
 		transform: rotate(-90deg);
 	}
 
-	/* Show arrows only when overflow */
-	.block-footer-usps__slider.has-overflow .block-footer-usps__nav {
+	/* Show buttons only when overflow */
+	.block-footer-usps__wrapper.has-overflow .block-footer-usps__nav {
 		display: flex;
 	}
 
-	.block-footer-usps__slider.has-overflow .block-footer-usps__list {
+	.block-footer-usps__wrapper.has-overflow .block-footer-usps__list {
 		justify-content: flex-start;
 	}
 
-	/* Add padding for arrows when visible */
-	.block-footer-usps__slider.has-overflow {
-		padding-left: 2.5em;
-		padding-right: 2.5em;
+	/* Mobile: show 1 item at a time */
+	@media (max-width: 40em) {
+		.block-footer-usps__item {
+			flex: 0 0 100%;
+			justify-content: center;
+		}
 	}
 {% endstyle %}
 
 <script>
 	class FooterUsps extends HTMLElement {
 		connectedCallback() {
+			this.wrapper = this.querySelector('.block-footer-usps__wrapper');
 			this.swiperEl = this.querySelector('[data-footer-usps-slider]');
 			this.prevBtn = this.querySelector('[data-nav-prev]');
 			this.nextBtn = this.querySelector('[data-nav-next]');
 			
-			if (!this.swiperEl) return;
+			if (!this.swiperEl || !this.wrapper) return;
 			this.initSwiper();
 		}
 
@@ -210,10 +215,10 @@
 
 			if (this.areAllSlidesInView(swiper)) {
 				wrapper.style.justifyContent = 'center';
-				swiper.el.classList.remove('has-overflow');
+				this.wrapper.classList.remove('has-overflow');
 			} else {
 				wrapper.style.justifyContent = '';
-				swiper.el.classList.add('has-overflow');
+				this.wrapper.classList.add('has-overflow');
 			}
 		}
 
@@ -270,12 +275,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "header",
@@ -284,14 +290,20 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#0f1f38"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#ffffff"
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Add USPs using blocks. Items auto-slide when they overflow the container width."
 		}
 	],
 	"blocks": [

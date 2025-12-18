@@ -1,0 +1,142 @@
+{%- comment -%}
+============================================================================
+HTML-THEME-CARD-ARTICLE
+============================================================================
+Article card renderer. Called by html-theme-card.
+
+PARAMS (from hub):
+- article              : Article object (required)
+- blog_title           : Blog title to display
+- layout               : 'vertical' | 'horizontal'
+- image_ratio          : 'adapt' | 'portrait' | 'square' | 'landscape'
+
+GRID CONTEXT (passed to html-theme-media):
+- columns_desktop      : Columns on desktop
+- columns_tablet       : Columns on tablet
+- columns_mobile       : Columns on mobile
+- columns_width        : Container width class
+- columns_gap          : Gap in em
+
+LOADING:
+- image_loading       : 'lazy' | 'eager'
+- image_priority      : 'high' | 'low' | 'auto'
+
+DISPLAY OPTIONS:
+- show_image           : Show featured image
+- show_blog            : Show blog title label
+- show_date            : Show publish date
+- show_author          : Show author name
+- show_excerpt         : Show article excerpt
+- show_cta             : Show read more link
+
+DEPENDENCIES:
+- html-theme-media snippet
+- html-theme-icons snippet
+============================================================================
+{%- endcomment -%}
+
+{%- if article and article != empty -%}
+{%- liquid
+	comment
+		Boolean defaults
+	endcomment
+	if show_image == nil
+		assign show_image = true
+	endif
+	if show_blog == nil
+		assign show_blog = false
+	endif
+	if show_date == nil
+		assign show_date = true
+	endif
+	if show_author == nil
+		assign show_author = false
+	endif
+	if show_excerpt == nil
+		assign show_excerpt = true
+	endif
+	if show_cta == nil
+		assign show_cta = true
+	endif
+
+	assign card_excerpt = excerpt | default: article.excerpt | default: article.content | strip_html | truncate: 120
+
+	comment
+		Aspect ratio CSS and class
+		Vertical: ratio determines card height
+		Horizontal: ratio determines image shape within stretched figure
+	endcomment
+	case image_ratio
+		when 'square'
+			assign aspect_ratio_css = '1 / 1'
+			assign ratio_class = 'card--ratio-square'
+		when 'portrait'
+			assign aspect_ratio_css = '2 / 3'
+			assign ratio_class = 'card--ratio-portrait'
+		when 'landscape'
+			assign aspect_ratio_css = '3 / 2'
+			assign ratio_class = 'card--ratio-landscape'
+		else
+			assign aspect_ratio_css = 'auto'
+			assign ratio_class = 'card--ratio-adapt'
+	endcase
+-%}
+
+<article class="card card--article card--{{ layout }} {{ ratio_class }}" style="--card-ratio: {{ aspect_ratio_css }};">
+	<a href="{{ article.url }}" class="card__link" aria-label="{{ article.title | escape }}"></a>
+	
+	{%- if show_image and article.image -%}
+		<div class="card__media">
+			<figure class="card__figure">
+				{%- render 'html-theme-media',
+					media: article.image,
+					alt: article.image.alt | default: article.title,
+					image_ratio: image_ratio,
+					columns_desktop: columns_desktop,
+					columns_tablet: columns_tablet,
+					columns_mobile: columns_mobile,
+					columns_width: columns_width,
+					layout: layout,
+					columns_gap: columns_gap,
+					image_loading: image_loading,
+					image_priority: image_priority,
+					class: 'card__image',
+					background: false,
+					wrapper: false
+				-%}
+			</figure>
+		</div>
+	{%- endif -%}
+
+	<div class="card__content">
+		{%- if show_blog and blog_title != blank -%}
+			<span class="card__label">{{ blog_title }}</span>
+		{%- endif -%}
+
+		<h3 class="card__title"><a href="{{ article.url }}">{{ article.title | escape }}</a></h3>
+
+		{%- if show_date or show_author -%}
+			<div class="card__meta">
+				{%- if show_date -%}
+					<time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">{{ article.published_at | date: format: 'date' }}</time>
+				{%- endif -%}
+				{%- if show_date and show_author %} · {% endif -%}
+				{%- if show_author -%}
+					<span>{{ article.author }}</span>
+				{%- endif -%}
+			</div>
+		{%- endif -%}
+		
+		{%- if show_excerpt and card_excerpt != blank -%}
+			<p class="card__excerpt">{{ card_excerpt }}</p>
+		{%- endif -%}
+
+		{%- if show_cta -%}
+			<span class="card__cta">
+				<span>{{ 'general.read_more' | t | default: 'Read more' }}</span>
+				{%- render 'html-theme-icons', icon: 'arrow', size: 14 -%}
+			</span>
+		{%- endif -%}
+	</div>
+</article>
+{%- endif -%}

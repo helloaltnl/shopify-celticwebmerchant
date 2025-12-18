@@ -1,23 +1,185 @@
-<style type="text/css">
-  .template-404 .title + * {
-    margin-top: 1rem;
-  }
+{%- comment -%}
+============================================================================
+MAIN-404
+============================================================================
+404 error page template.
 
-  @media screen and (min-width: 750px) {
-    .template-404 .title + * {
-      margin-top: 2rem;
-    }
-  }
-</style>
+FEATURES:
+- Customizable heading and subtext
+- Configurable CTA button
+- Width and padding controls
+- Color customization
+============================================================================
+{%- endcomment -%}
 
-<div class="template-404 page-width page-margin center">
-  <p>
-    {{ 'error.404.subtext' | t }}
-  </p>
-  <h1 class="title">
-    {{ 'error.404.title' | t }}
-  </h1>
-  <a href="{{ routes.all_products_collection_url }}" class="button">
-    {{ 'general.continue_shopping' | t }}
-  </a>
+{%- liquid
+	assign heading_text = section.settings.heading
+	if heading_text == blank
+		assign heading_text = 'error.404.title' | t
+	endif
+	
+	assign subtext = section.settings.subtext
+	if subtext == blank
+		assign subtext = 'error.404.subtext' | t
+	endif
+	
+	assign button_text = section.settings.button_text
+	if button_text == blank
+		assign button_text = 'general.continue_shopping' | t
+	endif
+-%}
+
+<div class="main-404__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+	<div class="main-404__container">
+		<p class="main-404__subtext">{{ subtext }}</p>
+		<h1 class="main-404__title">{{ heading_text }}</h1>
+		{%- if section.settings.button_link != blank -%}
+			<a href="{{ section.settings.button_link }}" class="main-404__button">{{ button_text }}</a>
+		{%- else -%}
+			<a href="{{ routes.all_products_collection_url }}" class="main-404__button">{{ button_text }}</a>
+		{%- endif -%}
+	</div>
 </div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.main-404 {
+		background-color: {{ section.settings.background_color | default: '#ffffff' }};
+		color: {{ section.settings.text_color | default: '#111111' }};
+		padding-block: {{ section.settings.padding_block }}em;
+	}
+
+	.main-404__container {
+		text-align: center;
+	}
+
+	.main-404__subtext {
+		font-size: 1.2em;
+		margin: 0;
+		opacity: 0.8;
+	}
+
+	.main-404__title {
+		font-family: var(--theme-font-family-serif);
+		font-size: clamp(2em, 6vw, 4em);
+		font-weight: 400;
+		margin: 0.5em 0;
+	}
+
+	.main-404__button {
+		display: inline-block;
+		margin-block-start: 1.5em;
+		padding: 0.8em 2em;
+		background: var(--theme-color-primary, #111111);
+		color: var(--theme-color-background, #ffffff);
+		text-decoration: none;
+		border-radius: 0.25em;
+		transition: opacity 0.2s;
+	}
+
+	.main-404__button:hover {
+		opacity: 0.85;
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "404 page",
+	"tag": "section",
+	"class": "main-404",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "text",
+			"id": "subtext",
+			"label": "Subtext",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "text",
+			"id": "button_text",
+			"label": "Button text",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "url",
+			"id": "button_link",
+			"label": "Button link",
+			"info": "Leave empty to link to all products"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
+			],
+			"default": "is-align"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 4,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "404 error page template. Displays when a requested page is not found."
+		}
+	]
+}
+{% endschema %}

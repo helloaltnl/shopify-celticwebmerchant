@@ -105,6 +105,9 @@
     "filtering": {
       "title": "Filtrovať a zoradiť",
       "button": "Filtrovať",
+      "filters": "Filtre",
+      "active_filters": "Aktívne filtre",
+      "remove_filter": "Odstrániť filter",
       "apply": "Použiť",
       "clear": "Vymazať",
       "clear_all": "Vymazať všetko",

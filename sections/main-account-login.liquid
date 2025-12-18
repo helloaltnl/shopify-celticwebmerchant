@@ -1,0 +1,411 @@
+<div id="shopify-section-{{ section.id }}" class="main-account-login {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+  <div class="main-account-login__container">
+    {%- comment -%} Recover Password Form {%- endcomment -%}
+    <div id="recover" class="main-account-login__recover" tabindex="-1">
+      <h1 class="main-account-login__title">{{ 'customer.recover_password.title' | t }}</h1>
+      <p class="main-account-login__subtitle">{{ 'customer.recover_password.subtext' | t }}</p>
+
+      {%- form 'recover_customer_password', class: 'main-account-login__form' -%}
+        {% assign recover_success = form.posted_successfully? %}
+
+        {%- if form.errors -%}
+          <div class="main-account-login__errors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>{{ form.errors.messages.form }}</span>
+          </div>
+        {%- endif -%}
+
+        <div class="main-account-login__field">
+          <label for="RecoverEmail" class="main-account-login__label">{{ 'customer.login_page.email' | t }}</label>
+          <input
+            type="email"
+            name="email"
+            id="RecoverEmail"
+            class="main-account-login__input"
+            autocorrect="off"
+            autocapitalize="off"
+            autocomplete="email"
+            {% if form.errors %}
+              aria-invalid="true"
+              aria-describedby="RecoverEmail-error"
+              autofocus
+            {% endif %}
+          >
+        </div>
+
+        <button type="submit" class="main-account-login__submit">
+          {{ 'customer.login_page.submit' | t }}
+        </button>
+
+        <a href="#login" class="main-account-login__link main-account-login__link--center">
+          {{ 'customer.login_page.cancel' | t }}
+        </a>
+      {%- endform -%}
+    </div>
+
+    {%- comment -%} Login Form {%- endcomment -%}
+    <div id="login" class="main-account-login__login" tabindex="-1">
+      <h1 class="main-account-login__title">{{ 'customer.login_page.title' | t }}</h1>
+
+      {%- if recover_success == true -%}
+        <div class="main-account-login__success" tabindex="-1" autofocus>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span>{{ 'customer.recover_password.success' | t }}</span>
+        </div>
+      {%- endif -%}
+
+      {%- form 'customer_login', novalidate: 'novalidate', class: 'main-account-login__form' -%}
+        {%- if form.errors -%}
+          <div class="main-account-login__errors" tabindex="-1" autofocus>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>{{ 'templates.contact.form.error_heading' | t }}</span>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.enable_shop_login and shop.features.login_with_shop_classic_customer_accounts? -%}
+          <div class="main-account-login__shop-login">
+            {{ shop | login_button }}
+          </div>
+          <div class="main-account-login__divider">
+            <span>{{ 'customer.login_page.alternate_provider_separator' | t }}</span>
+          </div>
+        {%- endif -%}
+
+        <div class="main-account-login__field">
+          <label for="CustomerEmail" class="main-account-login__label">{{ 'customer.login_page.email' | t }}</label>
+          <input
+            type="email"
+            name="customer[email]"
+            id="CustomerEmail"
+            class="main-account-login__input"
+            autocomplete="email"
+            autocorrect="off"
+            autocapitalize="off"
+            {% if form.errors contains 'form' %}aria-invalid="true"{% endif %}
+          >
+        </div>
+
+        {%- if form.password_needed -%}
+          <div class="main-account-login__field">
+            <label for="CustomerPassword" class="main-account-login__label">{{ 'customer.login_page.password' | t }}</label>
+            <input
+              type="password"
+              name="customer[password]"
+              id="CustomerPassword"
+              class="main-account-login__input"
+              autocomplete="current-password"
+              {% if form.errors contains 'form' %}aria-invalid="true"{% endif %}
+            >
+          </div>
+
+          <a href="#recover" class="main-account-login__link">
+            {{ 'customer.login_page.forgot_password' | t }}
+          </a>
+        {%- endif -%}
+
+        <button type="submit" class="main-account-login__submit">
+          {{ 'customer.login_page.sign_in' | t }}
+        </button>
+
+        <p class="main-account-login__register-link">
+          {{ 'customer.login_page.new_customer' | t | default: "Don't have an account?" }}
+          <a href="{{ routes.account_register_url }}">{{ 'customer.login_page.create_account' | t }}</a>
+        </p>
+      {%- endform -%}
+
+      {%- if shop.checkout.guest_login -%}
+        <div class="main-account-login__guest">
+          <div class="main-account-login__divider">
+            <span>{{ 'customer.login_page.or' | t | default: 'or' }}</span>
+          </div>
+          <h2 class="main-account-login__guest-title">{{ 'customer.login_page.guest_title' | t }}</h2>
+          {%- form 'guest_login' -%}
+            <button type="submit" class="main-account-login__guest-button">
+              {{ 'customer.login_page.guest_continue' | t }}
+            </button>
+          {%- endform -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<style>
+  #shopify-section-{{ section.id }}.main-account-login {
+    --account-background: {{ section.settings.background_color | default: '#ffffff' }};
+    --account-text: {{ section.settings.text_color | default: '#111111' }};
+    --account-border: {{ section.settings.text_color | default: '#111111' | color_modify: 'alpha', 0.2 }};
+    --account-error: #dc2626;
+    --account-success: #16a34a;
+
+    background-color: var(--account-background);
+    color: var(--account-text);
+    padding-block: {{ section.settings.padding_block }}em;
+  }
+
+  .main-account-login__container {
+    max-width: 28rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  /* Hide recover form by default, show when targeted */
+  .main-account-login__recover {
+    display: none;
+  }
+
+  .main-account-login__recover:target {
+    display: block;
+  }
+
+  .main-account-login__recover:target ~ .main-account-login__login {
+    display: none;
+  }
+
+  .main-account-login__title {
+    font-family: var(--theme-font-family-serif, Georgia, serif);
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 0.5rem;
+    text-align: center;
+  }
+
+  .main-account-login__subtitle {
+    margin: 0 0 1.5rem;
+    text-align: center;
+    opacity: 0.7;
+  }
+
+  .main-account-login__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .main-account-login__errors {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background-color: color-mix(in srgb, var(--account-error) 10%, transparent);
+    border: 1px solid var(--account-error);
+    border-radius: 0.25rem;
+    color: var(--account-error);
+    font-weight: 500;
+  }
+
+  .main-account-login__success {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: color-mix(in srgb, var(--account-success) 10%, transparent);
+    border: 1px solid var(--account-success);
+    border-radius: 0.25rem;
+    color: var(--account-success);
+    font-weight: 500;
+  }
+
+  .main-account-login__shop-login {
+    display: flex;
+    justify-content: center;
+  }
+
+  .main-account-login__divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--account-border);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .main-account-login__divider::before,
+  .main-account-login__divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--account-border);
+  }
+
+  .main-account-login__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .main-account-login__label {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .main-account-login__input {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--account-border);
+    border-radius: 0.25rem;
+    background-color: transparent;
+    color: inherit;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .main-account-login__input:focus {
+    outline: none;
+    border-color: var(--account-text);
+  }
+
+  .main-account-login__link {
+    color: inherit;
+    font-size: 0.875rem;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .main-account-login__link--center {
+    text-align: center;
+  }
+
+  .main-account-login__submit {
+    padding: 0.875rem 1.5rem;
+    background-color: var(--account-text);
+    color: var(--account-background);
+    border: none;
+    border-radius: 0.25rem;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .main-account-login__submit:hover {
+    opacity: 0.85;
+  }
+
+  .main-account-login__register-link {
+    margin: 0;
+    text-align: center;
+    font-size: 0.875rem;
+  }
+
+  .main-account-login__register-link a {
+    color: inherit;
+    font-weight: 500;
+  }
+
+  .main-account-login__guest {
+    margin-top: 2rem;
+  }
+
+  .main-account-login__guest-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin: 1rem 0;
+    text-align: center;
+  }
+
+  .main-account-login__guest-button {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background-color: transparent;
+    color: var(--account-text);
+    border: 1px solid var(--account-border);
+    border-radius: 0.25rem;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .main-account-login__guest-button:hover {
+    border-color: var(--account-text);
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Account login",
+  "tag": "section",
+  "class": "main-account-login-wrapper",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_shop_login",
+      "label": "Enable Shop Pay login button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Width",
+      "options": [
+        { "value": "is-align-narrow", "label": "Narrow" },
+        { "value": "is-align-small", "label": "Small" },
+        { "value": "is-align", "label": "Regular" },
+        { "value": "is-align-wide", "label": "Wide" },
+        { "value": "is-align-full", "label": "Full" }
+      ],
+      "default": "is-align-full"
+    },
+    {
+      "type": "range",
+      "id": "padding_block",
+      "label": "Vertical padding",
+      "min": 0,
+      "max": 6,
+      "step": 0.5,
+      "default": 4,
+      "unit": "em"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text"
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Anchor",
+      "info": "ID for scroll links (without #)"
+    },
+    {
+      "type": "text",
+      "id": "custom_class",
+      "label": "Custom class",
+      "info": "Add custom CSS class"
+    },
+    {
+      "type": "header",
+      "content": "Howto"
+    },
+    {
+      "type": "paragraph",
+      "content": "Login form with password recovery. Includes optional Shop Pay login and guest checkout options."
+    }
+  ]
+}
+{% endschema %}

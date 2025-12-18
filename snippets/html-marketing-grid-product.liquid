@@ -1,334 +1,229 @@
-{% comment %}
-  HTML Marketing Grid Component: Product Item
-  Product card with image and details for grid layouts
-  
-  Parameters:
-  - product: {Object} Shopify product object (required)
-  - show_secondary_image: {Boolean} Show second image on hover - default: false
-  - design: {String} blue | red | green - default: blue
-  - block_id: {String} Unique block ID for styling
-  
-  Usage:
-  {% render 'html-marketing-grid-product',
-    product: block.settings.product,
-    show_secondary_image: block.settings.second_image,
-    design: block.settings.design,
-    block_id: block.id
-  %}
-{% endcomment %}
+{%- comment -%}
+============================================================================
+HTML-MARKETING-GRID-PRODUCT
+============================================================================
+Product card with image and details for grid layouts.
+Uses global .is-marketing-card utilities from theme-ux.scss.
+
+PARAMETERS:
+- product              : Shopify product object (required)
+- show_secondary_image : Show second image on hover (default: false)
+- design               : 'blue' | 'red' | 'green' (default: 'blue')
+- block_id             : Unique block ID for styling
+- columns_desktop      : Number of columns on desktop (default 3)
+- columns_tablet       : Number of columns on tablet (default 2)
+- columns_mobile       : Number of columns on mobile (default 1)
+- columns_width        : Container width class (default 'is-align-wide')
+- columns_gap          : Gap between grid items in em (default 1)
+
+NOTES:
+- Sizes = actual display size, srcset = 1x-3x for retina
+- Quality default 70% via html-theme-media-image
+
+DEPENDENCIES:
+- html-theme-media-image snippet
+- html-product-price snippet
+- Global .is-marketing-card utilities from theme-ux.scss
+============================================================================
+{%- endcomment -%}
 
 {%- liquid
-  assign show_secondary_image = show_secondary_image | default: false
-  assign design = design | default: 'blue'
+	assign show_secondary_image = show_secondary_image | default: false
+	assign design = design | default: 'blue'
+	assign columns_desktop = columns_desktop | default: 3
+	assign columns_tablet = columns_tablet | default: 2
+	assign columns_mobile = columns_mobile | default: 1
+	assign columns_width = columns_width | default: 'is-align-wide'
+	assign columns_gap = columns_gap | default: 1
+	
+	comment
+		Container width in pixels (match theme-ui.scss)
+	endcomment
+	case columns_width
+		when 'is-align-narrow'
+			assign container_px = 480
+		when 'is-align-small'
+			assign container_px = 640
+		when 'is-align'
+			assign container_px = 960
+		when 'is-align-wide'
+			assign container_px = 1280
+		when 'is-align-full'
+			assign container_px = 1600
+		else
+			assign container_px = 1280
+	endcase
+	
+	comment
+		Gap in pixels
+	endcomment
+	assign gap_px = columns_gap | times: 16
+	
+	comment
+		Calculate actual display sizes per breakpoint
+	endcomment
+	assign desktop_gaps = columns_desktop | minus: 1 | times: gap_px
+	assign desktop_available = container_px | minus: desktop_gaps
+	assign desktop_image = desktop_available | divided_by: columns_desktop | round
+	
+	assign tablet_gaps = columns_tablet | minus: 1 | times: gap_px
+	assign tablet_available = 960 | minus: tablet_gaps
+	assign tablet_image = tablet_available | divided_by: columns_tablet | round
+	
+	assign mobile_gaps = columns_mobile | minus: 1 | times: gap_px
+	assign mobile_available = 480 | minus: mobile_gaps
+	assign mobile_image = mobile_available | divided_by: columns_mobile | round
+	
+	comment
+		Build sizes attribute (actual display sizes, not ×3)
+	endcomment
+	assign img_sizes = '(min-width: 60em) ' | append: desktop_image | append: 'px, (min-width: 40em) ' | append: tablet_image | append: 'px, ' | append: mobile_image | append: 'px'
+	
+	comment
+		Srcset widths based on desktop (largest display)
+		Provides 1x, 1.5x, 2x, 2.5x, 3x for retina
+	endcomment
+	assign base = desktop_image
+	if base < 200
+		assign base = 200
+	endif
+	
+	assign w1 = base | round
+	assign w2 = base | times: 1.5 | round
+	assign w3 = base | times: 2 | round
+	assign w4 = base | times: 2.5 | round
+	assign w5 = base | times: 3 | round
+	if w5 > 2048
+		assign w5 = 2048
+	endif
+	if w4 > 2048
+		assign w4 = 2048
+	endif
 -%}
 
-<div class="marketing-grid-product is-design-{{ design }}">
-  {%- if product -%}
-    <a href="{{ product.url }}" class="marketing-grid-product__link" aria-label="{{ product.title | escape }}"></a>
-    
-    <div class="marketing-grid-product__image">
-      {%- if product.featured_media -%}
-        <img
-          srcset="
-            {%- if product.featured_media.width >= 165 -%}{{ product.featured_media | image_url: width: 165 }} 165w,{%- endif -%}
-            {%- if product.featured_media.width >= 360 -%}{{ product.featured_media | image_url: width: 360 }} 360w,{%- endif -%}
-            {%- if product.featured_media.width >= 533 -%}{{ product.featured_media | image_url: width: 533 }} 533w,{%- endif -%}
-            {%- if product.featured_media.width >= 720 -%}{{ product.featured_media | image_url: width: 720 }} 720w,{%- endif -%}
-            {%- if product.featured_media.width >= 940 -%}{{ product.featured_media | image_url: width: 940 }} 940w,{%- endif -%}
-            {{ product.featured_media | image_url }} {{ product.featured_media.width }}w
-          "
-          src="{{ product.featured_media | image_url: width: 533 }}"
-          sizes="(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw"
-          alt="{{ product.featured_media.alt | escape }}"
-          class="marketing-grid-product__image-primary"
-          loading="lazy"
-          width="{{ product.featured_media.width }}"
-          height="{{ product.featured_media.height }}"
-        />
-        
-        {%- if product.media[1] != null and show_secondary_image -%}
-          <img
-            srcset="
-              {%- if product.media[1].width >= 165 -%}{{ product.media[1] | image_url: width: 165 }} 165w,{%- endif -%}
-              {%- if product.media[1].width >= 360 -%}{{ product.media[1] | image_url: width: 360 }} 360w,{%- endif -%}
-              {%- if product.media[1].width >= 533 -%}{{ product.media[1] | image_url: width: 533 }} 533w,{%- endif -%}
-              {%- if product.media[1].width >= 720 -%}{{ product.media[1] | image_url: width: 720 }} 720w,{%- endif -%}
-              {%- if product.media[1].width >= 940 -%}{{ product.media[1] | image_url: width: 940 }} 940w,{%- endif -%}
-              {{ product.media[1] | image_url }} {{ product.media[1].width }}w
-            "
-            src="{{ product.media[1] | image_url: width: 533 }}"
-            sizes="(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw"
-            alt="{{ product.media[1].alt | escape }}"
-            class="marketing-grid-product__image-secondary"
-            loading="lazy"
-            width="{{ product.media[1].width }}"
-            height="{{ product.media[1].height }}"
-          />
-        {%- endif -%}
-      {%- endif -%}
-    </div>
-    
-    <div class="marketing-grid-product__content">
-      <h3 class="marketing-grid-product__title">{{ product.title | escape }}</h3>
-      <div class="marketing-grid-product__price">
-        {% render 'html-product-price', product: product, price_class: '', show_compare_at_price: true %}
-      </div>
-    </div>
-  {%- else -%}
-    <div class="marketing-grid-product__placeholder">
-      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="80" height="80" rx="8" fill="#e0e0e0"/>
-        <rect x="16" y="16" width="48" height="40" rx="4" fill="#ccc"/>
-        <rect x="16" y="60" width="32" height="4" rx="2" fill="#ccc"/>
-      </svg>
-      <p>Select a product</p>
-    </div>
-  {%- endif -%}
+<div class="is-marketing-card is-design-{{ design }} marketing-grid-product{% if show_secondary_image and product.media[1] %} has-secondary-image{% endif %}">
+	{%- if product -%}
+		<a href="{{ product.url }}" class="is-marketing-card__link" aria-label="{{ product.title | escape }}"></a>
+		
+		<div class="is-marketing-card__image">
+			{%- if product.featured_media -%}
+				<div class="marketing-grid-product__image-primary">
+					{%- render 'html-theme-media-image',
+						image: product.featured_media,
+						alt: product.featured_media.alt | default: product.title,
+						w1: w1,
+						w2: w2,
+						w3: w3,
+						w4: w4,
+						w5: w5,
+						sizes: img_sizes,
+						image_loading: 'lazy'
+					-%}
+				</div>
+				
+				{%- if product.media[1] != null and show_secondary_image -%}
+					<div class="marketing-grid-product__image-secondary">
+						{%- render 'html-theme-media-image',
+							image: product.media[1],
+							alt: product.media[1].alt | default: product.title,
+							w1: w1,
+							w2: w2,
+							w3: w3,
+							w4: w4,
+							w5: w5,
+							sizes: img_sizes,
+							image_loading: 'lazy'
+						-%}
+					</div>
+				{%- endif -%}
+			{%- endif -%}
+		</div>
+		
+		<div class="is-marketing-card__content">
+			<h3 class="is-marketing-card__title">{{ product.title | escape }}</h3>
+			<div class="marketing-grid-product__price">
+				{% render 'html-product-price', product: product, price_class: '', show_compare_at_price: true %}
+			</div>
+		</div>
+	{%- else -%}
+		<div class="marketing-grid-product__placeholder">
+			<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<rect width="80" height="80" rx="8" fill="#e0e0e0"/>
+				<rect x="16" y="16" width="48" height="40" rx="4" fill="#ccc"/>
+				<rect x="16" y="60" width="32" height="4" rx="2" fill="#ccc"/>
+			</svg>
+			<p>Select a product</p>
+		</div>
+	{%- endif -%}
 </div>
 
 <style>
-  .marketing-grid-product {
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    background-color: #f5f5f5;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: flex-start;
-    height:100%;
-  }
-  
-  .marketing-grid-product__link {
-    position: absolute;
-    display:block!important;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    text-decoration: none;
-  }
-  
-  .marketing-grid-product__image {
-    position: absolute;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background-color: #fff;
-    z-index: -1;
-  }
-  
-  .marketing-grid-product__image-primary,
-  .marketing-grid-product__image-secondary {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: opacity 0.3s ease;
-  }
-  
-  .marketing-grid-product__image-secondary {
-    opacity: 0;
-  }
-  
-  .marketing-grid-product:hover .marketing-grid-product__image-secondary {
-    opacity: 1;
-  }
-  
-  .marketing-grid-product__content {
-    position: relative;
-    z-index: 2;
-    color: #fff;
-    width: 100%;
-    padding: 1.5em;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.8);
-    pointer-events: none;
-  }
-  
-  .marketing-grid-product__title {
-    color: inherit;
-    font-size: 1.5em;
-    font-weight: 500;
-    margin: 0 0 0.5rem 0;
-    line-height: 1.3;
-  }
-  
-  .marketing-grid-product__price {
-    color: inherit;
-  }
-  
-  .marketing-grid-product__price .price {
-    color: inherit;
-    font-size: 1em;
-    font-weight: 600;
-  }
-  
-  .marketing-grid-product__price .price__sale {
-    color: inherit;
-  }
-  
-  .marketing-grid-product__price .price__compare {
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: line-through;
-  }
-  
-  /* Design variants */
-  .marketing-grid-product.is-design-blue .marketing-grid-product__content {
-    position: relative;
-    isolation: isolate;
-    padding-bottom: 2.5em;
-    background: linear-gradient(180deg, rgba(15,31,56,0) 0%, rgba(15,31,56,1) calc(100% - 1em));
-    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) calc(100% - 1em));
-  }
-  
-  .marketing-grid-product.is-design-blue .marketing-grid-product__content::before {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -1;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 0;
-    height: 1em;
-    background: var(--theme-color-blue, #1e40af);
-  }
-  
-  .marketing-grid-product.is-design-blue .marketing-grid-product__content::after {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -2;
-    left: 0;
-    top: 1em;
-    right: 0;
-    bottom: 0;
-    background: var(--theme-color-blue, #1e40af);
-    transform: scaleX(-1);
-    mask-image: url('data:image/svg+xml;utf8,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 4 4" style="enable-background:new 0 0 4 4;" xml:space="preserve" opacity="1" stroke-width="0.5"> <line stroke="black" class="st0" x1="0" y1="0" x2="4" y2="4"/> <line stroke="black" x1="-0.4" y1="3.6" x2="0.4" y2="4.4"/> <line stroke="black" x1="3.6" y1="-0.4" x2="4.4" y2="0.4"/> </svg>');
-    mask-repeat: repeat;
-    mask-size: 16px;
-    mask-position: center center;
-  }
-  
-  .marketing-grid-product.is-design-red .marketing-grid-product__content {
-    position: relative;
-    isolation: isolate;
-    padding-bottom: 2.5em;
-    background: rgba(0, 0, 0, 0.7);
-    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) calc(100% - 1em));
-  }
-  
-  .marketing-grid-product.is-design-red .marketing-grid-product__content::before {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -1;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 0;
-    height: 1em;
-    background: var(--theme-color-red, #dc2626);
-  }
-  
-  .marketing-grid-product.is-design-red .marketing-grid-product__content::after {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -2;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 1em;
-    height: 1em;
-    background: var(--theme-color-red, #dc2626);
-    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 41 8"><polygon points="8.5 0 0 8 17 8 8.5 0"/></svg>');
-    mask-repeat: repeat-x;
-    mask-size: 41px;
-    mask-position: calc(50% - 30px) bottom;
-  }
-  
-  .marketing-grid-product.is-design-green .marketing-grid-product__content {
-    position: relative;
-    padding-bottom: 2.5em;
-    background: rgba(0, 0, 0, 0.7);
-    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) calc(100% - 1em));
-  }
-  
-  .marketing-grid-product.is-design-green .marketing-grid-product__content::before {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -1;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 0;
-    height: 1em;
-    background: var(--theme-color-green, #16a34a);
-  }
-  
-  .marketing-grid-product.is-design-green .marketing-grid-product__content::after {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: 0;
-    left: 0;
-    top: auto;
-    right: 0;
-    bottom: 1em;
-    height: 8px;
-    background: var(--theme-color-green, #16a34a);
-    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 11 8"><line stroke="black" stroke-width="4" x1="-.98" y1="11.78" x2="9.17" y2="2.22"/></svg>');
-    mask-repeat: repeat-x;
-    mask-size: 11px;
-    mask-position: left center;
-  }
-  
-  /* Hover effects */
-  .marketing-grid-product:hover .marketing-grid-product__image-primary {
-    transform: scale(1.05);
-  }
-  
-  .marketing-grid-product__image-primary {
-    transition: transform 0.6s ease;
-  }
-  
-  /* Placeholder */
-  .marketing-grid-product__placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    background-color: #f5f5f5;
-    color: #666;
-    text-align: center;
-    padding: 2rem;
-  }
-  
-  .marketing-grid-product__placeholder p {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-  }
-  
-  /* Responsive */
-  @media (max-width: 749px) {
-    .marketing-grid-product__title {
-      font-size: 1.25em;
-    }
-    
-    .marketing-grid-product__price .price {
-      font-size: 0.875em;
-    }
-  }
+.marketing-grid-product .is-marketing-card__image {
+	background-color: #fff;
+}
+
+.marketing-grid-product__image-primary,
+.marketing-grid-product__image-secondary {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	transition: opacity 300ms ease;
+}
+
+.marketing-grid-product__image-primary .theme-media__img,
+.marketing-grid-product__image-secondary .theme-media__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.marketing-grid-product__image-secondary {
+	opacity: 0;
+}
+
+.marketing-grid-product.has-secondary-image:hover .marketing-grid-product__image-secondary {
+	opacity: 1;
+}
+
+.marketing-grid-product__price {
+	color: inherit;
+}
+
+.marketing-grid-product__price .product-price {
+	display: inline-flex;
+}
+
+.marketing-grid-product__price .price {
+	color: inherit;
+	font-size: 1em;
+	font-weight: 600;
+}
+
+.marketing-grid-product__price .price__sale {
+	color: inherit;
+}
+
+.marketing-grid-product__price .price__compare {
+	color: rgba(255, 255, 255, 0.7);
+	text-decoration: line-through;
+}
+
+.marketing-grid-product__placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	background-color: #f5f5f5;
+	color: #666;
+	text-align: center;
+	padding: 2rem;
+}
+
+.marketing-grid-product__placeholder p {
+	margin-top: 1rem;
+	font-size: 0.875rem;
+}
 </style>

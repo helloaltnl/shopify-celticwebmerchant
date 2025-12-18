@@ -1,8 +1,25 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
       "type": "main-page-assist",
-      "settings": {}
+      "settings": {
+        "handle": "",
+        "show_count": true,
+        "show_cta": true,
+        "columns_desktop": 5,
+        "columns_tablet": 3,
+        "columns_mobile": 2,
+        "grid_gap": 0.2
+      }
     }
   },
   "order": [

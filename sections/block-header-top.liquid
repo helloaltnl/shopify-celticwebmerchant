@@ -22,10 +22,10 @@
 	{%- if section.blocks.size > 0 -%}
 		<nav class="block-header-top__usps">
 			<div class="swiper block-header-top__slider" data-usps-slider>
-				<ul class="swiper-wrapper">
+				<div class="swiper-wrapper">
 					{%- for block in section.blocks -%}
 						{%- if block.type == 'usp' -%}
-							<li class="swiper-slide" {{ block.shopify_attributes }}>
+							<div class="swiper-slide" {{ block.shopify_attributes }}>
 								{%- if block.settings.link != blank -%}
 									<a href="{{ block.settings.link }}" {% if block.settings.title != blank %}title="{{ block.settings.title }}"{% endif %}>
 										{%- if block.settings.icon != 'none' -%}
@@ -45,10 +45,10 @@
 										<span>{{ block.settings.text }}</span>
 									</span>
 								{%- endif -%}
-							</li>
+							</div>
 						{%- endif -%}
 					{%- endfor -%}
-				</ul>
+				</div>
 			</div>
 		</nav>
 	{%- endif -%}
@@ -62,8 +62,8 @@
 
 {%- style -%}
 	.block-header-top {
-		background-color: {{ section.settings.background_color }};
-		color: {{ section.settings.text_color }};
+		background-color: {{ section.settings.background_color | default: '#2e130d' }};
+		color: {{ section.settings.text_color | default: '#ffffff' }};
 	}
 
 	.block-header-top__content {
@@ -95,6 +95,8 @@
 	.block-header-top__slider .swiper-slide {
 		width: auto;
 		flex-shrink: 0;
+		display: flex;
+		align-items: center;
 		padding-right: 2em;
 	}
 
@@ -138,7 +140,7 @@
 	}
 
 	/* Mobile: enable autoplay sliding */
-	@media (max-width: 768px) {
+	@media (max-width: 40em) {
 		.block-header-top__slider .swiper-slide {
 			padding-right: 3em;
 		}
@@ -161,7 +163,7 @@
 				freeMode: true,
 				freeModeMomentum: false,
 				breakpoints: {
-					769: {
+					640: {
 						loop: false,
 						autoplay: false,
 						freeMode: true,
@@ -202,12 +204,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "header",
@@ -216,14 +219,20 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#2e130d"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#ffffff"
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Add USPs using blocks. On mobile, items auto-slide. Region selector pulls from Shopify Markets settings."
 		}
 	],
 	"blocks": [

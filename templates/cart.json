@@ -16,7 +16,7 @@
           "type": "cart_items",
           "settings": {
             "show_vendor": false,
-            "show_recommended": true,
+            "show_recommended": false,
             "max_recommended": 4,
             "hide_out_of_stock": true
           }
@@ -55,7 +55,8 @@
       "settings": {
         "heading": "",
         "show_continue_shopping": true,
-        "width": "alignwide",
+        "width": "is-align-wide",
+        "padding_block": 2,
         "background_color": "#f8f8f8",
         "text_color": "#111111"
       }

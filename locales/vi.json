@@ -105,6 +105,9 @@
     "filtering": {
       "title": "Lọc và sắp xếp",
       "button": "Lọc",
+      "filters": "Bộ lọc",
+      "active_filters": "Bộ lọc đang dùng",
+      "remove_filter": "Xóa bộ lọc",
       "apply": "Áp dụng",
       "clear": "Xóa",
       "clear_all": "Xóa tất cả",

@@ -16,7 +16,7 @@
 {% endcomment %}
 
 {%- if collection.description != blank or section.settings.show_title -%}
-<div class="block-collection-bottom__content {{ section.settings.width }}">
+<div class="block-collection-bottom__content {{ section.settings.width }}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	{%- if section.settings.show_title -%}
 		<{{ section.settings.heading_tag }} class="block-collection-bottom__title">
 			{{ collection.title | escape }}
@@ -200,12 +200,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignsmall"
+			"default": "is-align-narrow"
 		},
 		{
 			"type": "select",
@@ -225,14 +226,22 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "header",

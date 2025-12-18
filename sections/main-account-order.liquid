@@ -1,0 +1,585 @@
+<div id="shopify-section-{{ section.id }}" class="main-account-order {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+  <div class="main-account-order__container">
+    <header class="main-account-order__header">
+      <div>
+        <h1 class="main-account-order__title">{{ 'customer.order.title' | t: name: order.name }}</h1>
+        {%- assign order_date = order.created_at | time_tag: format: 'date_at_time' -%}
+        <p class="main-account-order__date">{{ 'customer.order.date_html' | t: date: order_date }}</p>
+      </div>
+      <a href="{{ routes.account_url }}" class="main-account-order__back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        {{ 'customer.account.return' | t }}
+      </a>
+    </header>
+
+    {%- if order.cancelled -%}
+      <div class="main-account-order__cancelled">
+        {%- assign cancelled_at = order.cancelled_at | time_tag: format: 'date_at_time' -%}
+        <p>{{ 'customer.order.cancelled_html' | t: date: cancelled_at }}</p>
+        <p>{{ 'customer.order.cancelled_reason' | t: reason: order.cancel_reason_label }}</p>
+      </div>
+    {%- endif -%}
+
+    <div class="main-account-order__content">
+      {%- comment -%} Order Items {%- endcomment -%}
+      <section class="main-account-order__items">
+        <div class="main-account-order__table-wrapper">
+          <table class="main-account-order__table" role="table">
+            <caption class="visually-hidden">{{ 'customer.order.title' | t: name: order.name }}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ 'customer.order.product' | t }}</th>
+                <th scope="col">{{ 'customer.order.sku' | t }}</th>
+                <th scope="col">{{ 'customer.order.price' | t }}</th>
+                <th scope="col">{{ 'customer.order.quantity' | t }}</th>
+                <th scope="col">{{ 'customer.order.total' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {%- for line_item in order.line_items -%}
+                <tr>
+                  <td data-label="{{ 'customer.order.product' | t }}">
+                    <div class="main-account-order__product">
+                      {%- if line_item.url != blank -%}
+                        <a href="{{ line_item.url }}">{{ line_item.title | escape }}</a>
+                      {%- else -%}
+                        <span>{{ line_item.title | escape }}</span>
+                      {%- endif -%}
+
+                      {%- unless line_item.product.has_only_default_variant -%}
+                        <span class="main-account-order__variant">{{ line_item.variant.title | escape }}</span>
+                      {%- endunless -%}
+
+                      {%- unless line_item.selling_plan_allocation == null -%}
+                        <span class="main-account-order__variant">{{ line_item.selling_plan_allocation.selling_plan.name }}</span>
+                      {%- endunless -%}
+
+                      {%- assign property_size = line_item.properties | size -%}
+                      {%- if property_size != 0 -%}
+                        <div class="main-account-order__properties">
+                          {%- for property in line_item.properties -%}
+                            {% assign property_first_char = property.first | slice: 0 %}
+                            {%- if property.last != blank and property_first_char != '_' -%}
+                              <span>{{ property.first }}: 
+                                {%- if property.last contains '/uploads/' -%}
+                                  <a href="{{ property.last }}">{{ property.last | split: '/' | last }}</a>
+                                {%- else -%}
+                                  {{ property.last }}
+                                {%- endif -%}
+                              </span>
+                            {%- endif -%}
+                          {%- endfor -%}
+                        </div>
+                      {%- endif -%}
+
+                      {%- if line_item.line_level_discount_allocations != blank -%}
+                        <ul class="main-account-order__discounts">
+                          {%- for discount_allocation in line_item.line_level_discount_allocations -%}
+                            <li>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                              {{ discount_allocation.discount_application.title | escape }} (-{{ discount_allocation.amount | money }})
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+
+                      {%- if line_item.fulfillment -%}
+                        <div class="main-account-order__fulfillment">
+                          {%- assign created_at = line_item.fulfillment.created_at | time_tag: format: 'date' -%}
+                          <span>{{ 'customer.order.fulfilled_at_html' | t: date: created_at }}</span>
+                          {%- if line_item.fulfillment.tracking_url -%}
+                            <a href="{{ line_item.fulfillment.tracking_url }}">{{ 'customer.order.track_shipment' | t }}</a>
+                          {%- endif -%}
+                          <span>{{ line_item.fulfillment.tracking_company }} {%- if line_item.fulfillment.tracking_number -%}#{{ line_item.fulfillment.tracking_number }}{%- endif -%}</span>
+                        </div>
+                      {%- endif -%}
+                    </div>
+                  </td>
+                  <td data-label="{{ 'customer.order.sku' | t }}">{{ line_item.sku }}</td>
+                  <td data-label="{{ 'customer.order.price' | t }}">
+                    {%- if line_item.original_price != line_item.final_price -%}
+                      <s>{{ line_item.original_price | money }}</s>
+                      <span>{{ line_item.final_price | money }}</span>
+                    {%- else -%}
+                      {{ line_item.original_price | money }}
+                    {%- endif -%}
+                    {%- if line_item.unit_price_measurement -%}
+                      <span class="main-account-order__unit-price">
+                        {{ line_item.unit_price | money }}/{{ line_item.unit_price_measurement.reference_value }}{{ line_item.unit_price_measurement.reference_unit }}
+                      </span>
+                    {%- endif -%}
+                  </td>
+                  <td data-label="{{ 'customer.order.quantity' | t }}">{{ line_item.quantity }}</td>
+                  <td data-label="{{ 'customer.order.total' | t }}">
+                    {%- if line_item.original_line_price != line_item.final_line_price -%}
+                      <s>{{ line_item.original_line_price | money }}</s>
+                      <span>{{ line_item.final_line_price | money }}</span>
+                    {%- else -%}
+                      {{ line_item.original_line_price | money }}
+                    {%- endif -%}
+                  </td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row" colspan="4">{{ 'customer.order.subtotal' | t }}</th>
+                <td data-label="{{ 'customer.order.subtotal' | t }}">{{ order.line_items_subtotal_price | money }}</td>
+              </tr>
+
+              {%- if order.cart_level_discount_applications != blank -%}
+                {%- for discount_application in order.cart_level_discount_applications -%}
+                  <tr>
+                    <th scope="row" colspan="4">
+                      {{ 'customer.order.discount' | t }}
+                      <span class="main-account-order__discount-badge">{{ discount_application.title | escape }}</span>
+                    </th>
+                    <td data-label="{{ 'customer.order.discount' | t }}">-{{ discount_application.total_allocated_amount | money }}</td>
+                  </tr>
+                {%- endfor -%}
+              {%- endif -%}
+
+              {%- for shipping_method in order.shipping_methods -%}
+                <tr>
+                  <th scope="row" colspan="4">{{ 'customer.order.shipping' | t }} ({{ shipping_method.title | escape }})</th>
+                  <td data-label="{{ 'customer.order.shipping' | t }}">{{ shipping_method.price | money }}</td>
+                </tr>
+              {%- endfor -%}
+
+              {%- for tax_line in order.tax_lines -%}
+                <tr>
+                  <th scope="row" colspan="4">{{ 'customer.order.tax' | t }} ({{ tax_line.title | escape }} {{ tax_line.rate | times: 100 }}%)</th>
+                  <td data-label="{{ 'customer.order.tax' | t }}">{{ tax_line.price | money }}</td>
+                </tr>
+              {%- endfor -%}
+
+              {%- if order.total_duties -%}
+                <tr>
+                  <th scope="row" colspan="4">{{ 'customer.order.total_duties' | t }}</th>
+                  <td data-label="{{ 'customer.order.total_duties' | t }}">{{ order.total_duties | money }}</td>
+                </tr>
+              {%- endif -%}
+
+              {%- if order.total_refunded_amount > 0 -%}
+                <tr>
+                  <th scope="row" colspan="4">{{ 'customer.order.total_refunded' | t }}</th>
+                  <td data-label="{{ 'customer.order.total_refunded' | t }}">-{{ order.total_refunded_amount | money_with_currency }}</td>
+                </tr>
+              {%- endif -%}
+
+              <tr class="main-account-order__total-row">
+                <th scope="row" colspan="4">{{ 'customer.order.total' | t }}</th>
+                <td data-label="{{ 'customer.order.total' | t }}">{{ order.total_net_amount | money_with_currency }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+
+      {%- comment -%} Addresses {%- endcomment -%}
+      <aside class="main-account-order__addresses">
+        <div class="main-account-order__address-card">
+          <h2 class="main-account-order__address-title">{{ 'customer.order.billing_address' | t }}</h2>
+          <p class="main-account-order__status-line">
+            <strong>{{ 'customer.order.payment_status' | t }}:</strong>
+            <span class="main-account-order__status main-account-order__status--{{ order.financial_status }}">
+              {{ order.financial_status_label }}
+            </span>
+          </p>
+          <address class="main-account-order__address">
+            {{ order.billing_address | format_address }}
+          </address>
+        </div>
+
+        <div class="main-account-order__address-card">
+          <h2 class="main-account-order__address-title">{{ 'customer.order.shipping_address' | t }}</h2>
+          <p class="main-account-order__status-line">
+            <strong>{{ 'customer.order.fulfillment_status' | t }}:</strong>
+            <span class="main-account-order__status main-account-order__status--{{ order.fulfillment_status }}">
+              {{ order.fulfillment_status_label }}
+            </span>
+          </p>
+          <address class="main-account-order__address">
+            {{ order.shipping_address | format_address }}
+          </address>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<style>
+  #shopify-section-{{ section.id }}.main-account-order {
+    --account-background: {{ section.settings.background_color | default: '#ffffff' }};
+    --account-text: {{ section.settings.text_color | default: '#111111' }};
+    --account-border: {{ section.settings.text_color | default: '#111111' | color_modify: 'alpha', 0.2 }};
+
+    background-color: var(--account-background);
+    color: var(--account-text);
+    padding-block: {{ section.settings.padding_block }}em;
+  }
+
+  .main-account-order__container {
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  .main-account-order__header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--account-border);
+  }
+
+  .main-account-order__title {
+    font-family: var(--theme-font-family-serif, Georgia, serif);
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0;
+  }
+
+  .main-account-order__date {
+    margin: 0.5rem 0 0;
+    opacity: 0.7;
+    font-size: 0.875rem;
+  }
+
+  .main-account-order__back {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.875rem;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+
+  .main-account-order__back:hover {
+    opacity: 1;
+  }
+
+  .main-account-order__cancelled {
+    padding: 1rem;
+    margin-bottom: 2rem;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    color: #991b1b;
+  }
+
+  .main-account-order__cancelled p {
+    margin: 0;
+  }
+
+  .main-account-order__cancelled p + p {
+    margin-top: 0.5rem;
+  }
+
+  .main-account-order__content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 60em) {
+    .main-account-order__content {
+      grid-template-columns: 1fr 20rem;
+    }
+  }
+
+  .main-account-order__table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .main-account-order__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .main-account-order__table th,
+  .main-account-order__table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--account-border);
+    vertical-align: top;
+  }
+
+  .main-account-order__table thead th {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .main-account-order__table tfoot th {
+    font-weight: 500;
+  }
+
+  .main-account-order__total-row th,
+  .main-account-order__total-row td {
+    font-weight: 700;
+    font-size: 1rem;
+    border-top: 2px solid var(--account-text);
+  }
+
+  .main-account-order__product a {
+    color: inherit;
+    font-weight: 500;
+  }
+
+  .main-account-order__variant {
+    display: block;
+    font-size: 0.8125rem;
+    opacity: 0.7;
+  }
+
+  .main-account-order__properties {
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    opacity: 0.7;
+  }
+
+  .main-account-order__properties span {
+    display: block;
+  }
+
+  .main-account-order__discounts {
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .main-account-order__discounts li {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8125rem;
+    color: #166534;
+  }
+
+  .main-account-order__fulfillment {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--account-border);
+    font-size: 0.8125rem;
+  }
+
+  .main-account-order__fulfillment span,
+  .main-account-order__fulfillment a {
+    display: block;
+  }
+
+  .main-account-order__fulfillment a {
+    color: inherit;
+    font-weight: 500;
+  }
+
+  .main-account-order__unit-price {
+    display: block;
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  .main-account-order__discount-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    background-color: #dcfce7;
+    color: #166534;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .main-account-order__addresses {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .main-account-order__address-card {
+    padding: 1.5rem;
+    background-color: var(--account-border);
+    border-radius: 0.5rem;
+  }
+
+  .main-account-order__address-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 1rem;
+  }
+
+  .main-account-order__status-line {
+    margin: 0 0 1rem;
+    font-size: 0.875rem;
+  }
+
+  .main-account-order__status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    background-color: var(--account-background);
+  }
+
+  .main-account-order__status--paid,
+  .main-account-order__status--fulfilled {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+
+  .main-account-order__status--pending,
+  .main-account-order__status--unfulfilled {
+    background-color: #fef9c3;
+    color: #854d0e;
+  }
+
+  .main-account-order__address {
+    font-style: normal;
+    line-height: 1.6;
+    font-size: 0.875rem;
+  }
+
+  /* Mobile table styles */
+  @media (max-width: 40em) {
+    .main-account-order__table thead {
+      display: none;
+    }
+
+    .main-account-order__table tbody tr {
+      display: block;
+      padding: 1rem 0;
+    }
+
+    .main-account-order__table tbody td {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: none;
+    }
+
+    .main-account-order__table tbody td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      margin-right: 1rem;
+    }
+
+    .main-account-order__table tbody td:first-child {
+      display: block;
+    }
+
+    .main-account-order__table tbody td:first-child::before {
+      display: none;
+    }
+
+    .main-account-order__table tbody tr + tr {
+      border-top: 1px solid var(--account-border);
+    }
+
+    .main-account-order__table tfoot tr {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+    }
+
+    .main-account-order__table tfoot th,
+    .main-account-order__table tfoot td {
+      padding: 0;
+      border: none;
+    }
+
+    .main-account-order__table tfoot th {
+      text-align: left;
+    }
+
+    .main-account-order__total-row th,
+    .main-account-order__total-row td {
+      padding-top: 1rem;
+      border-top: 2px solid var(--account-text);
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Account order",
+  "tag": "section",
+  "class": "main-account-order-wrapper",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Width",
+      "options": [
+        { "value": "is-align-narrow", "label": "Narrow" },
+        { "value": "is-align-small", "label": "Small" },
+        { "value": "is-align", "label": "Regular" },
+        { "value": "is-align-wide", "label": "Wide" },
+        { "value": "is-align-full", "label": "Full" }
+      ],
+      "default": "is-align-wide"
+    },
+    {
+      "type": "range",
+      "id": "padding_block",
+      "label": "Vertical padding",
+      "min": 0,
+      "max": 6,
+      "step": 0.5,
+      "default": 4,
+      "unit": "em"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text"
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Anchor",
+      "info": "ID for scroll links (without #)"
+    },
+    {
+      "type": "text",
+      "id": "custom_class",
+      "label": "Custom class",
+      "info": "Add custom CSS class"
+    },
+    {
+      "type": "header",
+      "content": "Howto"
+    },
+    {
+      "type": "paragraph",
+      "content": "Order detail page showing line items, totals, and addresses. Displays on /account/orders/[id] pages."
+    }
+  ]
+}
+{% endschema %}

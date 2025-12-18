@@ -72,11 +72,17 @@
     // Store previous focus
     previousFocus = document.activeElement;
 
-    // Open modal
+    // Open modal - show first, then animate
     modal.hidden = false;
-    modal.classList.add(CLASSES.open);
     document.body.classList.add(CLASSES.bodyLock);
     activeModal = modal;
+
+    // Add open class after a frame to trigger CSS transition
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        modal.classList.add(CLASSES.open);
+      });
+    });
 
     // Focus first focusable element
     requestAnimationFrame(() => {
@@ -115,8 +121,8 @@
 
     const id = modal.dataset.modal;
 
+    // Start close animation
     modal.classList.remove(CLASSES.open);
-    modal.hidden = true;
     document.body.classList.remove(CLASSES.bodyLock);
 
     if (activeModal === modal) {
@@ -128,6 +134,11 @@
       previousFocus.focus();
       previousFocus = null;
     }
+
+    // Hide after transition completes (175ms snappy)
+    setTimeout(() => {
+      modal.hidden = true;
+    }, 175);
 
     // Dispatch event
     document.dispatchEvent(new CustomEvent('modal:close', { 

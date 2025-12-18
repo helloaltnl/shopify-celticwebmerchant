@@ -105,6 +105,9 @@
     "filtering": {
       "title": "Filtra e ordina",
       "button": "Filtra",
+      "filters": "Filtri",
+      "active_filters": "Filtri attivi",
+      "remove_filter": "Rimuovi filtro",
       "apply": "Applica",
       "clear": "Cancella",
       "clear_all": "Cancella tutto",

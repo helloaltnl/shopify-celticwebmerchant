@@ -13,17 +13,20 @@
       "type": "block-marketing-cover",
       "name": "Marketing Cover",
       "settings": {
-        "subheading": "",
-        "heading": "Discover The Tribe",
-        "text": "<p>Word nu lid!</p>",
-        "image": "shopify://shop_images/Banner_Tribe_5.webp",
+        "subheading": "The Tribe",
+        "heading": "Jouw community",
+        "text": "",
+        "image": "shopify://shop_images/Dec2025_-_Banners_Tribe_v2.webp",
         "focus_x": 60,
-        "focus_y": 50,
+        "focus_y": 40,
         "overlay": "medium",
-        "width": "alignfull",
+        "loading": "eager",
+        "fetchpriority": "high",
+        "width": "is-align-full",
         "height": "medium",
         "text_position": "center",
         "text_alignment": "center",
+        "anchor": "",
         "custom_class": ""
       }
     },
@@ -32,11 +35,11 @@
       "custom_css": [],
       "name": "Promo: Spaar",
       "settings": {
-        "heading": "Spaar voor exclusieve kortingen, elke keer dat je winkelt",
+        "heading": "Word lid van onze community & spaar exclusieve kortingen",
         "subheading": "",
         "text": "",
         "cta_text": "Wordt nu gratis lid!",
-        "cta_url": "shopify://pages/the-tribe",
+        "cta_url": "https://shopify.com/89128927560/account/orders?locale=nl&region_country=NO",
         "cta_style": "primary",
         "show_countdown": false,
         "countdown_end_date": "",
@@ -45,12 +48,14 @@
         "countdown_style": "highlight",
         "countdown_size": "large",
         "show_usp": false,
-        "width": "alignwide",
-        "layout": "boxed",
+        "width": "is-align-wide",
+        "layout": "default",
+        "padding_block": 3,
         "background_color": "#0f1f38",
         "text_color": "#ffffff",
         "button_color": "#ffffff",
         "button_text_color": "#0f1f38",
+        "anchor": "",
         "custom_class": "promo-spaar"
       }
     },
@@ -62,7 +67,7 @@
           "settings": {
             "icon": "",
             "heading": "Spaar punten voor extra kortingen",
-            "text": "Ontvang 500 punten voor je aanmelding. Voor elke euro dat je bij ons uitgeeft, ontvang je een punt. Daarnaast ontvang je 250 punten voor je aanmeldjubileum. Verzilver uiteindelijk jouw punten voor kortingen tot wel €150!"
+            "text": "Elke keer dat je bij ons koopt ontvang jij kortingspunten! Daarnaast ontvang je 250 punten voor je aanmeldjubileum. Verzilver uiteindelijk jouw punten voor kortingen tot wel €150!"
           }
         },
         "usp_ygaD6f": {
@@ -78,7 +83,7 @@
           "settings": {
             "icon": "",
             "heading": "Ontvang wekelijks exclusieve kortingen",
-            "text": "Voor Tribe leden hebben we wekelijks exclusieve Thematische aanbiedingen. Deze vallen buiten de aanbiedingen die voor andere klanten geldig zijn."
+            "text": "Voor Tribe leden hebben we wekelijks exclusieve thematische aanbiedingen. Deze vallen buiten de aanbiedingen die voor andere klanten geldig zijn."
           }
         },
         "usp_D3xyML": {
@@ -86,15 +91,15 @@
           "settings": {
             "icon": "",
             "heading": "Ontvang onze e-books",
-            "text": "Vol met inspiratie en kunst"
+            "text": "Vol met inspiratie, historische feitjes en kunst."
           }
         },
         "usp_FzTEVf": {
           "type": "usp",
           "settings": {
             "icon": "",
-            "heading": "Deel je foto, ontvang een cadeautje & doe mee aan de wedstrijd",
-            "text": "Stuur jouw foto in en ontvang direct 10% korting. Daarnaast maak je kans op €150 shoptegoed!"
+            "heading": "Inspireer anderen, ontvang cadeaus & doe mee aan de wedstrijden",
+            "text": "Deel je inspiratie, verzamel cadeaus en doe mee aan spannende wedstrijden. Maak elke maand kans op €100 shoptegoed!"
           }
         }
       },
@@ -112,30 +117,57 @@
         "cta_text": "",
         "cta_url": "",
         "cta_style": "primary",
-        "image": "shopify://shop_images/voordelen-img.jpg",
+        "image": "shopify://shop_images/DSC04191.jpg",
         "media_height": "fill",
         "focus_x": 50,
-        "focus_y": 20,
-        "width": "align",
+        "focus_y": 25,
+        "width": "is-align",
         "media_position": "left",
         "media_width": "40",
         "vertical_alignment": "center",
+        "padding_block": 3,
         "background_color": "#f8f8f8",
         "text_color": "#111111",
         "icon_background": "#ffffff",
         "icon_color": "#243406",
         "button_color": "",
         "button_text_color": "",
+        "anchor": "",
         "custom_class": ""
+      }
+    },
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "width": "align"
       }
     },
     "block_marketing_testimonials_attenQ": {
       "type": "block-marketing-testimonials",
       "blocks": {
+        "testimonial_fHMLYg": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "In onze community ontsnap ik aan de dagelijkse sleur van  de saaie dreuzelwereld.",
+            "author": "",
+            "author_title": "",
+            "rating": 5
+          }
+        },
+        "testimonial_hxqTPC": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Je voorouders zie je terug als je in de spiegel kijkt. Zonder jou zouden zij verdwijnen. Bij Celtic vind ik de kans om in hun voetsporen te treden.",
+            "author": "",
+            "author_title": "",
+            "rating": 5
+          }
+        },
         "testimonial_jyjHqK": {
           "type": "testimonial",
           "settings": {
-            "quote": "",
+            "quote": "Celtic is onze community, waar wij, zonder vooroordelen onszelf kunnen zijn.",
             "author": "",
             "author_title": "",
             "rating": 5
@@ -144,7 +176,7 @@
         "testimonial_k3Uyxb": {
           "type": "testimonial",
           "settings": {
-            "quote": "",
+            "quote": "Ik ben me bewust van mijn cultuur en geschiedenis. Deze diepe waardering herken en voel ik bij Celtic.",
             "author": "",
             "author_title": "",
             "rating": 5
@@ -152,6 +184,8 @@
         }
       },
       "block_order": [
+        "testimonial_fHMLYg",
+        "testimonial_hxqTPC",
         "testimonial_jyjHqK",
         "testimonial_k3Uyxb"
       ],
@@ -159,19 +193,158 @@
       "settings": {
         "heading": "",
         "subheading": "",
-        "width": "alignwide",
-        "layout": "two-column",
         "alignment": "center",
         "quote_style": "boxed",
+        "width": "is-align-small",
+        "columns_desktop": 2,
+        "columns_tablet": 2,
+        "columns_mobile": 1,
+        "grid_gap": 0.5,
+        "padding_block": 3,
+        "display_mode": "slider",
+        "slider_navigation": true,
+        "slider_pagination": true,
+        "slider_loop": false,
+        "slider_autoplay": false,
+        "slider_autoplay_speed": 5,
         "background_color": "#ffffff",
         "text_color": "#111111",
+        "anchor": "",
         "custom_class": ""
       }
     },
-    "main": {
-      "type": "main-page",
+    "block_marketing_media_text_HtFd6L": {
+      "type": "block-marketing-media-text",
+      "blocks": {
+        "image_text_4RCR9H": {
+          "type": "image_text",
+          "name": "Image + text #1",
+          "settings": {
+            "image": "shopify://shop_images/DSC06911_15b3fb02-ddea-4a58-9397-610b09709ede.jpg",
+            "image_height": "square",
+            "focus_x": 50,
+            "focus_y": 15,
+            "heading": "Inspireer de community & verdien je volgende bestelling bij elkaar!",
+            "text": "<p>Doe mee aan challenges, sta in de spotlight en inspireer anderen. Deel jouw kennis en ervaring en word bekend! De community heeft jou nodig.</p>",
+            "cta_text": "Lees meer",
+            "cta_url": "shopify://blogs/vroeg-modern/de-backsword",
+            "cta_style": "primary",
+            "image_position": "left",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "background_color": "rgba(0,0,0,0)",
+            "text_color": "",
+            "button_color": "#f05a22",
+            "button_text_color": ""
+          }
+        },
+        "image_text_jLUgxx": {
+          "type": "image_text",
+          "name": "Image + text #2",
+          "settings": {
+            "image": "shopify://shop_images/DSC08062_af256e70-7b4b-4c90-9eb1-a232efd040b1.jpg",
+            "image_height": "square",
+            "focus_x": 50,
+            "focus_y": 40,
+            "heading": "Participeer & help anderen",
+            "text": "<p>Onze community deelt een unieke levensstijl, waardeer haar en help haar te groeien! </p><p>Nodig jouw vrienden uit en help hen hun weg te vinden binnen de community.</p>",
+            "cta_text": "",
+            "cta_url": "",
+            "cta_style": "primary",
+            "image_position": "right",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "background_color": "",
+            "text_color": "",
+            "button_color": "#f05a22",
+            "button_text_color": ""
+          }
+        },
+        "image_text_KFBKdW": {
+          "type": "image_text",
+          "name": "Image + text #3",
+          "settings": {
+            "image": "shopify://shop_images/DSC08310_1_ce0a2bde-0ee1-4f66-9523-ad1f540ca492.jpg",
+            "image_height": "square",
+            "focus_x": 50,
+            "focus_y": 25,
+            "heading": "Ontgrendel nieuwe levels in de Tribe",
+            "text": "<p>In de Tribe groei je stap voor stap en worden jouw bijdragen beloond. </p><p>Ons loyalty-programma is verdeeld in verschillende levels, elk met unieke voordelen. </p><p>Hoe actiever je bent, hoe hoger je stijgt en hoe meer speciale rewards, kortingen en privileges je ontvangt.</p>",
+            "cta_text": "Lees meer",
+            "cta_url": "shopify://blogs/challenges/ontgrendel-nieuwe-levels-in-de-tribe",
+            "cta_style": "primary",
+            "image_position": "left",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "background_color": "",
+            "text_color": "",
+            "button_color": "#f05a22",
+            "button_text_color": ""
+          }
+        },
+        "image_text_WykxUi": {
+          "type": "image_text",
+          "name": "Image + text #2",
+          "settings": {
+            "image": "shopify://shop_images/DSC00684_98e81687-404a-45a5-ad6a-b1e78c0272ae.jpg",
+            "image_height": "square",
+            "focus_x": 50,
+            "focus_y": 15,
+            "heading": "Word influencer & groei met ons mee",
+            "text": "<p>Ben jij gek op onze artikelen, actief binnen onze community en wil je ons graag vertegenwoordigen? Dat kan! Stuur ons jouw profiel ter beoordeling.</p><p>Elk jaar kiezen we enkele tientallen vrienden uit om een officieel Celtic WebMerchant influencer te worden. Belangrijk is dat je:</p><ul><li>Dezelfde waarden uitdraagt als waar Wij voor staan.</li><li>Geen politieke of concurrerende activiteiten ontplooit.</li><li>Een goede reputatie hebt binnen de markt.<br/></li></ul><p>Van alle inzendingen worden er jaarlijks een selectie gekozen om deel uit te maken van ons influencer programma.</p>",
+            "cta_text": "Lees meer",
+            "cta_url": "shopify://blogs/challenges/word-influencer",
+            "cta_style": "primary",
+            "image_position": "right",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "background_color": "",
+            "text_color": "",
+            "button_color": "#f05a22",
+            "button_text_color": ""
+          }
+        },
+        "image_text_hGqQrk": {
+          "type": "image_text",
+          "name": "Image + text #3",
+          "settings": {
+            "image": "shopify://shop_images/DSC09415_1a3c47b7-3722-40cf-9283-4c76386e04e5.jpg",
+            "image_height": "square",
+            "focus_x": 50,
+            "focus_y": 15,
+            "heading": "Ontvang korting & exclusieve aanbiedingen",
+            "text": "<p>Leden profiteren van:</p><ul><li>Kortingspunten bij elke aankoop.</li><li>Kortingen tot wel €150 bij het verzilveren van je punten.</li><li>Wekelijks exclusieve aanbiedingen voor Tribe-leden.</li><li>Lagere verzendkosten bij elke bestelling.</li></ul>",
+            "cta_text": "Lees meer",
+            "cta_url": "shopify://blogs/oudheid-romeinen",
+            "cta_style": "primary",
+            "image_position": "left",
+            "image_width": "40",
+            "vertical_alignment": "center",
+            "background_color": "",
+            "text_color": "",
+            "button_color": "#f05a22",
+            "button_text_color": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_text_4RCR9H",
+        "image_text_jLUgxx",
+        "image_text_KFBKdW",
+        "image_text_WykxUi",
+        "image_text_hGqQrk"
+      ],
+      "custom_css": [],
+      "name": "Media & text",
       "settings": {
-        "width": "align"
+        "heading": "",
+        "subheading": "",
+        "width": "is-align",
+        "padding_block": 3,
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff",
+        "anchor": "",
+        "custom_class": ""
       }
     },
     "block_marketing_promo_mAALrK": {
@@ -192,98 +365,50 @@
         "countdown_style": "highlight",
         "countdown_size": "large",
         "show_usp": false,
-        "width": "alignwide",
+        "width": "is-align-full",
         "layout": "default",
+        "padding_block": 3,
         "background_color": "#243406",
         "text_color": "#ffffff",
         "button_color": "#ffffff",
         "button_text_color": "#243406",
+        "anchor": "",
         "custom_class": "promo-join-tribe"
       }
     },
-    "block_marketing_media_text_HtFd6L": {
-      "type": "block-marketing-media-text",
+    "block_marketing_cover_FfEjPV": {
+      "type": "block-marketing-cover",
       "blocks": {
-        "image_text_4RCR9H": {
-          "type": "image_text",
-          "name": "Image + text #1",
+        "button_tbrtQn": {
+          "type": "button",
           "settings": {
-            "image": "shopify://shop_images/tribe-media1.jpg",
-            "image_height": "square",
-            "focus_x": 50,
-            "focus_y": 15,
-            "heading": "Voordeel 1",
-            "text": "<p>Dit is een link naar een pagina (vergelijkbaar met een blogpost) dat onze klanten informeert over het voordeel. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>",
-            "cta_text": "Lees meer",
-            "cta_url": "shopify://blogs/vroeg-modern/de-backsword",
-            "cta_style": "primary",
-            "image_position": "left",
-            "image_width": "40",
-            "vertical_alignment": "center",
-            "background_color": "rgba(0,0,0,0)",
-            "text_color": "",
-            "button_color": "#f05a22",
-            "button_text_color": ""
-          }
-        },
-        "image_text_jLUgxx": {
-          "type": "image_text",
-          "name": "Image + text #2",
-          "settings": {
-            "image": "shopify://shop_images/0216696018i_scheibenknaufdolch_regulaere_ausfuehrung_scheide_mittelalterHn3kGa4sDMnFr_e81718ec-7028-47ed-ab9f-d19ce6a2aabc.jpg",
-            "image_height": "square",
-            "focus_x": 50,
-            "focus_y": 15,
-            "heading": "Voordeel 2",
-            "text": "<p>Dit is een link naar een pagina (vergelijkbaar met een blogpost) dat onze klanten informeert over het voordeel. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>",
-            "cta_text": "",
-            "cta_url": "",
-            "cta_style": "primary",
-            "image_position": "right",
-            "image_width": "40",
-            "vertical_alignment": "center",
-            "background_color": "",
-            "text_color": "",
-            "button_color": "",
-            "button_text_color": ""
-          }
-        },
-        "image_text_hGqQrk": {
-          "type": "image_text",
-          "name": "Image + text #3",
-          "settings": {
-            "image": "shopify://shop_images/tribe-media1.jpg",
-            "image_height": "square",
-            "focus_x": 50,
-            "focus_y": 15,
-            "heading": "Voordeel 3",
-            "text": "<p>Dit is een link naar een pagina (vergelijkbaar met een blogpost) dat onze klanten informeert over het voordeel. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>",
-            "cta_text": "Lees meer",
-            "cta_url": "shopify://blogs/oudheid-romeinen",
-            "cta_style": "primary",
-            "image_position": "left",
-            "image_width": "40",
-            "vertical_alignment": "center",
-            "background_color": "",
-            "text_color": "",
-            "button_color": "#f05a22",
+            "text": "Lees meer",
+            "url": "shopify://blogs/challenges/ontgrendel-nieuwe-levels-in-de-tribe",
+            "style": "outline",
+            "button_color": "#ffffff",
             "button_text_color": ""
           }
         }
       },
       "block_order": [
-        "image_text_4RCR9H",
-        "image_text_jLUgxx",
-        "image_text_hGqQrk"
+        "button_tbrtQn"
       ],
-      "custom_css": [],
-      "name": "Media & text",
+      "name": "Cover",
       "settings": {
-        "heading": "",
-        "subheading": "",
-        "width": "alignwide",
-        "background_color": "#0f1f38",
-        "text_color": "#ffffff",
+        "subheading": "The Tribe premium!",
+        "heading": "Wordt donateur en krijg hogere korting",
+        "text": "",
+        "image": "shopify://shop_images/Banner_Blog_v1.jpg",
+        "focus_x": 65,
+        "focus_y": 50,
+        "overlay": "medium",
+        "loading": "lazy",
+        "fetchpriority": "auto",
+        "width": "is-align-full",
+        "height": "medium",
+        "text_position": "center",
+        "text_alignment": "center",
+        "anchor": "",
         "custom_class": ""
       }
     }
@@ -292,9 +417,10 @@
     "block_marketing_cover_yk8iXx",
     "block_marketing_promo_pdcXtQ",
     "block_marketing_media_usps_zVfPNR",
-    "block_marketing_testimonials_attenQ",
     "main",
+    "block_marketing_media_text_HtFd6L",
     "block_marketing_promo_mAALrK",
-    "block_marketing_media_text_HtFd6L"
+    "block_marketing_testimonials_attenQ",
+    "block_marketing_cover_FfEjPV"
   ]
 }

@@ -1,0 +1,201 @@
+{%- comment -%}
+============================================================================
+HTML-THEME-MEDIA-VIDEO
+============================================================================
+Renders native or external (YouTube/Vimeo) video with poster and controls.
+
+PARAMS:
+- video         : Video object (Shopify video or video_url)
+- alt           : Alt text for poster
+- w1-w8         : Widths for poster srcset (fixed ladder)
+- aspect_ratio  : Aspect ratio for height calculation
+- crop          : Crop position for poster
+- sizes         : Sizes attribute for poster
+- image_loading : 'lazy' | 'eager' (default 'lazy')
+- image_priority: 'high' | 'low' | 'auto' (default 'auto')
+- mode          : 'main' | 'thumb' | 'card' | 'background'
+- controls      : Show controls (default true, ignored in background mode)
+- autoplay      : Autoplay video (default false, always true in background mode)
+- external      : Is external video (YouTube/Vimeo)
+- host          : 'youtube' | 'vimeo'
+- video_id      : External video ID
+- focus_x       : Object position X (0-100, default 50)
+- focus_y       : Object position Y (0-100, default 50)
+
+MODE BEHAVIORS:
+- main       : Full video player with poster, play button, controls
+- thumb      : Poster image with play icon overlay (no video)
+- card       : Smaller play button, card context
+- background : Autoplay, muted, looped, no controls (hero/cover backgrounds)
+
+DEPENDENCIES:
+- html-theme-media-image.liquid (for poster)
+- html-theme-icons.liquid (for play button)
+- Called by html-theme-media.liquid
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	assign mode = mode | default: 'main'
+	assign controls = controls | default: true
+	assign autoplay = autoplay | default: false
+	assign image_loading = image_loading | default: 'lazy'
+	assign image_priority = image_priority | default: 'auto'
+	assign focus_x = focus_x | default: 50
+	assign focus_y = focus_y | default: 50
+	
+	comment
+		Background mode overrides
+	endcomment
+	if mode == 'background'
+		assign autoplay = true
+		assign controls = false
+	endif
+	
+	comment
+		Get poster image
+	endcomment
+	if video.preview_image
+		assign poster = video.preview_image
+	elsif video.poster
+		assign poster = video.poster
+	endif
+	
+	comment
+		Generate unique ID
+	endcomment
+	assign video_wrapper_id = 'video-' | append: video.id | default: 'now' | date: '%s%N'
+-%}
+
+{%- if mode == 'thumb' -%}
+	{%- comment -%}
+	========================================
+	THUMB MODE: Poster + overlay icon
+	========================================
+	{%- endcomment -%}
+	{%- if poster -%}
+		{%- render 'html-theme-media-image',
+			image: poster,
+			alt: alt,
+			w1: w1, w2: w2, w3: w3, w4: w4, w5: w5, w6: w6, w7: w7, w8: w8,
+			aspect_ratio: aspect_ratio,
+			crop: crop,
+			sizes: sizes,
+			image_loading: image_loading
+		-%}
+	{%- endif -%}
+	<span class="theme-media__overlay" aria-hidden="true">
+		{%- render 'html-theme-icons', icon: 'play', size: 32 -%}
+	</span>
+
+{%- elsif mode == 'background' -%}
+	{%- comment -%}
+	========================================
+	BACKGROUND MODE: Autoplay, muted, loop, no controls
+	- Poster rendered as <picture> for LCP optimization (supports fetchpriority)
+	- Poster fades out when video starts playing
+	- Triggers 'is-video-playing' class on parent container
+	========================================
+	{%- endcomment -%}
+	{%- if poster -%}
+		<picture class="theme-media__picture--background">
+			<source
+				type="image/webp"
+				srcset="
+					{{ poster | image_url: width: 1200, format: 'webp' }} 1200w,
+					{{ poster | image_url: width: 1600, format: 'webp' }} 1600w,
+					{{ poster | image_url: width: 1920, format: 'webp' }} 1920w"
+				sizes="100vw"
+			>
+			<img
+				class="theme-media__img"
+				src="{{ poster | image_url: width: 1600 }}"
+				srcset="
+					{{ poster | image_url: width: 1200 }} 1200w,
+					{{ poster | image_url: width: 1600 }} 1600w,
+					{{ poster | image_url: width: 1920 }} 1920w"
+				sizes="100vw"
+				alt="{{ alt | escape }}"
+				loading="{{ image_loading }}"
+				{% if image_priority != 'auto' %}fetchpriority="{{ image_priority }}"{% endif %}
+				width="{{ poster.width }}"
+				height="{{ poster.height }}"
+				style="object-position: {{ focus_x }}% {{ focus_y }}%;"
+			>
+		</picture>
+	{%- endif -%}
+	{%- if external -%}
+		{%- comment -%} External video (YouTube/Vimeo) {%- endcomment -%}
+		<div class="theme-media__iframe-wrapper--background" data-background-video data-host="{{ host }}" data-video-id="{{ video_id }}"></div>
+	{%- else -%}
+		{%- comment -%} Native video element (no poster attr, using picture above) {%- endcomment -%}
+		<video
+			class="theme-media__video--background"
+			autoplay
+			muted
+			loop
+			playsinline
+			preload="metadata"
+			style="object-position: {{ focus_x }}% {{ focus_y }}%;"
+			data-background-video
+		>
+			{%- for source in video.sources -%}
+				<source data-src="{{ source.url }}" type="{{ source.mime_type }}">
+			{%- endfor -%}
+		</video>
+	{%- endif -%}
+
+{%- else -%}
+	{%- comment -%}
+	========================================
+	MAIN/CARD MODE: Full video player
+	========================================
+	{%- endcomment -%}
+	<div 
+		class="theme-media__video-wrapper" 
+		id="{{ video_wrapper_id }}"
+		data-video-wrapper
+		{% if external %}data-external-video data-host="{{ host }}" data-video-id="{{ video_id }}"{% endif %}
+	>
+		{%- comment -%} Poster {%- endcomment -%}
+		{%- if poster -%}
+			<div class="theme-media__poster">
+				{%- render 'html-theme-media-image',
+					image: poster,
+					alt: alt,
+					w1: w1, w2: w2, w3: w3, w4: w4, w5: w5, w6: w6, w7: w7, w8: w8,
+					aspect_ratio: aspect_ratio,
+					crop: crop,
+					sizes: sizes,
+					image_loading: image_loading
+				-%}
+			</div>
+		{%- endif -%}
+
+		{%- comment -%} Play button {%- endcomment -%}
+		<button class="theme-media__play-btn" type="button" data-video-play aria-label="{{ 'product.media.play_video' | t | default: 'Play video' }}">
+			{%- render 'html-theme-icons', icon: 'play', size: 48 -%}
+		</button>
+
+		{%- if external -%}
+			{%- comment -%} External video iframe container {%- endcomment -%}
+			<div class="theme-media__iframe-wrapper" data-iframe-wrapper></div>
+		{%- else -%}
+			{%- comment -%} Native video element {%- endcomment -%}
+			<video
+				class="theme-media__video"
+				preload="none"
+				playsinline
+				{% if controls %}controls{% endif %}
+				{% if autoplay %}autoplay muted{% endif %}
+				controlslist="nodownload"
+				data-video
+			>
+				{%- for source in video.sources -%}
+					<source src="{{ source.url }}" type="{{ source.mime_type }}">
+				{%- endfor -%}
+				{{ 'product.media.video_error' | t | default: 'Your browser does not support the video tag.' }}
+			</video>
+		{%- endif -%}
+	</div>
+{%- endif -%}

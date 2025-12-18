@@ -230,25 +230,20 @@
 	"name": "Region modal",
 	"tag": "section",
 	"class": "block-modal-region",
+	"limit": 1,
 	"enabled_on": {
 		"groups": ["footer"]
 	},
 	"settings": [
 		{
 			"type": "header",
-			"content": "Trigger"
+			"content": "Content"
 		},
 		{
 			"type": "checkbox",
 			"id": "show_trigger",
 			"label": "Show trigger button",
 			"default": true
-		},
-		{
-			"type": "text",
-			"id": "modal_id",
-			"label": "Modal ID",
-			"default": "region-modal"
 		},
 		{
 			"type": "checkbox",
@@ -264,11 +259,21 @@
 		},
 		{
 			"type": "header",
-			"content": "How to use"
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "modal_id",
+			"label": "Modal ID",
+			"default": "region-modal"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
 		},
 		{
 			"type": "paragraph",
-			"content": "Add to footer group. Trigger with data-modal-trigger attribute matching the Modal ID. Uses Shopify's native localization system."
+			"content": "Add to footer group. Trigger with data-modal-trigger matching the Modal ID."
 		}
 	],
 	"blocks": [
@@ -344,7 +349,7 @@
 	],
 	"presets": [
 		{
-			"name": "Region",
+			"name": "Region modal",
 			"category": "Modal",
 			"blocks": [
 				{ "type": "form_region" }

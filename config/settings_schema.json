@@ -24,6 +24,23 @@
     ]
   },
   {
+    "name": "SEO",
+    "settings": [
+      {
+        "type": "textarea",
+        "id": "seo_description",
+        "label": "Homepage meta description",
+        "info": "Used for the homepage and as fallback for pages without a description. Recommended: 150-160 characters."
+      },
+      {
+        "type": "image_picker",
+        "id": "seo_image",
+        "label": "Default share image",
+        "info": "Fallback image for social sharing when page has no image. Recommended: 1200×630px"
+      }
+    ]
+  },
+  {
     "name": "Colors",
     "settings": [
       {
@@ -143,6 +160,53 @@
         "step": 1,
         "default": 3,
         "info": "Show low stock warning when inventory is at or below this number"
+      }
+    ]
+  },
+  {
+    "name": "Socials",
+    "settings": [
+      {
+        "type": "text",
+        "id": "social_facebook_link",
+        "label": "Facebook",
+        "info": "https://facebook.com/shopname"
+      },
+      {
+        "type": "text",
+        "id": "social_instagram_link",
+        "label": "Instagram",
+        "info": "https://instagram.com/shopname"
+      },
+      {
+        "type": "text",
+        "id": "social_twitter_link",
+        "label": "X (Twitter)",
+        "info": "https://x.com/shopname"
+      },
+      {
+        "type": "text",
+        "id": "social_youtube_link",
+        "label": "YouTube",
+        "info": "https://youtube.com/shopname"
+      },
+      {
+        "type": "text",
+        "id": "social_tiktok_link",
+        "label": "TikTok",
+        "info": "https://tiktok.com/@shopname"
+      },
+      {
+        "type": "text",
+        "id": "social_pinterest_link",
+        "label": "Pinterest",
+        "info": "https://pinterest.com/shopname"
+      },
+      {
+        "type": "text",
+        "id": "social_linkedin_link",
+        "label": "LinkedIn",
+        "info": "https://linkedin.com/company/shopname"
       }
     ]
   }

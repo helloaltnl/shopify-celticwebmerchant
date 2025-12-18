@@ -17,7 +17,7 @@
 -%}
 
 <div class="marketing-text marketing-text--{{ width }} marketing-text--{{ text_size }} {{ alignment }}">
-  <div class="marketing-text__content">
+  <div class="marketing-text__content rte">
     {{ text }}
   </div>
 </div>
@@ -72,39 +72,5 @@
   
   .marketing-text.text-right .marketing-text__content {
     text-align: right;
-  }
-  
-  /* Rich text element spacing */
-  .marketing-text__content > * + * {
-    margin-top: 1em;
-  }
-  
-  .marketing-text__content h1,
-  .marketing-text__content h2,
-  .marketing-text__content h3,
-  .marketing-text__content h4,
-  .marketing-text__content h5,
-  .marketing-text__content h6 {
-    margin-top: 1.5em;
-    margin-bottom: 0.5em;
-    line-height: 1.3;
-  }
-  
-  .marketing-text__content ul,
-  .marketing-text__content ol {
-    padding-left: 1.5em;
-  }
-  
-  .marketing-text__content li + li {
-    margin-top: 0.5em;
-  }
-  
-  .marketing-text__content a {
-    text-decoration: underline;
-  }
-  
-  .marketing-text__content img {
-    max-width: 100%;
-    height: auto;
   }
 </style>

@@ -34,7 +34,7 @@
 -%}
 
 {%- if blogpost_references or knowledge_references -%}
-<div class="block-collection-info__content {{ section.settings.width }}">
+<div class="block-collection-info__content {{ section.settings.width }}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	<header class="block-collection-info__header">
 		<h2 class="block-collection-info__title">{{ title_text }}</h2>
 	</header>
@@ -45,7 +45,7 @@
 				{%- for article_reference in blogpost_references.value -%}
 					{%- if forloop.first -%}
 						<article class="block-collection-info__card block-collection-info__card--featured">
-							<a href="{{ article_reference.link.value.url }}" class="block-collection-info__card-link" target="_blank" rel="noopener"></a>
+							<a href="{{article_reference.article.value.url }}" aria-label="{{ article_reference.title | escape }}" class="block-collection-info__card-link" target="_blank" rel="noopener"></a>
 							{%- if article_reference.thumb -%}
 								<figure class="block-collection-info__card-image">
 									<img
@@ -62,7 +62,7 @@
 								{%- if article_reference.excerpt -%}
 									<p class="block-collection-info__card-excerpt">{{ article_reference.excerpt }}</p>
 								{%- endif -%}
-								{%- if article_reference.link -%}
+								{%- if article_reference.article.value -%}
 									<span class="block-collection-info__card-cta">
 										<span>{{ read_more_text }}</span>
 										<i>{% render 'html-theme-icons', icon: 'arrow', size: 14 %}</i>
@@ -77,7 +77,7 @@
 					{%- for article_reference in blogpost_references.value offset: 1 -%}
 						<li class="block-collection-info__item">
 						<article class="block-collection-info__card block-collection-info__card--article">
-							<a href="{{ article_reference.link.value.url }}" class="block-collection-info__card-link" target="_blank" rel="noopener"></a>
+							<a href="{{article_reference.article.value.url }}" aria-label="{{ article_reference.title | escape }}" class="block-collection-info__card-link" target="_blank" rel="noopener"></a>
 							{%- if article_reference.thumb -%}
 								<figure class="block-collection-info__card-image">
 									<img
@@ -94,7 +94,7 @@
 								{%- if article_reference.excerpt -%}
 									<p class="block-collection-info__card-excerpt">{{ article_reference.excerpt }}</p>
 								{%- endif -%}
-								{%- if article_reference.link -%}
+								{%- if article_reference.article.value -%}
 									<span class="block-collection-info__card-cta">
 										<span>{{ read_more_text }}</span>
 										<i>{% render 'html-theme-icons', icon: 'arrow', size: 14 %}</i>
@@ -113,13 +113,13 @@
 				{%- for article_reference in knowledge_references.value -%}
 					<li class="block-collection-info__item">
 						<article class="block-collection-info__card block-collection-info__card--knowledge">
-							<a href="{{ article_reference.link.value.url }}" class="block-collection-info__card-link" target="_blank" rel="noopener"></a>
+							<a href="{{article_reference.article.value.url }}" aria-label="{{ article_reference.title | escape }}" class="block-collection-info__card-link" target="_blank" rel="noopener"></a>
 							<div class="block-collection-info__card-content">
 								<h4 class="block-collection-info__card-title">{{ article_reference.title }}</h4>
 								{%- if article_reference.excerpt -%}
 									<p class="block-collection-info__card-excerpt">{{ article_reference.excerpt }}</p>
 								{%- endif -%}
-								{%- if article_reference.link -%}
+								{%- if article_reference.article.value -%}
 									<span class="block-collection-info__card-cta">
 										<span>{{ read_more_text }}</span>
 										<i>{% render 'html-theme-icons', icon: 'arrow', size: 14 %}</i>
@@ -358,7 +358,7 @@
 	}
 
 	/* Responsive */
-	@media (max-width: 768px) {
+	@media (max-width: 40em) {
 		.block-collection-info__articles-wrapper {
 			flex-direction: column;
 		}
@@ -419,12 +419,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "align"
+			"default": "is-align"
 		},
 		{
 			"type": "header",
@@ -433,26 +434,32 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#f8f8f8"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "color",
 			"id": "knowledge_background_color",
-			"label": "Knowledge card background",
-			"default": "#0f1f38"
+			"label": "Knowledge card background"
 		},
 		{
 			"type": "color",
 			"id": "knowledge_text_color",
-			"label": "Knowledge card text",
-			"default": "#ffffff"
+			"label": "Knowledge card text"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "header",

@@ -1,0 +1,50 @@
+{%- comment -%}
+============================================================================
+HTML-THEME-SCHEMA
+============================================================================
+Schema.org JSON-LD structured data for SEO.
+
+Renders:
+- Organization schema (all pages)
+- WebSite schema with SearchAction (homepage only)
+
+Include once in layout files.
+
+USAGE:
+{% render 'html-theme-schema' %}
+============================================================================
+{%- endcomment -%}
+
+<script type="application/ld+json">
+{
+	"@context": "http://schema.org",
+	"@type": "Organization",
+	"name": {{ shop.name | json }},
+	"url": {{ request.origin | json }},
+	{%- if settings.logo -%}
+	"logo": {{ settings.logo | image_url: width: 500 | prepend: "https:" | json }},
+	{%- endif -%}
+	"contactPoint": {
+		"@type": "ContactPoint",
+		"contactType": "customer service",
+		"url": {{ request.origin | append: '/pages/contact' | json }}
+	}
+}
+</script>
+
+{%- if request.page_type == 'index' -%}
+{%- assign search_url = request.origin | append: routes.search_url | append: '?q={search_term_string}' -%}
+<script type="application/ld+json">
+{
+	"@context": "http://schema.org",
+	"@type": "WebSite",
+	"name": {{ shop.name | json }},
+	"url": {{ request.origin | json }},
+	"potentialAction": {
+		"@type": "SearchAction",
+		"target": {{ search_url | json }},
+		"query-input": "required name=search_term_string"
+	}
+}
+</script>
+{%- endif -%}

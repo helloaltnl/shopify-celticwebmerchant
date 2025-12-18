@@ -5,50 +5,55 @@ MAIN-ARTICLE
 Blog article template with featured image, title, content, and comments.
 
 FEATURES:
-- Hero image with configurable height
+- Boxed article layout (prepared for sidebar)
+- Hero image with configurable width (contained/wide/full)
 - Article title with date/author meta
 - Rich text content
 - Social sharing
 - Comment system (if enabled)
-- Back to blog link
+- Back to blog link (outside box)
 
 DEPENDENCIES:
 - html-theme-icons snippet
 ============================================================================
 {%- endcomment -%}
 
-<article class="main-article">
-	{%- for block in section.blocks -%}
-		{%- case block.type -%}
+{%- comment -%} Article wrapper for future sidebar {%- endcomment -%}
+<div class="main-article__wrapper alignfull">
+	<article class="main-article{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+		{%- for block in section.blocks -%}
+			{%- case block.type -%}
 
-			{%- when 'featured_image' -%}
-				{%- if article.image -%}
-					{%- liquid
-						assign focus_x = block.settings.focus_x | default: 50
-						assign focus_y = block.settings.focus_y | default: 50
-					-%}
-					<figure class="main-article__hero main-article__hero--{{ block.settings.image_height }}" {{ block.shopify_attributes }}>
-						<img
-							src="{{ article.image | image_url: width: 1600 }}"
-							srcset="
-								{{ article.image | image_url: width: 600 }} 600w,
-								{{ article.image | image_url: width: 900 }} 900w,
-								{{ article.image | image_url: width: 1200 }} 1200w,
-								{{ article.image | image_url: width: 1600 }} 1600w
-							"
-							sizes="100vw"
-							alt="{{ article.image.alt | escape | default: article.title }}"
-							loading="eager"
-							fetchpriority="high"
-							width="{{ article.image.width }}"
-							height="{{ article.image.height }}"
-							style="object-position: {{ focus_x }}% {{ focus_y }}%;"
-						>
-					</figure>
-				{%- endif -%}
+				{%- when 'featured_image' -%}
+					{%- if article.image -%}
+						{%- liquid
+							assign image_width = block.settings.image_width | default: 'contained'
+							if image_width == 'full'
+								assign hero_sizes = '100vw'
+							else
+								assign hero_sizes = '(min-width: 60em) 900px, 100vw'
+							endif
+						-%}
+						<figure class="main-article__hero main-article__hero--{{ block.settings.image_height }} main-article__hero--{{ image_width }}" {{ block.shopify_attributes }}>
+							{%- render 'html-theme-media-image',
+								image: article.image,
+								alt: article.image.alt | default: article.title,
+								w1: 600,
+								w2: 900,
+								w3: 1200,
+								w4: 1600,
+								w5: 2048,
+								sizes: hero_sizes,
+								loading: 'eager',
+								fetchpriority: 'high',
+								focus_x: block.settings.focus_x,
+								focus_y: block.settings.focus_y
+							-%}
+						</figure>
+					{%- endif -%}
 
 			{%- when 'back_link' -%}
-				<nav class="main-article__back {{ section.settings.width }}" {{ block.shopify_attributes }}>
+				<nav class="main-article__back" {{ block.shopify_attributes }}>
 					<a href="{{ blog.url }}" class="main-article__back-link">
 						<i>{%- render 'html-theme-icons', icon: 'arrow', size: 16 -%}</i>
 						<span>{{ 'blog.back_to' | t }} {{ blog.title }}</span>
@@ -56,202 +61,365 @@ DEPENDENCIES:
 				</nav>
 
 			{%- when 'title' -%}
-				<header class="main-article__header {{ section.settings.width }}" {{ block.shopify_attributes }}>
-					<h1 class="main-article__title">{{ article.title | escape }}</h1>
-					
-					{%- if block.settings.blog_show_date or block.settings.blog_show_author -%}
-						<div class="main-article__meta">
-							{%- if block.settings.blog_show_date -%}
-								<time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
-									{{ article.published_at | date: format: 'date' }}
-								</time>
-							{%- endif -%}
-							
-							{%- if block.settings.blog_show_date and block.settings.blog_show_author -%}
-								<span class="main-article__meta-separator">•</span>
-							{%- endif -%}
-							
-							{%- if block.settings.blog_show_author -%}
-								<span class="main-article__author">{{ article.author }}</span>
-							{%- endif -%}
-						</div>
-					{%- endif -%}
-				</header>
+				<header class="main-article__header" {{ block.shopify_attributes }}>
+						<h1 class="main-article__title">{{ article.title | escape }}</h1>
+						
+						{%- if block.settings.blog_show_date or block.settings.blog_show_author -%}
+							<div class="main-article__meta">
+								{%- if block.settings.blog_show_date -%}
+									<time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+										{{ article.published_at | date: format: 'date' }}
+									</time>
+								{%- endif -%}
+								
+								{%- if block.settings.blog_show_date and block.settings.blog_show_author -%}
+									<span class="main-article__meta-separator">•</span>
+								{%- endif -%}
+								
+								{%- if block.settings.blog_show_author -%}
+									<span class="main-article__author">{{ article.author }}</span>
+								{%- endif -%}
+							</div>
+						{%- endif -%}
+					</header>
 
-			{%- when 'content' -%}
-				<div class="main-article__content {{ section.settings.width }} rte" {{ block.shopify_attributes }}>
-					{{ article.content }}
-				</div>
+				{%- when 'content' -%}
+					<div class="main-article__content rte" {{ block.shopify_attributes }}>
+						{{ article.content }}
+					</div>
 
-			{%- when 'share' -%}
-				<div class="main-article__share {{ section.settings.width }}" {{ block.shopify_attributes }}>
-					<div class="main-article__share-inner">
-						<span class="main-article__share-label">{{ block.settings.share_label | default: 'Share' }}</span>
-						<div class="main-article__share-buttons">
-							<a 
-								href="https://www.facebook.com/sharer/sharer.php?u={{ article.url | absolute_url | url_encode }}"
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label="Share on Facebook"
-								class="main-article__share-button"
-							>
-								{%- render 'html-theme-icons', icon: 'facebook', size: 20 -%}
-							</a>
-							<a 
-								href="https://twitter.com/intent/tweet?url={{ article.url | absolute_url | url_encode }}&text={{ article.title | url_encode }}"
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label="Share on Twitter"
-								class="main-article__share-button"
-							>
-								{%- render 'html-theme-icons', icon: 'twitter', size: 20 -%}
-							</a>
-							<a 
-								href="https://pinterest.com/pin/create/button/?url={{ article.url | absolute_url | url_encode }}&media={{ article.image | image_url: width: 1200 | url_encode }}&description={{ article.title | url_encode }}"
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label="Share on Pinterest"
-								class="main-article__share-button"
-							>
-								{%- render 'html-theme-icons', icon: 'pinterest', size: 20 -%}
-							</a>
-							<a 
-								href="mailto:?subject={{ article.title | url_encode }}&body={{ article.url | absolute_url | url_encode }}"
-								aria-label="Share via Email"
-								class="main-article__share-button"
-							>
-								{%- render 'html-theme-icons', icon: 'email', size: 20 -%}
-							</a>
+				{%- when 'share' -%}
+					<div class="main-article__share" {{ block.shopify_attributes }}>
+						<div class="main-article__share-inner">
+							<span class="main-article__share-label">{{ block.settings.share_label | default: 'Share' }}</span>
+							<div class="main-article__share-buttons">
+								<a 
+									href="https://www.facebook.com/sharer/sharer.php?u={{ article.url | absolute_url | url_encode }}"
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label="Share on Facebook"
+									class="main-article__share-button"
+								>
+									{%- render 'html-theme-icons', icon: 'facebook', size: 20 -%}
+								</a>
+								<a 
+									href="https://twitter.com/intent/tweet?url={{ article.url | absolute_url | url_encode }}&text={{ article.title | url_encode }}"
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label="Share on Twitter"
+									class="main-article__share-button"
+								>
+									{%- render 'html-theme-icons', icon: 'twitter', size: 20 -%}
+								</a>
+								<a 
+									href="https://pinterest.com/pin/create/button/?url={{ article.url | absolute_url | url_encode }}&media={{ article.image | image_url: width: 1200 | url_encode }}&description={{ article.title | url_encode }}"
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label="Share on Pinterest"
+									class="main-article__share-button"
+								>
+									{%- render 'html-theme-icons', icon: 'pinterest', size: 20 -%}
+								</a>
+								<a 
+									href="mailto:?subject={{ article.title | url_encode }}&body={{ article.url | absolute_url | url_encode }}"
+									aria-label="Share via Email"
+									class="main-article__share-button"
+								>
+									{%- render 'html-theme-icons', icon: 'email', size: 20 -%}
+								</a>
+							</div>
 						</div>
 					</div>
-				</div>
 
-			{%- endcase -%}
-	{%- endfor -%}
+				{%- endcase -%}
+		{%- endfor -%}
 
-	{%- comment -%} Comments Section {%- endcomment -%}
-	{%- if blog.comments_enabled? -%}
-		<section class="main-article__comments" id="comments">
-			<div class="main-article__comments-inner {{ section.settings.width }}">
-				
-				{%- if article.comments_count > 0 -%}
-					<h2 class="main-article__comments-title">
-						{{ 'blog.comments.count' | t: count: article.comments_count }}
-					</h2>
+		{%- comment -%} Comments Section {%- endcomment -%}
+		{%- if blog.comments_enabled? -%}
+			<section class="main-article__comments" id="comments">
+				<div class="main-article__comments-inner">
 					
-					{% paginate article.comments by 10 %}
-						<div class="main-article__comments-list">
-							{%- for comment in article.comments -%}
-								<article class="main-article__comment" id="comment-{{ comment.id }}">
-									<div class="main-article__comment-content">
-										{{ comment.content }}
-									</div>
-									<footer class="main-article__comment-meta">
-										<span class="main-article__comment-author">{{ comment.author }}</span>
-										<span class="main-article__comment-date">{{ comment.created_at | date: format: 'date' }}</span>
-									</footer>
-								</article>
-							{%- endfor -%}
-						</div>
+					{%- if article.comments_count > 0 -%}
+						<h2 class="main-article__comments-title">
+							{{ 'blog.comments.count' | t: count: article.comments_count }}
+						</h2>
 						
-						{%- if paginate.pages > 1 -%}
-							<nav class="main-article__pagination">
-								{%- if paginate.previous -%}
-									<a href="{{ paginate.previous.url }}#comments">{{ 'pagination.previous' | t }}</a>
-								{%- endif -%}
-								{%- if paginate.next -%}
-									<a href="{{ paginate.next.url }}#comments">{{ 'pagination.next' | t }}</a>
-								{%- endif -%}
-							</nav>
-						{%- endif -%}
-					{% endpaginate %}
-				{%- endif -%}
-
-				{%- comment -%} Comment Form {%- endcomment -%}
-				<div class="main-article__comment-form">
-					<h2 class="main-article__comments-title">{{ 'blog.comments.title' | t }}</h2>
-					
-					{% form 'new_comment', article %}
-						{%- if form.posted_successfully? -%}
-							<div class="main-article__form-success">
-								{%- if blog.moderated? -%}
-									{{ 'blog.comments.moderated' | t }}
-								{%- else -%}
-									{{ 'blog.comments.success' | t }}
-								{%- endif -%}
+						{% paginate article.comments by 10 %}
+							<div class="main-article__comments-list">
+								{%- for comment in article.comments -%}
+									<article class="main-article__comment" id="comment-{{ comment.id }}">
+										<div class="main-article__comment-content">
+											{{ comment.content }}
+										</div>
+										<footer class="main-article__comment-meta">
+											<span class="main-article__comment-author">{{ comment.author }}</span>
+											<span class="main-article__comment-date">{{ comment.created_at | date: format: 'date' }}</span>
+										</footer>
+									</article>
+								{%- endfor -%}
 							</div>
-						{%- endif -%}
+							
+							{%- if paginate.pages > 1 -%}
+								<nav class="main-article__pagination">
+									{%- if paginate.previous -%}
+										<a href="{{ paginate.previous.url }}#comments">{{ 'pagination.previous' | t }}</a>
+									{%- endif -%}
+									{%- if paginate.next -%}
+										<a href="{{ paginate.next.url }}#comments">{{ 'pagination.next' | t }}</a>
+									{%- endif -%}
+								</nav>
+							{%- endif -%}
+						{% endpaginate %}
+					{%- endif -%}
 
-						{%- if form.errors -%}
-							<div class="main-article__form-errors">
-								{{ form.errors | default_errors }}
+					{%- comment -%} Comment Form {%- endcomment -%}
+					<div class="main-article__comment-form">
+						<h2 class="main-article__comments-title">{{ 'blog.comments.title' | t }}</h2>
+						
+						{% form 'new_comment', article %}
+							{%- if form.posted_successfully? -%}
+								<div class="main-article__form-success">
+									{%- if blog.moderated? -%}
+										{{ 'blog.comments.moderated' | t }}
+									{%- else -%}
+										{{ 'blog.comments.success' | t }}
+									{%- endif -%}
+								</div>
+							{%- endif -%}
+
+							{%- if form.errors -%}
+								<div class="main-article__form-errors">
+									{{ form.errors | default_errors }}
+								</div>
+							{%- endif -%}
+
+							<div class="main-article__form-row">
+								<div class="main-article__form-field">
+									<label for="CommentForm-author">{{ 'blog.comments.name' | t }} <span aria-hidden="true">*</span></label>
+									<input
+										type="text"
+										name="comment[author]"
+										id="CommentForm-author"
+										value="{{ form.author }}"
+										autocomplete="name"
+										required
+									>
+								</div>
+								<div class="main-article__form-field">
+									<label for="CommentForm-email">{{ 'blog.comments.email' | t }} <span aria-hidden="true">*</span></label>
+									<input
+										type="email"
+										name="comment[email]"
+										id="CommentForm-email"
+										value="{{ form.email }}"
+										autocomplete="email"
+										required
+									>
+								</div>
 							</div>
-						{%- endif -%}
 
-						<div class="main-article__form-row">
 							<div class="main-article__form-field">
-								<label for="CommentForm-author">{{ 'blog.comments.name' | t }} <span aria-hidden="true">*</span></label>
-								<input
-									type="text"
-									name="comment[author]"
-									id="CommentForm-author"
-									value="{{ form.author }}"
-									autocomplete="name"
+								<label for="CommentForm-body">{{ 'blog.comments.message' | t }} <span aria-hidden="true">*</span></label>
+								<textarea
+									name="comment[body]"
+									id="CommentForm-body"
+									rows="5"
 									required
-								>
+								>{{ form.body }}</textarea>
 							</div>
-							<div class="main-article__form-field">
-								<label for="CommentForm-email">{{ 'blog.comments.email' | t }} <span aria-hidden="true">*</span></label>
-								<input
-									type="email"
-									name="comment[email]"
-									id="CommentForm-email"
-									value="{{ form.email }}"
-									autocomplete="email"
-									required
-								>
-							</div>
-						</div>
 
-						<div class="main-article__form-field">
-							<label for="CommentForm-body">{{ 'blog.comments.message' | t }} <span aria-hidden="true">*</span></label>
-							<textarea
-								name="comment[body]"
-								id="CommentForm-body"
-								rows="5"
-								required
-							>{{ form.body }}</textarea>
-						</div>
+							<button type="submit" class="main-article__form-submit is-button is-button--primary">
+								{{ 'blog.comments.post' | t }}
+							</button>
+						{% endform %}
+					</div>
+				</div>
+			</section>
+		{%- endif -%}
+	</article>
 
-						<button type="submit" class="main-article__form-submit is-button is-button--primary">
-							{{ 'blog.comments.post' | t }}
-						</button>
-					{% endform %}
+	{%- comment -%} Future: Sidebar for related products {%- endcomment -%}
+	{%- if section.settings.show_sidebar -%}
+		<aside class="main-article__sidebar">
+			<div class="main-article__sidebar-inner">
+				<h3 class="main-article__sidebar-title">Gerelateerde producten</h3>
+				<div class="main-article__sidebar-item">
+					<div class="main-article__sidebar-placeholder"></div>
+					<span>Product titel</span>
+				</div>
+				<div class="main-article__sidebar-item">
+					<div class="main-article__sidebar-placeholder"></div>
+					<span>Product titel</span>
+				</div>
+				<div class="main-article__sidebar-item">
+					<div class="main-article__sidebar-placeholder"></div>
+					<span>Product titel</span>
 				</div>
 			</div>
-		</section>
+		</aside>
 	{%- endif -%}
-</article>
+</div>
 
 <script type="application/ld+json">
 {{ article | structured_data }}
 </script>
 
 {% style %}
+	#shopify-section-{{ section.id }}.main-article-section {
+		{%- if section.settings.background_color != blank -%}
+			background-color: {{ section.settings.background_color }};
+		{%- endif -%}
+		{%- if section.settings.text_color != blank -%}
+			color: {{ section.settings.text_color }};
+		{%- endif -%}
+	}
+
+	/* Back link */
+	.main-article__back {
+		padding-top: 1.5em;
+	}
+
+	.main-article__back-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		color: inherit;
+		text-decoration: none;
+		font-weight: 500;
+		transition: opacity 150ms ease;
+	}
+
+	.main-article__back-link:hover {
+		opacity: 0.7;
+	}
+
+	.main-article__back-link i {
+		display: flex;
+		transform: rotate(180deg);
+	}
+
+	/* Article wrapper - flexbox for future sidebar */
+	.main-article__wrapper {
+		display: flex;
+		justify-content: center;
+		gap: 2em;
+		padding-block: 2em;
+		padding-inline: var(--theme-page-padding, 1em);
+		max-width: 100%;
+	}
+
+	/* Boxed article */
 	.main-article {
-		padding-bottom: 3em;
+		width: 100%;
+		max-width: var(--article-width, 60em);
+		min-width: 0;
+		background-color: {{ section.settings.article_background | default: '#ffffff' }};
+	}
+
+	#shopify-section-{{ section.id }} .main-article__wrapper {
+		{%- case section.settings.width -%}
+			{%- when 'is-align-narrow' -%}
+				--article-width: 40em;
+			{%- when 'is-align-small' -%}
+				--article-width: 50em;
+			{%- when 'is-align' -%}
+				--article-width: 60em;
+			{%- when 'is-align-wide' -%}
+				--article-width: 80em;
+		{%- endcase -%}
+	}
+
+	/* Sidebar */
+	.main-article__sidebar {
+		width: 280px;
+		flex-shrink: 0;
+	}
+
+	.main-article__sidebar-inner {
+		position: sticky;
+		top: calc(var(--header-height, 9.5em) + 2em);
+		background-color: {{ section.settings.article_background | default: '#ffffff' }};
+		padding: 1.5em;
+	}
+
+	.main-article__sidebar-title {
+		font-size: 1em;
+		font-weight: 600;
+		margin: 0 0 1em;
+	}
+
+	.main-article__sidebar-item {
+		display: flex;
+		align-items: center;
+		gap: 0.75em;
+		padding: 0.5em 0;
+		font-size: 0.9em;
+	}
+
+	.main-article__sidebar-placeholder {
+		width: 50px;
+		height: 50px;
+		background-color: rgba(0, 0, 0, 0.1);
+		flex-shrink: 0;
+	}
+
+	@media (max-width: 920px) {
+		.main-article__wrapper {
+			flex-direction: column;
+			padding: 0;
+			gap: 0;
+		}
+
+		.main-article {
+			max-width: 100%;
+		}
+
+		.main-article__header,
+		.main-article__content,
+		.main-article__share,
+		.main-article__comments-inner,
+		.main-article__back {
+			padding-left: 1em;
+			padding-right: 1em;
+		}
+
+		.main-article__sidebar {
+			width: 100%;
+			border-top: 1px solid rgba(0, 0, 0, 0.1);
+		}
+
+		.main-article__sidebar-inner {
+			position: static;
+		}
+
+		.main-article__form-row {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	/* Hero Image */
 	.main-article__hero {
-		width: 100vw;
-		margin-left: calc(50% - 50vw);
-		margin-right: calc(50% - 50vw);
-		padding: 0;
 		overflow: hidden;
 	}
 
-	.main-article__hero img {
+	.main-article__hero--contained {
+		/* Contained: fits within boxed article */
+	}
+
+	.main-article__hero--full {
+		/* Full: 100vw */
+		width: 100vw;
+		margin-left: calc(50% - 50vw);
+		margin-right: calc(50% - 50vw);
+	}
+
+	.main-article__hero .theme-media__picture {
+		width: 100%;
+		height: 100%;
+	}
+
+	.main-article__hero img,
+	.main-article__hero .theme-media__img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
@@ -261,7 +429,12 @@ DEPENDENCIES:
 		aspect-ratio: auto;
 	}
 
-	.main-article__hero--adapt img {
+	.main-article__hero--adapt .theme-media__picture {
+		height: auto;
+	}
+
+	.main-article__hero--adapt img,
+	.main-article__hero--adapt .theme-media__img {
 		height: auto;
 	}
 
@@ -279,6 +452,16 @@ DEPENDENCIES:
 		height: 70vh;
 		min-height: 400px;
 		max-height: 700px;
+	}
+
+	/* Content padding within boxed article */
+	.main-article__header,
+	.main-article__content,
+	.main-article__share,
+	.main-article__comments-inner,
+	.main-article__back {
+		padding-left: 2em;
+		padding-right: 2em;
 	}
 
 	/* Header */
@@ -314,41 +497,11 @@ DEPENDENCIES:
 		padding-bottom: 2em;
 	}
 
-	.main-article__content.rte {
-		line-height: 1.7;
-	}
-
-	.main-article__content.rte p {
-		margin-bottom: 1.2em;
-	}
-
-	.main-article__content.rte h2,
-	.main-article__content.rte h3,
-	.main-article__content.rte h4 {
-		margin-top: 1.5em;
-		margin-bottom: 0.5em;
-	}
-
-	.main-article__content.rte img {
-		margin: 1.5em 0;
-	}
-
-	.main-article__content.rte ul,
-	.main-article__content.rte ol {
-		margin: 1em 0;
-		padding-left: 1.5em;
-		list-style: revert;
-	}
-
-	.main-article__content.rte li {
-		margin-bottom: 0.5em;
-	}
-
 	/* Share */
 	.main-article__share {
 		padding-top: 1em;
 		padding-bottom: 2em;
-		border-top: 1px solid var(--theme-color-grey);
+		border-top: 1px solid rgba(0, 0, 0, 0.1);
 	}
 
 	.main-article__share-inner {
@@ -381,35 +534,10 @@ DEPENDENCIES:
 		opacity: 1;
 	}
 
-	/* Back to Blog */
-	.main-article__back {
-		padding-top: 1.5em;
-		padding-bottom: 0;
-	}
-
-	.main-article__back-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5em;
-		color: inherit;
-		text-decoration: none;
-		font-weight: 500;
-		transition: opacity 150ms ease;
-	}
-
-	.main-article__back-link:hover {
-		opacity: 0.7;
-	}
-
-	.main-article__back-link i {
-		display: flex;
-		transform: rotate(180deg);
-	}
-
 	/* Comments */
 	.main-article__comments {
-		background-color: var(--theme-color-grey);
-		padding: 3em 0;
+		background-color: rgba(0, 0, 0, 0.03);
+		padding: 2em 0;
 	}
 
 	.main-article__comments-title {
@@ -428,7 +556,7 @@ DEPENDENCIES:
 
 	.main-article__comment {
 		padding: 1.5em;
-		background-color: var(--theme-color-white);
+		background-color: #ffffff;
 	}
 
 	.main-article__comment-content {
@@ -470,12 +598,6 @@ DEPENDENCIES:
 		margin-bottom: 1em;
 	}
 
-	@media (max-width: 640px) {
-		.main-article__form-row {
-			grid-template-columns: 1fr;
-		}
-	}
-
 	.main-article__form-field {
 		display: flex;
 		flex-direction: column;
@@ -491,7 +613,7 @@ DEPENDENCIES:
 	.main-article__form-field textarea {
 		padding: 0.8em;
 		border: 1px solid rgba(0, 0, 0, 0.2);
-		background-color: var(--theme-color-white);
+		background-color: #ffffff;
 		font-family: inherit;
 		font-size: inherit;
 	}
@@ -516,12 +638,6 @@ DEPENDENCIES:
 		color: var(--theme-color-error);
 	}
 
-	.main-article__form-notice {
-		font-size: 0.9em;
-		opacity: 0.7;
-		margin-bottom: 1em;
-	}
-
 	.main-article__form-submit {
 		margin-top: 0.5em;
 	}
@@ -534,15 +650,63 @@ DEPENDENCIES:
 	"class": "main-article-section",
 	"settings": [
 		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
 			"type": "select",
 			"id": "width",
-			"label": "Content width",
+			"label": "Article width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" }
 			],
-			"default": "align"
+			"default": "is-align-small"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_sidebar",
+			"label": "Show sidebar",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Section background"
+		},
+		{
+			"type": "color",
+			"id": "article_background",
+			"label": "Article background"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Blog article template. Add blocks to configure layout: featured image, back link, title, content, share buttons."
 		}
 	],
 	"blocks": [
@@ -553,6 +717,16 @@ DEPENDENCIES:
 			"settings": [
 				{
 					"type": "select",
+					"id": "image_width",
+					"label": "Image width",
+					"options": [
+						{ "value": "contained", "label": "Contained" },
+						{ "value": "full", "label": "Full" }
+					],
+					"default": "contained"
+				},
+				{
+					"type": "select",
 					"id": "image_height",
 					"label": "Image height",
 					"options": [
@@ -561,7 +735,7 @@ DEPENDENCIES:
 						{ "value": "medium", "label": "Medium" },
 						{ "value": "large", "label": "Large" }
 					],
-					"default": "medium"
+					"default": "adapt"
 				},
 				{
 					"type": "header",

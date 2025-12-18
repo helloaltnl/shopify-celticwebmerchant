@@ -105,6 +105,9 @@
     "filtering": {
       "title": "Filtriraj i razvrstaj",
       "button": "Filtriraj",
+      "filters": "Filteri",
+      "active_filters": "Aktivni filteri",
+      "remove_filter": "Ukloni filter",
       "apply": "Primijeni",
       "clear": "Očisti",
       "clear_all": "Očisti sve",

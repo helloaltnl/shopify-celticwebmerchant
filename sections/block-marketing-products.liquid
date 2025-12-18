@@ -24,7 +24,7 @@
 -%}
 
 {%- if source_collection and source_collection.products_count > 0 -%}
-	<div class="block-marketing-products__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+	<div class="block-marketing-products__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 		{%- if heading != blank -%}
 			<header class="block-marketing-products__header">
 				<h2 class="block-marketing-products__heading">
@@ -51,9 +51,16 @@
 				
 				{%- if show_product -%}
 					<li class="block-marketing-products__item">
-						{%- render 'html-product-card',
+						{%- render 'html-theme-card',
+							type: 'product',
 							product: product,
+							layout: section.settings.card_layout,
 							image_ratio: section.settings.image_ratio,
+							columns_desktop: section.settings.columns_desktop,
+							columns_tablet: section.settings.columns_tablet,
+							columns_mobile: section.settings.columns_mobile,
+							columns_width: section.settings.width,
+							columns_gap: section.settings.grid_gap,
 							show_secondary_image: section.settings.show_secondary_image,
 							show_vendor: section.settings.show_vendor,
 							show_price: true,
@@ -61,8 +68,7 @@
 							show_delivery: true,
 							show_rating: section.settings.show_rating,
 							show_badges: true,
-							quick_add: section.settings.quick_add,
-							context: 'marketing'
+							quick_add: section.settings.quick_add
 						-%}
 					</li>
 				{%- endif -%}
@@ -73,7 +79,7 @@
 			class="block-marketing-products__grid"
 			data-expandable-grid
 			data-visible-rows="{{ section.settings.visible_rows }}"
-			style="--grid-columns: {{ grid_columns }}; --grid-columns-tablet: {{ section.settings.columns_tablet }}; --grid-columns-mobile: {{ section.settings.columns_mobile }};"
+			style="--grid-columns: {{ grid_columns }}; --grid-columns-tablet: {{ section.settings.columns_tablet }}; --grid-columns-mobile: {{ section.settings.columns_mobile }}; --grid-gap: {{ section.settings.grid_gap | default: 0.2 }}em;"
 			role="list"
 		>
 			{{ products_html }}
@@ -98,9 +104,9 @@
 
 {% style %}
 	#shopify-section-{{ section.id }}.block-marketing-products {
-		background-color: {{ section.settings.background_color | default: '#f5f5f5' }};
-		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: 3em;
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {{ section.settings.padding_block }}em;
 	}
 
 	.block-marketing-products__header {
@@ -126,7 +132,7 @@
 	#shopify-section-{{ section.id }} .block-marketing-products__grid {
 		display: grid;
 		grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
-		gap: 0.2em;
+		gap: var(--grid-gap, 0.2em);
 		list-style: none;
 		margin: 0;
 		margin-block-start: 2em;
@@ -136,10 +142,6 @@
 	.block-marketing-products__item {
 		margin: 0;
 		min-width: 0;
-	}
-
-	.block-marketing-products__item > .product-card {
-		height: 100%;
 	}
 
 	.block-marketing-products__actions {
@@ -173,13 +175,13 @@
 		transform: rotate(180deg);
 	}
 
-	@media (max-width: 989px) {
+	@media (max-width: 60em) {
 		#shopify-section-{{ section.id }} .block-marketing-products__grid {
 			grid-template-columns: repeat(var(--grid-columns-tablet, 3), 1fr);
 		}
 	}
 
-	@media (max-width: 749px) {
+	@media (max-width: 40em) {
 		#shopify-section-{{ section.id }} .block-marketing-products__grid {
 			grid-template-columns: repeat(var(--grid-columns-mobile, 2), 1fr);
 		}
@@ -278,35 +280,31 @@
 			"info": "Leave empty to use collection title, or locale default if no collection selected"
 		},
 		{
-			"type": "range",
-			"id": "max_products",
-			"label": "Maximum products",
-			"min": 4,
-			"max": 24,
-			"step": 4,
-			"default": 12
-		},
-		{
-			"type": "checkbox",
-			"id": "only_available",
-			"label": "Only show available products",
-			"default": true
-		},
-		{
 			"type": "header",
 			"content": "Product card"
+		},
+		{
+			"type": "select",
+			"id": "card_layout",
+			"label": "Card layout",
+			"options": [
+				{ "value": "vertical", "label": "Vertical" },
+				{ "value": "horizontal", "label": "Horizontal" }
+			],
+			"default": "vertical"
 		},
 		{
 			"type": "select",
 			"id": "image_ratio",
 			"label": "Image ratio",
 			"options": [
-				{ "value": "adapt", "label": "Adapt" },
-				{ "value": "square", "label": "Square (1:1)" },
 				{ "value": "portrait", "label": "Portrait (2:3)" },
-				{ "value": "landscape", "label": "Landscape (3:2)" }
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" },
+				{ "value": "adapt", "label": "Adapt (original)" }
 			],
-			"default": "portrait"
+			"default": "portrait",
+			"info": "Use a fixed ratio for consistent heights in grids"
 		},
 		{
 			"type": "checkbox",
@@ -334,6 +332,25 @@
 		},
 		{
 			"type": "header",
+			"content": "Filters"
+		},
+		{
+			"type": "range",
+			"id": "max_products",
+			"label": "Maximum products",
+			"min": 4,
+			"max": 24,
+			"step": 4,
+			"default": 12
+		},
+		{
+			"type": "checkbox",
+			"id": "only_available",
+			"label": "Only show available products",
+			"default": true
+		},
+		{
+			"type": "header",
 			"content": "Layout"
 		},
 		{
@@ -341,42 +358,50 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "range",
 			"id": "columns_desktop",
 			"label": "Columns (desktop)",
 			"min": 1,
-			"max": 4,
+			"max": 6,
 			"step": 1,
 			"default": 4
 		},
 		{
-			"type": "select",
+			"type": "range",
 			"id": "columns_tablet",
 			"label": "Columns (tablet)",
-			"options": [
-				{ "value": "1", "label": "1" },
-				{ "value": "2", "label": "2" },
-				{ "value": "3", "label": "3" }
-			],
-			"default": "3"
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 3
 		},
 		{
-			"type": "select",
+			"type": "range",
 			"id": "columns_mobile",
 			"label": "Columns (mobile)",
-			"options": [
-				{ "value": "1", "label": "1" },
-				{ "value": "2", "label": "2" }
-			],
-			"default": "2"
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "grid_gap",
+			"label": "Grid gap",
+			"min": 0,
+			"max": 2,
+			"step": 0.1,
+			"default": 0.2,
+			"unit": "em"
 		},
 		{
 			"type": "range",
@@ -401,20 +426,28 @@
 			"info": "Leave empty to use locale default"
 		},
 		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
 			"type": "header",
 			"content": "Colors"
 		},
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#f5f5f5"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "header",
@@ -422,9 +455,23 @@
 		},
 		{
 			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
+		},
+		{
+			"type": "text",
 			"id": "custom_class",
 			"label": "Custom class",
 			"info": "Add custom CSS class for styling"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Select a collection to display products from. Use 'Visible rows' to create an expandable grid."
 		}
 	],
 	"presets": [

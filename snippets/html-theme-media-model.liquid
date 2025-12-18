@@ -1,0 +1,102 @@
+{%- comment -%}
+============================================================================
+HTML-THEME-MEDIA-MODEL
+============================================================================
+Renders 3D model with poster and model-viewer.
+
+PARAMS:
+- model         : Model media object
+- alt           : Alt text for poster
+- w1-w8         : Widths for poster srcset (fixed ladder)
+- aspect_ratio  : Aspect ratio for height calculation
+- crop          : Crop position for poster
+- sizes         : Sizes attribute for poster
+- image_loading : 'lazy' | 'eager'
+- mode          : 'main' | 'thumb' | 'card'
+
+DEPENDENCIES:
+- html-theme-media-image.liquid (for poster)
+- html-theme-icons.liquid (for 3D button)
+- Shopify model-viewer (loaded automatically)
+- Called by html-theme-media.liquid
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	assign mode = mode | default: 'main'
+	
+	comment
+		Get poster image
+	endcomment
+	if model.preview_image
+		assign poster = model.preview_image
+	endif
+	
+	comment
+		Generate unique ID
+	endcomment
+	assign model_wrapper_id = 'model-' | append: model.id | default: 'now' | date: '%s%N'
+-%}
+
+{%- if mode == 'thumb' -%}
+	{%- comment -%}
+	========================================
+	THUMB MODE: Poster + overlay icon
+	========================================
+	{%- endcomment -%}
+	{%- if poster -%}
+		{%- render 'html-theme-media-image',
+			image: poster,
+			alt: alt,
+			w1: w1, w2: w2, w3: w3, w4: w4, w5: w5, w6: w6, w7: w7, w8: w8,
+			aspect_ratio: aspect_ratio,
+			crop: crop,
+			sizes: sizes,
+			image_loading: image_loading
+		-%}
+	{%- endif -%}
+	<span class="theme-media__overlay" aria-hidden="true">
+		{%- render 'html-theme-icons', icon: '3d-model', size: 32 -%}
+	</span>
+
+{%- else -%}
+	{%- comment -%}
+	========================================
+	MAIN MODE: Full 3D viewer
+	========================================
+	{%- endcomment -%}
+	<div 
+		class="theme-media__model-wrapper" 
+		id="{{ model_wrapper_id }}"
+		data-model-wrapper
+	>
+		{%- comment -%} Poster {%- endcomment -%}
+		{%- if poster -%}
+			<div class="theme-media__poster">
+				{%- render 'html-theme-media-image',
+					image: poster,
+					alt: alt,
+					w1: w1, w2: w2, w3: w3, w4: w4, w5: w5, w6: w6, w7: w7, w8: w8,
+					aspect_ratio: aspect_ratio,
+					crop: crop,
+					sizes: sizes,
+					image_loading: image_loading
+				-%}
+			</div>
+		{%- endif -%}
+
+		{%- comment -%} Activate button {%- endcomment -%}
+		<button class="theme-media__play-btn" type="button" data-model-play aria-label="{{ 'product.media.view_3d' | t | default: 'View in 3D' }}">
+			{%- render 'html-theme-icons', icon: '3d-model', size: 48 -%}
+		</button>
+
+		{%- comment -%} Model viewer {%- endcomment -%}
+		{{ model | model_viewer_tag: 
+			reveal: 'interaction', 
+			toggleable: true, 
+			data-model: '', 
+			class: 'theme-media__model',
+			poster: blank
+		}}
+	</div>
+{%- endif -%}

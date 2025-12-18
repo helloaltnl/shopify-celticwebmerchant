@@ -1,12 +1,17 @@
 // ============================================================================
-// THEME-GLOBAL.SCSS
+// THEME-UI.SCSS
 // Celtic Webmerchant - Global Styles Foundation
 // ============================================================================
 //
-// Compiles to: theme-global.min.css
+// Mobile-first, em-based responsive system with CSS custom properties.
+//
+// Naming conventions:
+// - .is-* → styling/state classes (is-button, is-grid, is-hidden)
+// - .has-* → boolean states (has-modal-open, has-sidebar)
+// - --theme-* → CSS custom properties
 //
 // TABLE OF CONTENTS:
-// 1. SCSS Variables & Maps
+// 1. Sass Modules & Variables
 // 2. CSS Custom Properties
 // 3. Mixins
 // 4. Reset & Normalize
@@ -19,7 +24,6 @@
 // 11. Alignment & Containers
 // 12. Visibility & Display
 // 13. Spacing Utilities
-// 14. Component: Product Card
 //
 // ============================================================================
 
@@ -32,10 +36,13 @@
 
 
 // ============================================================================
-// 1. SCSS VARIABLES & MAPS
+// 1. SASS MODULES & VARIABLES
 // ============================================================================
 
+// ----------------------------------------------------------------------------
 // Colors
+// ----------------------------------------------------------------------------
+
 $colors: (
 	'black': #111111,
 	'brown': #2e130d,
@@ -52,17 +59,19 @@ $colors: (
 	'error': #7f1d1d,
 );
 
+// ----------------------------------------------------------------------------
 // Typography
+// ----------------------------------------------------------------------------
+
 $font-family-sans: 'Absara Sans Pro', system-ui, sans-serif;
 $font-family-serif: 'Absara Pro', Georgia, serif;
 $font-size-min: 16;
 $font-size-max: 21;
-$font-view-min: 576;
-$font-view-max: 1640;
+$font-view-min: 480;
+$font-view-max: 1600;
 $line-height: 1.6;
 $letter-spacing: -0.02em;
 
-// Heading sizes
 $heading-sizes: (
 	'h1': clamp(2em, 5vw, 3em),
 	'h2': clamp(1.6em, 4vw, 2.2em),
@@ -72,7 +81,34 @@ $heading-sizes: (
 	'h6': 0.875em,
 );
 
-// Layout
+// ----------------------------------------------------------------------------
+// Breakpoints (em-based, mobile-first)
+// At 16px root: xs=480px, sm=640px, md=960px, lg=1280px, xl=1600px
+// ----------------------------------------------------------------------------
+
+$breakpoints: (
+	'xs': 30em,
+	'sm': 40em,
+	'md': 60em,
+	'lg': 80em,
+	'xl': 100em,
+);
+
+// ----------------------------------------------------------------------------
+// Height Breakpoints (em-based)
+// At 16px root: short=480px, medium=720px, tall=960px
+// ----------------------------------------------------------------------------
+
+$heights: (
+	'short': 30em,
+	'medium': 45em,
+	'tall': 60em,
+);
+
+// ----------------------------------------------------------------------------
+// Page Widths (matching breakpoints)
+// ----------------------------------------------------------------------------
+
 $page-widths: (
 	'xs': 30em,
 	'sm': 40em,
@@ -83,27 +119,26 @@ $page-widths: (
 
 $page-padding: 1em;
 
+// ----------------------------------------------------------------------------
 // Spacing
+// ----------------------------------------------------------------------------
+
 $spacing: (
 	'0': 0,
-	'sm': 0.2em,
+	'xs': 0.25em,
+	'sm': 0.5em,
 	'md': 1em,
 	'lg': 2em,
 	'xl': 4em,
 );
 
-// Breakpoints
-$breakpoints: (
-	'mobile': 640px,
-	'tablet': 920px,
-	'desktop': 1200px,
-);
+// ----------------------------------------------------------------------------
+// Borders & Radius
+// ----------------------------------------------------------------------------
 
-// Borders
 $border-width: 1px;
 $border-color: map.get($colors, 'grey');
 
-// Radius
 $radius: (
 	'none': 0,
 	'sm': 0.25em,
@@ -112,14 +147,20 @@ $radius: (
 	'full': 9999px,
 );
 
+// ----------------------------------------------------------------------------
 // Transitions
+// ----------------------------------------------------------------------------
+
 $transitions: (
 	'fast': 150ms ease,
 	'normal': 250ms ease,
 	'slow': 400ms ease,
 );
 
-// Z-index - high values to stay above third-party widgets
+// ----------------------------------------------------------------------------
+// Z-index layers (high values to stay above third-party widgets)
+// ----------------------------------------------------------------------------
+
 $z-layers: (
 	'dropdown': 1000,
 	'sticky': 2000,
@@ -129,8 +170,11 @@ $z-layers: (
 	'toast': 9999999999,
 );
 
-// Grid columns
-$grid-columns: 6;
+// ----------------------------------------------------------------------------
+// Grid
+// ----------------------------------------------------------------------------
+
+$grid-columns-max: 6;
 
 
 // ============================================================================
@@ -146,50 +190,59 @@ $grid-columns: 6;
 	// Typography
 	--theme-font-family-sans: #{$font-family-sans};
 	--theme-font-family-serif: #{$font-family-serif};
-	--theme-font-size-min: #{$font-size-min};
-	--theme-font-size-max: #{$font-size-max};
-	--theme-font-view-min: #{$font-view-min};
-	--theme-font-view-max: #{$font-view-max};
 	--theme-line-height: #{$line-height};
 	--theme-letter-spacing: #{$letter-spacing};
 	
-	// Layout
-	@each $name, $value in $page-widths {
-		--theme-page-width-#{$name}: #{$value};
+	// Breakpoints (for reference in inline CSS)
+	@each $name, $value in $breakpoints {
+		--breakpoint-#{$name}: #{$value};
 	}
-	--theme-page-padding: #{$page-padding};
 	
-	// Header heights (fixed for consistent layout)
+	// Height breakpoints
+	@each $name, $value in $heights {
+		--height-#{$name}: #{$value};
+	}
+	
+	// Page widths
+	@each $name, $value in $page-widths {
+		--page-width-#{$name}: #{$value};
+	}
+	--page-padding: #{$page-padding};
+	
+	// Spacing
+	--gap: #{map.get($spacing, 'md')};
+	--gap-xs: #{map.get($spacing, 'xs')};
+	--gap-sm: #{map.get($spacing, 'sm')};
+	--gap-lg: #{map.get($spacing, 'lg')};
+	--gap-xl: #{map.get($spacing, 'xl')};
+	
+	// Header heights
 	--header-top-height: 2.5em;
 	--header-middle-height: 3.5em;
 	--header-bottom-height: 3.5em;
 	--header-height: calc(var(--header-top-height) + var(--header-middle-height) + var(--header-bottom-height));
 	
-	// Spacing
-	--theme-gap: #{map.get($spacing, 'md')};
-	--theme-gap-sm: #{map.get($spacing, 'sm')};
-	--theme-gap-lg: #{map.get($spacing, 'lg')};
-	
 	// Borders
-	--theme-border-width: #{$border-width};
-	--theme-border-color: var(--theme-color-grey);
-	--theme-radius: #{map.get($radius, 'none')};
-	--theme-radius-sm: #{map.get($radius, 'sm')};
-	--theme-radius-lg: #{map.get($radius, 'md')};
-	--theme-radius-full: #{map.get($radius, 'full')};
+	--border-width: #{$border-width};
+	--border-color: var(--theme-color-grey);
+	--radius: #{map.get($radius, 'none')};
+	--radius-sm: #{map.get($radius, 'sm')};
+	--radius-md: #{map.get($radius, 'md')};
+	--radius-lg: #{map.get($radius, 'lg')};
+	--radius-full: #{map.get($radius, 'full')};
 	
 	// Transitions
-	--theme-transition-fast: #{map.get($transitions, 'fast')};
-	--theme-transition: #{map.get($transitions, 'normal')};
-	--theme-transition-slow: #{map.get($transitions, 'slow')};
+	--transition-fast: #{map.get($transitions, 'fast')};
+	--transition: #{map.get($transitions, 'normal')};
+	--transition-slow: #{map.get($transitions, 'slow')};
 	
 	// Z-index
 	@each $name, $value in $z-layers {
-		--theme-z-#{$name}: #{$value};
+		--z-#{$name}: #{$value};
 	}
 	
-	// Responsive: header-bottom hidden on smaller screens (must be last)
-	@media (max-width: 1024px) {
+	// Header collapse on smaller screens
+	@media (max-width: #{map.get($breakpoints, 'md')}) {
 		--header-bottom-height: 0em;
 	}
 }
@@ -199,42 +252,135 @@ $grid-columns: 6;
 // 3. MIXINS
 // ============================================================================
 
-// Fluid typography
+// ----------------------------------------------------------------------------
+// Responsive (mobile-first)
+// ----------------------------------------------------------------------------
+
+/// Apply styles from breakpoint and up
+/// @param {String} $size - Breakpoint name (xs, sm, md, lg, xl)
+@mixin from($size) {
+	@if map.has-key($breakpoints, $size) {
+		@media (min-width: #{map.get($breakpoints, $size)}) {
+			@content;
+		}
+	} @else {
+		@warn "Unknown breakpoint: #{$size}";
+	}
+}
+
+/// Apply styles until breakpoint
+/// @param {String} $size - Breakpoint name (xs, sm, md, lg, xl)
+@mixin until($size) {
+	@if map.has-key($breakpoints, $size) {
+		@media (max-width: #{map.get($breakpoints, $size)}) {
+			@content;
+		}
+	} @else {
+		@warn "Unknown breakpoint: #{$size}";
+	}
+}
+
+/// Apply styles between two breakpoints
+/// @param {String} $min - Start breakpoint
+/// @param {String} $max - End breakpoint
+@mixin between($min, $max) {
+	@if map.has-key($breakpoints, $min) and map.has-key($breakpoints, $max) {
+		@media (min-width: #{map.get($breakpoints, $min)}) and (max-width: #{map.get($breakpoints, $max)}) {
+			@content;
+		}
+	} @else {
+		@warn "Unknown breakpoint(s): #{$min}, #{$max}";
+	}
+}
+
+// ----------------------------------------------------------------------------
+// Height Responsive
+// ----------------------------------------------------------------------------
+
+/// Apply styles from height breakpoint and up
+/// @param {String} $size - Height breakpoint name (short, medium, tall)
+@mixin height-from($size) {
+	@if map.has-key($heights, $size) {
+		@media (min-height: #{map.get($heights, $size)}) {
+			@content;
+		}
+	} @else {
+		@warn "Unknown height breakpoint: #{$size}";
+	}
+}
+
+/// Apply styles until height breakpoint
+/// @param {String} $size - Height breakpoint name (short, medium, tall)
+@mixin height-until($size) {
+	@if map.has-key($heights, $size) {
+		@media (max-height: #{map.get($heights, $size)}) {
+			@content;
+		}
+	} @else {
+		@warn "Unknown height breakpoint: #{$size}";
+	}
+}
+
+/// Apply styles for landscape orientation
+@mixin landscape {
+	@media (orientation: landscape) {
+		@content;
+	}
+}
+
+/// Apply styles for portrait orientation
+@mixin portrait {
+	@media (orientation: portrait) {
+		@content;
+	}
+}
+
+// ----------------------------------------------------------------------------
+// Typography
+// ----------------------------------------------------------------------------
+
+/// Fluid typography using clamp()
 @mixin fluid-type($min-size, $max-size, $min-vw: $font-view-min, $max-vw: $font-view-max) {
 	font-size: clamp(
 		#{$min-size}px,
-		calc(#{$min-size}px + (#{$max-size} - #{$min-size}) * ((100vw - #{$min-vw}px) / #{$max-vw})),
+		calc(#{$min-size}px + (#{$max-size} - #{$min-size}) * ((100vw - #{$min-vw}px) / (#{$max-vw} - #{$min-vw}))),
 		#{$max-size}px
 	);
 }
 
-// Container
+// ----------------------------------------------------------------------------
+// Layout
+// ----------------------------------------------------------------------------
+
+/// Container with max-width and auto margins
 @mixin container($max-width, $padding: true) {
 	width: 100%;
-	margin-left: auto;
-	margin-right: auto;
+	margin-inline: auto;
 	
 	@if $padding {
-		max-width: min(calc(100% - (2 * var(--theme-page-padding))), $max-width);
+		max-width: min(calc(100% - (2 * var(--page-padding))), $max-width);
 	} @else {
 		max-width: $max-width;
 	}
 }
 
-// Container constrained
-@mixin container-constrained($max-width) {
-	max-width: min(100%, calc(#{$max-width} + (2 * var(--theme-page-padding))));
-	padding-left: var(--theme-page-padding);
-	padding-right: var(--theme-page-padding);
+/// Container with padding instead of max-width reduction
+@mixin container-padded($max-width) {
+	max-width: min(100%, calc(#{$max-width} + (2 * var(--page-padding))));
+	padding-inline: var(--page-padding);
 }
 
-// Focus ring
+// ----------------------------------------------------------------------------
+// Accessibility
+// ----------------------------------------------------------------------------
+
+/// Focus ring for interactive elements
 @mixin focus-ring($color: var(--theme-color-blue)) {
 	outline: 2px solid $color;
 	outline-offset: 2px;
 }
 
-// Screen reader only
+/// Visually hide element but keep accessible to screen readers
 @mixin sr-only {
 	position: absolute;
 	width: 1px;
@@ -247,45 +393,30 @@ $grid-columns: 6;
 	border: 0;
 }
 
-// Truncate text
+// ----------------------------------------------------------------------------
+// Text
+// ----------------------------------------------------------------------------
+
+/// Truncate text with ellipsis
 @mixin truncate {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-// Breakpoint mixins
-@mixin mobile {
-	@media (max-width: #{map.get($breakpoints, 'mobile')}) {
-		@content;
-	}
+/// Truncate text to N lines
+@mixin truncate-lines($lines: 2) {
+	display: -webkit-box;
+	-webkit-line-clamp: $lines;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
-@mixin tablet {
-	@media (min-width: #{map.get($breakpoints, 'mobile') + 1}) and (max-width: #{map.get($breakpoints, 'tablet')}) {
-		@content;
-	}
-}
+// ----------------------------------------------------------------------------
+// Form Elements
+// ----------------------------------------------------------------------------
 
-@mixin desktop {
-	@media (min-width: #{map.get($breakpoints, 'tablet') + 1}) {
-		@content;
-	}
-}
-
-@mixin tablet-up {
-	@media (min-width: #{map.get($breakpoints, 'mobile') + 1}) {
-		@content;
-	}
-}
-
-@mixin desktop-up {
-	@media (min-width: #{map.get($breakpoints, 'tablet') + 1}) {
-		@content;
-	}
-}
-
-// Button base
+/// Base button styling
 @mixin button-base {
 	display: inline-flex;
 	align-items: center;
@@ -302,16 +433,16 @@ $grid-columns: 6;
 	vertical-align: middle;
 	cursor: pointer;
 	user-select: none;
-	border: var(--theme-border-width) solid transparent;
-	border-radius: var(--theme-radius);
+	border: var(--border-width) solid transparent;
+	border-radius: var(--radius);
 	transition: 
-		background-color var(--theme-transition-fast),
-		border-color var(--theme-transition-fast),
-		color var(--theme-transition-fast),
-		transform var(--theme-transition-fast);
+		background-color var(--transition-fast),
+		border-color var(--transition-fast),
+		color var(--transition-fast),
+		opacity var(--transition-fast);
 }
 
-// Input base
+/// Base input styling
 @mixin input-base {
 	appearance: none;
 	display: block;
@@ -322,9 +453,9 @@ $grid-columns: 6;
 	line-height: inherit;
 	color: inherit;
 	background-color: var(--theme-color-white);
-	border: var(--theme-border-width) solid var(--theme-border-color);
-	border-radius: var(--theme-radius);
-	transition: border-color var(--theme-transition-fast), box-shadow var(--theme-transition-fast);
+	border: var(--border-width) solid var(--border-color);
+	border-radius: var(--radius);
+	transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 	
 	&:focus {
 		outline: none;
@@ -425,8 +556,8 @@ pre {
 // Horizontal rule
 hr {
 	border: 0;
-	border-top: var(--theme-border-width) solid var(--theme-border-color);
-	margin: var(--theme-gap-lg) 0;
+	border-top: var(--border-width) solid var(--border-color);
+	margin: var(--gap-lg) 0;
 }
 
 // Selection
@@ -469,12 +600,11 @@ h1, h2, h3, h4, h5, h6,
 	font-weight: 400;
 	line-height: 1.1;
 	letter-spacing: var(--theme-letter-spacing);
-	margin-top: 1em;
-	margin-bottom: 0.4em;
+	margin-block: 0.5em 0.25em;
 	text-wrap: balance;
 	
 	&:first-child {
-		margin-top: 0;
+		margin-block-start: 0;
 	}
 }
 
@@ -487,26 +617,34 @@ h1, h2, h3, h4, h5, h6,
 
 // Paragraphs
 p {
-	margin-bottom: 1em;
+	margin-block-end: 1em;
 	
 	&:last-child {
-		margin-bottom: 0;
+		margin-block-end: 0;
 	}
 }
 
 // Text utilities
-.is-text {
-	&-sm { font-size: 0.875em; }
-	&-lg { font-size: 1.125em; }
-	&-xl { font-size: 1.25em; }
-	&-center { text-align: center; }
-	&-left { text-align: left; }
-	&-right { text-align: right; }
-	&-uppercase { text-transform: uppercase; letter-spacing: 0.05em; }
-	&-nowrap { white-space: nowrap; }
-	&-truncate { @include truncate; }
-	&-balance { text-wrap: balance; }
-}
+.is-text-xs { font-size: 0.75em; }
+.is-text-sm { font-size: 0.875em; }
+.is-text-lg { font-size: 1.125em; }
+.is-text-xl { font-size: 1.25em; }
+
+.is-text-left { text-align: left; }
+.is-text-center { text-align: center; }
+.is-text-right { text-align: right; }
+
+.is-text-uppercase { text-transform: uppercase; letter-spacing: 0.05em; }
+.is-text-nowrap { white-space: nowrap; }
+.is-text-truncate { @include truncate; }
+.is-text-balance { text-wrap: balance; }
+
+.is-font-sans { font-family: var(--theme-font-family-sans); }
+.is-font-serif { font-family: var(--theme-font-family-serif); }
+
+.is-weight-normal { font-weight: 400; }
+.is-weight-medium { font-weight: 500; }
+.is-weight-bold { font-weight: 700; }
 
 
 // ============================================================================
@@ -572,8 +710,8 @@ select,
 	background-repeat: no-repeat;
 	background-position: right 0.6em center;
 	background-size: 1.2em;
-	border: var(--theme-border-width) solid var(--theme-border-color);
-	border-radius: var(--theme-radius);
+	border: var(--border-width) solid var(--border-color);
+	border-radius: var(--radius);
 	cursor: pointer;
 	max-width: 100%;
 	
@@ -590,7 +728,7 @@ input[type="radio"] {
 	appearance: none;
 	width: 1.2em;
 	height: 1.2em;
-	border: var(--theme-border-width) solid var(--theme-border-color);
+	border: var(--border-width) solid var(--border-color);
 	background-color: var(--theme-color-white);
 	cursor: pointer;
 	vertical-align: middle;
@@ -607,7 +745,7 @@ input[type="radio"] {
 }
 
 input[type="radio"] {
-	border-radius: var(--theme-radius-full);
+	border-radius: var(--radius-full);
 	
 	&:checked {
 		background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="6"/></svg>');
@@ -618,7 +756,7 @@ input[type="radio"] {
 }
 
 input[type="checkbox"] {
-	border-radius: var(--theme-radius-sm);
+	border-radius: var(--radius-sm);
 	
 	&:checked {
 		background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>');
@@ -631,15 +769,14 @@ input[type="checkbox"] {
 // Labels
 label {
 	display: block;
-	margin-bottom: 0.4em;
+	margin-block-end: 0.4em;
 	font-weight: 500;
 	
-	&.is-inline,
-	&.is-label-inline {
+	&.is-inline {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5em;
-		margin-bottom: 0;
+		margin-block-end: 0;
 		font-weight: normal;
 		cursor: pointer;
 	}
@@ -647,9 +784,9 @@ label {
 
 // Fieldset & Legend
 fieldset {
-	border: var(--theme-border-width) solid var(--theme-border-color);
-	padding: var(--theme-gap);
-	margin: 0 0 var(--theme-gap);
+	border: var(--border-width) solid var(--border-color);
+	padding: var(--gap);
+	margin: 0 0 var(--gap);
 }
 
 legend {
@@ -670,19 +807,19 @@ legend {
 	cursor: not-allowed;
 }
 
-// Form utilities
+// Form group
 .is-form-group {
-	margin-bottom: var(--theme-gap);
+	margin-block-end: var(--gap);
 	
 	&:last-child {
-		margin-bottom: 0;
+		margin-block-end: 0;
 	}
 }
 
 .is-form-row {
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--theme-gap);
+	gap: var(--gap);
 	
 	> * {
 		flex: 1 1 200px;
@@ -708,11 +845,11 @@ button {
 	@include button-base;
 	
 	&:hover {
-		transform: translateY(-1px);
+		opacity: 0.85;
 	}
 	
 	&:active {
-		transform: translateY(0);
+		opacity: 0.7;
 	}
 	
 	&:focus-visible {
@@ -723,11 +860,10 @@ button {
 	&.is-disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
-		transform: none;
 	}
 	
-	// Icon container
-	> i,
+	// Icon inside button
+	> svg,
 	> .icon {
 		display: inline-flex;
 		align-items: center;
@@ -735,11 +871,6 @@ button {
 		width: 1.2em;
 		height: 1.2em;
 		flex-shrink: 0;
-		
-		> svg {
-			width: 100%;
-			height: 100%;
-		}
 	}
 	
 	// Variants
@@ -747,21 +878,12 @@ button {
 		background-color: var(--theme-color-blue);
 		border-color: var(--theme-color-blue);
 		color: var(--theme-color-white);
-		
-		&:hover {
-			background-color: var(--theme-color-black);
-			border-color: var(--theme-color-black);
-		}
 	}
 	
 	&--secondary {
 		background-color: transparent;
 		border-color: currentColor;
 		color: inherit;
-		
-		&:hover {
-			background-color: var(--theme-color-grey);
-		}
 	}
 	
 	&--success {
@@ -782,7 +904,8 @@ button {
 		color: inherit;
 		
 		&:hover {
-			background-color: var(--theme-color-grey);
+			background-color: rgba(0, 0, 0, 0.05);
+			opacity: 1;
 		}
 	}
 	
@@ -792,10 +915,6 @@ button {
 		padding: 0;
 		color: inherit;
 		text-decoration: underline;
-		
-		&:hover {
-			transform: none;
-		}
 	}
 	
 	// Sizes
@@ -824,16 +943,19 @@ button {
 // 8. LAYOUT UTILITIES
 // ============================================================================
 
-// Main layout elements
+// ----------------------------------------------------------------------------
+// Header / Body structure
+// ----------------------------------------------------------------------------
+
 body > header {
 	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
-	z-index: var(--theme-z-sticky);
-	transition: transform var(--theme-transition);
+	z-index: var(--z-sticky);
+	transition: transform var(--transition);
 	
-	// Header section stacking - middle needs higher z-index for dropdowns
+	// Header section stacking
 	.block-header-top {
 		position: relative;
 		z-index: 1;
@@ -851,52 +973,62 @@ body > header {
 }
 
 body {
-	// Space for fixed header - uses CSS variables from :root
-	padding-top: var(--header-height);
+	padding-block-start: var(--header-height);
 }
 
 body > main {
 	min-height: 50vh;
 	
-	// Default alignment for all section content
+	// Default container for all section content
 	> * > * {
 		width: 100%;
 		@include container(map.get($page-widths, 'md'));
 	}
 	
-	// Allow content to override default alignment
+	// Width overrides (new + legacy classes)
+	> * > .is-align-wide,
 	> * > .alignwide {
 		@include container(map.get($page-widths, 'lg'));
 	}
 	
+	> * > .is-align-full,
 	> * > .alignfull {
 		max-width: map.get($page-widths, 'xl');
 	}
 	
+	> * > .is-align-small,
 	> * > .alignsmall {
 		@include container(map.get($page-widths, 'sm'));
+	}
+	
+	> * > .is-align-narrow,
+	> * > .alignnarrow {
+		@include container(map.get($page-widths, 'xs'));
 	}
 }
 
 // Scroll states (controlled by JS)
 body:not(.is-scrolled-top, .is-scrolled-bottom).is-scrolled-down > header {
-	// Use CSS variable set by JS based on actual header-top height
 	transform: translateY(calc(-1 * var(--header-top-height, 2.5em)));
 }
 
+// ----------------------------------------------------------------------------
 // Section spacing
+// ----------------------------------------------------------------------------
+
 .is-section {
-	padding-top: var(--theme-gap-lg);
-	padding-bottom: var(--theme-gap-lg);
+	padding-block: var(--gap-lg);
 	
 	&--sm {
-		padding-top: var(--theme-gap);
-		padding-bottom: var(--theme-gap);
+		padding-block: var(--gap);
 	}
 	
 	&--lg {
-		padding-top: calc(var(--theme-gap-lg) * 2);
-		padding-bottom: calc(var(--theme-gap-lg) * 2);
+		padding-block: var(--gap-xl);
+	}
+	
+	&--none {
+		padding-block: 0;
 	}
 }
 
@@ -940,16 +1072,20 @@ body:not(.is-scrolled-top, .is-scrolled-bottom).is-scrolled-down > header {
 .is-self-stretch { align-self: stretch; }
 
 // Gap
-.is-gap { gap: var(--theme-gap); }
+.is-gap { gap: var(--gap); }
 .is-gap-0 { gap: 0; }
-.is-gap-sm { gap: var(--theme-gap-sm); }
-.is-gap-lg { gap: var(--theme-gap-lg); }
+.is-gap-xs { gap: var(--gap-xs); }
+.is-gap-sm { gap: var(--gap-sm); }
+.is-gap-lg { gap: var(--gap-lg); }
+.is-gap-xl { gap: var(--gap-xl); }
 
-// Flex grow/shrink
+// Flex sizing
 .is-flex-1 { flex: 1 1 0%; }
 .is-flex-auto { flex: 1 1 auto; }
 .is-flex-none { flex: none; }
 .is-grow { flex-grow: 1; }
+.is-grow-0 { flex-grow: 0; }
+.is-shrink { flex-shrink: 1; }
 .is-shrink-0 { flex-shrink: 0; }
 
 
@@ -957,121 +1093,138 @@ body:not(.is-scrolled-top, .is-scrolled-bottom).is-scrolled-down > header {
 // 10. GRID UTILITIES
 // ============================================================================
 
+// ----------------------------------------------------------------------------
+// CSS Variable-driven Grid
+// 
+// Use inline styles to control columns per breakpoint:
+// style="--cols: 1; --cols-sm: 2; --cols-md: 3; --cols-lg: 4; --grid-gap: 1em;"
+// ----------------------------------------------------------------------------
+
 .is-grid {
 	display: grid;
-	gap: var(--theme-gap);
+	gap: var(--grid-gap, var(--gap));
+	
+	// Mobile-first column cascade
+	grid-template-columns: repeat(var(--cols, 1), 1fr);
+	
+	@include from('sm') {
+		grid-template-columns: repeat(var(--cols-sm, var(--cols, 1)), 1fr);
+	}
+	
+	@include from('md') {
+		grid-template-columns: repeat(var(--cols-md, var(--cols-sm, var(--cols, 1))), 1fr);
+	}
+	
+	@include from('lg') {
+		grid-template-columns: repeat(var(--cols-lg, var(--cols-md, var(--cols-sm, var(--cols, 1)))), 1fr);
+	}
+	
+	@include from('xl') {
+		grid-template-columns: repeat(var(--cols-xl, var(--cols-lg, var(--cols-md, var(--cols-sm, var(--cols, 1))))), 1fr);
+	}
 }
 
-// Auto-fit columns (responsive)
+// ----------------------------------------------------------------------------
+// Auto-fit Grid
+// 
+// Automatically fits as many columns as possible based on min-width.
+// style="--grid-min: 300px; --grid-gap: 1em;"
+// ----------------------------------------------------------------------------
+
 .is-grid-auto {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-	gap: var(--theme-gap);
+	grid-template-columns: repeat(auto-fit, minmax(min(var(--grid-min, 280px), 100%), 1fr));
+	gap: var(--grid-gap, var(--gap));
 }
 
-// Generate fixed columns
-@for $i from 1 through $grid-columns {
-	.is-grid-cols-#{$i} {
-		grid-template-columns: repeat(#{$i}, 1fr);
-	}
-}
+// ----------------------------------------------------------------------------
+// Grid item utilities
+// ----------------------------------------------------------------------------
 
-// Responsive grid adjustments
-@include mobile {
-	.is-grid-cols-3,
-	.is-grid-cols-4,
-	.is-grid-cols-5,
-	.is-grid-cols-6 {
-		grid-template-columns: repeat(2, 1fr);
-	}
-}
+.is-col-span-2 { grid-column: span 2; }
+.is-col-span-3 { grid-column: span 3; }
+.is-col-span-full { grid-column: 1 / -1; }
 
-@include tablet {
-	.is-grid-cols-4,
-	.is-grid-cols-5,
-	.is-grid-cols-6 {
-		grid-template-columns: repeat(3, 1fr);
-	}
-}
-
-// Product grid
-.is-product-grid {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
-	gap: var(--theme-gap-sm);
-	list-style: none;
-	padding: 0;
-	margin: 0;
-	
-	> li {
-		display: block;
-		width: 100%;
-	}
-	
-	@include tablet {
-		grid-template-columns: repeat(3, 1fr);
-	}
-	
-	@include mobile {
-		grid-template-columns: repeat(2, 1fr);
-	}
-}
+.is-row-span-2 { grid-row: span 2; }
+.is-row-span-3 { grid-row: span 3; }
 
 
 // ============================================================================
 // 11. ALIGNMENT & CONTAINERS
 // ============================================================================
 
-// Container base
-.is-container,
-.align,
-.alignwide,
-.alignfull,
+// ----------------------------------------------------------------------------
+// Container classes
+//
+// New naming (is-align-*) + legacy naming (align*) for backward compatibility.
+// Legacy classes will continue to work for existing JSON templates.
+//
+// Mapping:
+// is-align-narrow / alignnarrow → 30em (xs)
+// is-align-small  / alignsmall  → 40em (sm)
+// is-align        / align       → 60em (md)
+// is-align-wide   / alignwide   → 80em (lg)
+// is-align-full   / alignfull   → 100% (xl)
+// ----------------------------------------------------------------------------
+
+// Narrow (30em / xs)
+.is-align-narrow,
+.alignnarrow {
+	width: 100%;
+	margin-inline: auto;
+	@include container(map.get($page-widths, 'xs'));
+	
+	&.is-padded {
+		@include container-padded(map.get($page-widths, 'xs'));
+	}
+}
+
+// Small (40em / sm)
+.is-align-small,
 .alignsmall {
 	width: 100%;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-// Container sizes
-.alignsmall {
+	margin-inline: auto;
 	@include container(map.get($page-widths, 'sm'));
 	
-	&.is-constrained {
-		@include container-constrained(map.get($page-widths, 'sm'));
+	&.is-padded {
+		@include container-padded(map.get($page-widths, 'sm'));
 	}
 }
 
+// Regular (60em / md) - default
+.is-align,
 .align {
+	width: 100%;
+	margin-inline: auto;
 	@include container(map.get($page-widths, 'md'));
 	
-	&.is-constrained {
-		@include container-constrained(map.get($page-widths, 'md'));
+	&.is-padded {
+		@include container-padded(map.get($page-widths, 'md'));
 	}
 }
 
+// Wide (80em / lg)
+.is-align-wide,
 .alignwide {
+	width: 100%;
+	margin-inline: auto;
 	@include container(map.get($page-widths, 'lg'));
 	
-	&.is-constrained {
-		@include container-constrained(map.get($page-widths, 'lg'));
+	&.is-padded {
+		@include container-padded(map.get($page-widths, 'lg'));
 	}
 }
 
+// Full (100% / xl)
+.is-align-full,
 .alignfull {
+	width: 100%;
+	margin-inline: auto;
 	max-width: map.get($page-widths, 'xl');
 	
-	&.is-constrained {
+	&.is-padded {
 		max-width: 100%;
-		padding-left: var(--theme-page-padding);
-		padding-right: var(--theme-page-padding);
-	}
-}
-
-// Semantic container aliases
-@each $name, $width in $page-widths {
-	.is-container-#{$name} {
-		max-width: $width;
+		padding-inline: var(--page-padding);
 	}
 }
 
@@ -1080,43 +1233,72 @@ body:not(.is-scrolled-top, .is-scrolled-bottom).is-scrolled-down > header {
 // 12. VISIBILITY & DISPLAY
 // ============================================================================
 
-.is-hidden { display: none !important; }
-.is-visible { visibility: visible; }
-.is-invisible { visibility: hidden; }
-
+// Display types
 .is-block { display: block; }
 .is-inline { display: inline; }
 .is-inline-block { display: inline-block; }
+
+// Visibility
+.is-hidden { display: none !important; }
+.is-visible { visibility: visible; }
+.is-invisible { visibility: hidden; }
+.is-opacity-0 { opacity: 0; }
+.is-opacity-50 { opacity: 0.5; }
+.is-opacity-100 { opacity: 1; }
 
 // Screen reader only
 .is-sr-only {
 	@include sr-only;
 }
 
-// Responsive visibility
-@include mobile {
-	.is-hidden-mobile { display: none !important; }
+// Alias for compatibility
+.visually-hidden {
+	@include sr-only;
 }
 
-@include tablet {
-	.is-hidden-tablet { display: none !important; }
+// ----------------------------------------------------------------------------
+// Responsive visibility (mobile-first)
+// 
+// .is-hidden-until-{breakpoint} → Hidden until breakpoint, then visible
+// .is-hidden-from-{breakpoint} → Visible until breakpoint, then hidden
+// ----------------------------------------------------------------------------
+
+// Hidden until (show from breakpoint and up)
+.is-hidden-until-sm {
+	display: none !important;
+	@include from('sm') { display: revert !important; }
 }
 
-@include desktop {
-	.is-hidden-desktop { display: none !important; }
+.is-hidden-until-md {
+	display: none !important;
+	@include from('md') { display: revert !important; }
 }
 
-// Show only on specific breakpoints
-@include tablet-up {
-	.is-mobile-only { display: none !important; }
+.is-hidden-until-lg {
+	display: none !important;
+	@include from('lg') { display: revert !important; }
 }
 
-@media (max-width: #{map.get($breakpoints, 'mobile')}), (min-width: #{map.get($breakpoints, 'tablet') + 1}) {
-	.is-tablet-only { display: none !important; }
+.is-hidden-until-xl {
+	display: none !important;
+	@include from('xl') { display: revert !important; }
 }
 
-@media (max-width: #{map.get($breakpoints, 'tablet')}) {
-	.is-desktop-only { display: none !important; }
+// Hidden from (hide from breakpoint and up)
+.is-hidden-from-sm {
+	@include from('sm') { display: none !important; }
+}
+
+.is-hidden-from-md {
+	@include from('md') { display: none !important; }
+}
+
+.is-hidden-from-lg {
+	@include from('lg') { display: none !important; }
+}
+
+.is-hidden-from-xl {
+	@include from('xl') { display: none !important; }
 }
 
 
@@ -1124,37 +1306,59 @@ body:not(.is-scrolled-top, .is-scrolled-bottom).is-scrolled-down > header {
 // 13. SPACING UTILITIES
 // ============================================================================
 
-// Margin utilities
+// ----------------------------------------------------------------------------
+// Margin
+// ----------------------------------------------------------------------------
+
 .is-m-0 { margin: 0; }
 .is-m-auto { margin: auto; }
-.is-mx-auto { margin-left: auto; margin-right: auto; }
-.is-my-auto { margin-top: auto; margin-bottom: auto; }
+.is-mx-auto { margin-inline: auto; }
+.is-my-auto { margin-block: auto; }
 
-// Generate margin top/bottom
-@each $key, $value in ('0': 0, '1': var(--theme-gap-sm), '2': var(--theme-gap), '3': var(--theme-gap-lg)) {
-	.is-mt-#{$key} { margin-top: #{$value}; }
-	.is-mb-#{$key} { margin-bottom: #{$value}; }
-}
+.is-mt-0 { margin-block-start: 0; }
+.is-mt-xs { margin-block-start: var(--gap-xs); }
+.is-mt-sm { margin-block-start: var(--gap-sm); }
+.is-mt-md { margin-block-start: var(--gap); }
+.is-mt-lg { margin-block-start: var(--gap-lg); }
+.is-mt-xl { margin-block-start: var(--gap-xl); }
 
-.is-ml-0 { margin-left: 0; }
-.is-ml-auto { margin-left: auto; }
-.is-mr-0 { margin-right: 0; }
-.is-mr-auto { margin-right: auto; }
+.is-mb-0 { margin-block-end: 0; }
+.is-mb-xs { margin-block-end: var(--gap-xs); }
+.is-mb-sm { margin-block-end: var(--gap-sm); }
+.is-mb-md { margin-block-end: var(--gap); }
+.is-mb-lg { margin-block-end: var(--gap-lg); }
+.is-mb-xl { margin-block-end: var(--gap-xl); }
 
-// Padding utilities
-@each $key, $value in ('0': 0, '1': var(--theme-gap-sm), '2': var(--theme-gap), '3': var(--theme-gap-lg)) {
-	.is-p-#{$key} { padding: #{$value}; }
-}
+.is-ml-0 { margin-inline-start: 0; }
+.is-ml-auto { margin-inline-start: auto; }
+.is-mr-0 { margin-inline-end: 0; }
+.is-mr-auto { margin-inline-end: auto; }
 
-.is-px-0 { padding-left: 0; padding-right: 0; }
-.is-px-1 { padding-left: var(--theme-gap-sm); padding-right: var(--theme-gap-sm); }
-.is-px-2 { padding-left: var(--theme-gap); padding-right: var(--theme-gap); }
+// ----------------------------------------------------------------------------
+// Padding
+// ----------------------------------------------------------------------------
 
-.is-py-0 { padding-top: 0; padding-bottom: 0; }
-.is-py-1 { padding-top: var(--theme-gap-sm); padding-bottom: var(--theme-gap-sm); }
-.is-py-2 { padding-top: var(--theme-gap); padding-bottom: var(--theme-gap); }
+.is-p-0 { padding: 0; }
+.is-p-xs { padding: var(--gap-xs); }
+.is-p-sm { padding: var(--gap-sm); }
+.is-p-md { padding: var(--gap); }
+.is-p-lg { padding: var(--gap-lg); }
+.is-p-xl { padding: var(--gap-xl); }
 
-// List unstyled
+.is-px-0 { padding-inline: 0; }
+.is-px-sm { padding-inline: var(--gap-sm); }
+.is-px-md { padding-inline: var(--gap); }
+.is-px-lg { padding-inline: var(--gap-lg); }
+
+.is-py-0 { padding-block: 0; }
+.is-py-sm { padding-block: var(--gap-sm); }
+.is-py-md { padding-block: var(--gap); }
+.is-py-lg { padding-block: var(--gap-lg); }
+
+// ----------------------------------------------------------------------------
+// Misc
+// ----------------------------------------------------------------------------
+
 .is-list-unstyled {
 	list-style: none;
 	padding: 0;
@@ -1163,233 +1367,149 @@ body:not(.is-scrolled-top, .is-scrolled-bottom).is-scrolled-down > header {
 
 
 // ============================================================================
-// 14. COMPONENT: PRODUCT CARD
-// (Temporary - should move to html-product-card snippet)
+// 14. RICH TEXT EDITOR (.rte)
 // ============================================================================
+//
+// Base styling for Shopify richtext fields and article content.
+// Apply .rte class to any container with user-generated HTML content.
+//
+// ----------------------------------------------------------------------------
 
-.product-card {
-	display: flex;
-	flex-direction: column;
-	position: relative;
-	isolation: isolate;
-	overflow: hidden;
-	background-color: var(--theme-color-white);
-	height: 100%;
+.rte {
+	line-height: 1.7;
 	
-	&__media {
-		display: block;
-		position: relative;
-		isolation: isolate;
-		overflow: hidden;
-		margin: 0;
-		padding: 0;
+	// Paragraphs
+	p {
+		margin-block-end: 1.2em;
+		
+		&:last-child {
+			margin-block-end: 0;
+		}
+	}
+	
+	// Headings
+	h1, h2, h3, h4, h5, h6 {
+		margin-block-start: 1.5em;
+		margin-block-end: 0.5em;
+		
+		&:first-child {
+			margin-block-start: 0;
+		}
+	}
+	
+	// Lists
+	ul, ol {
+		margin-block: 1em;
+		padding-inline-start: 1.5em;
+		list-style: revert;
+	}
+	
+	ul {
+		list-style-type: disc;
+		
+		ul {
+			list-style-type: circle;
+			margin-block: 0.5em;
+		}
+	}
+	
+	ol {
+		list-style-type: decimal;
+		
+		ol {
+			list-style-type: lower-alpha;
+			margin-block: 0.5em;
+		}
+	}
+	
+	li {
+		margin-block-end: 0.5em;
+		
+		&:last-child {
+			margin-block-end: 0;
+		}
+	}
+	
+	// Tables
+	table {
 		width: 100%;
-		flex-shrink: 0;
+		margin-block: 1.5em;
+		border-collapse: collapse;
+		font-size: 0.9375em;
+	}
+	
+	th, td {
+		padding: 0.75em 1em;
+		text-align: left;
+		border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+	}
+	
+	th {
+		font-weight: 600;
+		background-color: rgba(0, 0, 0, 0.03);
+	}
+	
+	tr:nth-child(even) td {
+		background-color: rgba(0, 0, 0, 0.01);
+	}
+	
+	// Blockquote
+	blockquote {
+		margin-block: 1.5em;
+		margin-inline: 0;
+		padding-inline-start: 1.5em;
+		border-inline-start: 3px solid var(--theme-color-blue, currentColor);
+		font-style: italic;
+		opacity: 0.9;
+	}
+	
+	// Horizontal rule
+	hr {
+		margin-block: 2em;
+		border: 0;
+		border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+	}
+	
+	// Images
+	img {
+		margin-block: 1.5em;
+		height: auto;
+	}
+	
+	// Links
+	a {
+		color: var(--theme-color-blue, currentColor);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
 		
-		a {
-			position: absolute;
-			inset: 0;
-			display: block;
-			z-index: 1;
-		}
-		
-		picture {
-			display: block;
-			position: relative;
-			isolation: isolate;
-			overflow: hidden;
-			z-index: 0;
-			margin: 0;
-			padding: 0;
-			width: 100%;
-			aspect-ratio: 2/3;
-		}
-		
-		img {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
+		&:hover {
+			opacity: 0.7;
 		}
 	}
 	
-	&__content {
-		display: flex;
-		flex-direction: column;
-		flex-grow: 1;
+	// Code
+	code {
+		padding: 0.2em 0.4em;
+		background-color: rgba(0, 0, 0, 0.05);
+		border-radius: var(--radius-sm, 0.25em);
+		font-size: 0.875em;
+	}
+	
+	pre {
+		margin-block: 1.5em;
 		padding: 1em;
-		border-top: var(--theme-border-width) solid var(--theme-border-color);
-	}
-	
-	&__title {
-		font-family: var(--theme-font-family-serif);
-		font-size: 1.2em;
-		font-weight: 400;
-		line-height: 1.2;
-		letter-spacing: var(--theme-letter-spacing);
-		margin: 0 0 0.25em;
+		background-color: rgba(0, 0, 0, 0.05);
+		border-radius: var(--radius-sm, 0.25em);
+		overflow-x: auto;
 		
-		a {
-			text-decoration: none;
-			color: inherit;
-		}
-	}
-	
-	&__badges {
-		position: absolute;
-		top: 1em;
-		left: 1em;
-		z-index: 2;
-		
-		> .badge {
-			display: inline-block;
-			font-size: 0.8em;
-			padding: 0.5em;
-			border-radius: var(--theme-radius);
-			
-			&--sale {
-				background-color: var(--theme-color-success);
-				color: var(--theme-color-white);
-			}
-		}
-	}
-	
-	&__price {
-		letter-spacing: var(--theme-letter-spacing);
-		
-		.price {
-			> span {
-				display: inline-block;
-				margin: 0;
-			}
-			
-			> span.seperator {
-				transform: translate(-0.15em, 0);
-			}
-			
-			> span.after_seperator {
-				font-size: 0.75em;
-				transform: translate(-0.4em, -0.4em);
-			}
-			
-			&--compare {
-				position: relative;
-				margin-right: 0.5em;
-				opacity: 0.6;
-				
-				&::after {
-					content: '';
-					display: block;
-					width: 100%;
-					height: 1px;
-					position: absolute;
-					left: 50%;
-					top: 50%;
-					background-color: currentcolor;
-					transform: translate(-50%, -50%) rotate(-12deg);
-				}
-			}
-		}
-	}
-	
-	&__stock {
-		margin-top: 0.25rem;
-		
-		.stock-tag {
-			display: inline-block;
-			line-height: 1;
-			letter-spacing: var(--theme-letter-spacing);
-			padding: 0.4em 0.8em;
-			border-radius: var(--theme-radius);
-			
-			&--in,
-			&--low,
-			&--backorder {
-				background: #e8f7ea;
-				color: var(--theme-color-success);
-				border: 1px solid var(--theme-color-success);
-			}
-			
-			&--out {
-				background: #fde8e8;
-				color: var(--theme-color-error);
-				border: 1px solid var(--theme-color-error);
-			}
-		}
-	}
-	
-	&__delivery {
-		padding-top: 0.5em;
-		color: var(--theme-color-success);
-		
-		span {
-			display: block;
-			line-height: 1.2;
-			letter-spacing: var(--theme-letter-spacing);
-		}
-	}
-	
-	&__form {
-		padding-top: 1em;
-		margin-top: auto;
-		
-		.is-button {
-			background-color: var(--theme-color-green);
-			color: var(--theme-color-white);
-			padding: 0.5em 1em;
-			text-align: left;
-			column-gap: 1em;
-			
-			> i {
-				width: 1.4em;
-				height: 1.4em;
-				
-				> svg {
-					width: 1.4em;
-					height: 1.4em;
-				}
-			}
-			
-			> span {
-				font-size: 0.8em;
-				line-height: 1.1;
-			}
+		code {
+			padding: 0;
+			background: none;
 		}
 	}
 }
 
-// Product price
-.product-price {
-	& .price {
-		& > span { display: inline-block;}
-		letter-spacing: -0.02em;
-		& .valuta {}
-		& .before_seperator {}
-		& .seperator { transform: translateX(-0.2em);}
-		& .after_seperator { font-size: 0.6em; line-height: 1.5em; vertical-align: top; transform: translateX(-0.6em);}
-	}
-}
-
-.product-card__badges {
-	& .badge {
-		&.badge--soldout {
-			background-color: #fff; color:#000;
-		}
-	}
-}
-
-// Accessibility
-.visually-hidden {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
 
 // ============================================================================
-// END OF THEME-GLOBAL.SCSS
+// END OF THEME-UI.SCSS
 // ============================================================================

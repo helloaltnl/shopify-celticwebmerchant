@@ -1,0 +1,108 @@
+{%- comment -%}
+============================================================================
+BLOCK-LOYALTY-ACCOUNT
+============================================================================
+Loyalty program account section.
+Container for loyalty app blocks (e.g. Toki).
+
+Note: Login handling is done by the loyalty layout.
+============================================================================
+{%- endcomment -%}
+
+<div class="block-loyalty-account__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+	{%- for block in section.blocks -%}
+		<div class="block-loyalty-account__block" {{ block.shopify_attributes }}>
+			{%- case block.type -%}
+				{%- when '@app' -%}
+					{% render block %}
+			{%- endcase -%}
+		</div>
+	{%- endfor -%}
+</div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.block-loyalty-account {
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {{ section.settings.padding_block | default: 3 }}em;
+	}
+
+	#shopify-section-{{ section.id }} .block-loyalty-account__content {
+		scroll-margin-top: 100px;
+	}
+
+	#shopify-section-{{ section.id }} .block-loyalty-account__block + .block-loyalty-account__block {
+		margin-block-start: 2em;
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "Loyalty account",
+	"tag": "section",
+	"class": "block-loyalty-account",
+	"settings": [
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
+			],
+			"default": "is-align-wide"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		}
+	]
+}
+{% endschema %}

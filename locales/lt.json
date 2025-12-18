@@ -105,6 +105,9 @@
     "filtering": {
       "title": "Filtruoti ir rūšiuoti",
       "button": "Filtruoti",
+      "filters": "Filtrai",
+      "active_filters": "Aktyvūs filtrai",
+      "remove_filter": "Pašalinti filtrą",
       "apply": "Taikyti",
       "clear": "Išvalyti",
       "clear_all": "Išvalyti viską",

@@ -1,0 +1,205 @@
+{%- comment -%}
+============================================================================
+HTML-THEME-CARD
+============================================================================
+Universal card hub. Routes to appropriate card type snippet.
+Passes grid context to child snippets for responsive image sizing.
+
+PARAMS (shared):
+- type             : 'product' | 'collection' | 'article' | 'blog' (auto-detected if object passed)
+- layout           : 'vertical' | 'horizontal' (default 'vertical')
+- image_ratio      : 'adapt' | 'portrait' | 'square' | 'landscape' (default per type)
+- image_loading    : 'lazy' | 'eager' (default 'lazy')
+- image_priority   : 'high' | 'low' | 'auto' (default 'auto')
+
+GRID CONTEXT (passed to html-theme-media for sizing):
+- columns_desktop  : Columns on desktop 60em+ (default 4)
+- columns_tablet   : Columns on tablet 40-60em (default 3)
+- columns_mobile   : Columns on mobile <40em (default 2)
+- columns          : Shorthand for all breakpoints (overridden by specific values)
+- columns_width    : 'is-align-narrow' | 'is-align-small' | 'is-align' | 'is-align-wide' | 'is-align-full'
+- columns_gap      : Gap between items in em (default 1)
+
+PARAMS (product) - passed to html-theme-card-product:
+- product              : Product object
+- show_secondary_image : Show hover image (default false)
+- show_vendor          : Show vendor name (default false)
+- show_price           : Show price (default true)
+- show_stock           : Show stock status (default false)
+- show_delivery        : Show delivery date (default false)
+- show_rating          : Show rating stars (default false)
+- show_badges          : Show sale/soldout badges (default true)
+- show_volume_pricing  : Show B2B volume pricing (default false)
+- quick_add            : Show quick add button (default false)
+
+PARAMS (collection) - passed to html-theme-card-collection:
+- collection       : Collection object
+- show_count       : Show product count (default true)
+- heading_level    : 'h2' | 'h3' | 'h4' (default 'h3')
+
+PARAMS (article) - passed to html-theme-card-article:
+- article          : Article object
+- blog_title       : Blog title to display (optional)
+- show_image       : Show featured image (default true)
+- show_blog        : Show blog title label (default false)
+- show_date        : Show publish date (default true)
+- show_author      : Show author name (default false)
+- show_excerpt     : Show article excerpt (default true)
+- show_cta         : Show read more link (default true)
+
+PARAMS (blog) - passed to html-theme-card-blog:
+- blog             : Blog object
+- show_image       : Show featured image (default true)
+- show_count       : Show article count (default true)
+- heading_level    : 'h2' | 'h3' | 'h4' (default 'h3')
+
+DEPENDENCIES:
+- html-theme-card-product snippet
+- html-theme-card-collection snippet
+- html-theme-card-article snippet
+- html-theme-card-blog snippet
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	comment
+		========================================
+		AUTO-DETECT TYPE
+		========================================
+		Prefer explicit type parameter for reliability.
+	endcomment
+	if type == blank
+		if product != blank
+			assign type = 'product'
+		elsif collection != blank
+			assign type = 'collection'
+		elsif article != blank
+			assign type = 'article'
+		elsif blog != blank
+			assign type = 'blog'
+		endif
+	endif
+
+	comment
+		========================================
+		SHARED DEFAULTS
+		========================================
+	endcomment
+	assign card_layout = layout | default: 'vertical'
+
+	comment
+		========================================
+		IMAGE DEFAULTS
+		========================================
+	endcomment
+	case type
+		when 'product'
+			assign default_ratio = 'adapt'
+		when 'collection'
+			assign default_ratio = 'portrait'
+		when 'article'
+			assign default_ratio = 'landscape'
+		when 'blog'
+			assign default_ratio = 'portrait'
+		else
+			assign default_ratio = 'adapt'
+	endcase
+	assign image_ratio = image_ratio | default: default_ratio
+	assign image_loading = image_loading | default: 'lazy'
+	assign image_priority = image_priority | default: 'auto'
+
+	comment
+		========================================
+		GRID CONTEXT DEFAULTS
+		========================================
+		These are passed through to html-theme-media
+		for responsive sizing calculations.
+	endcomment
+	assign cols_desktop = columns_desktop | default: columns | default: 4
+	assign cols_tablet = columns_tablet | default: columns | default: 3
+	assign cols_mobile = columns_mobile | default: columns | default: 2
+	assign cols_width = columns_width | default: 'is-align'
+	assign cols_gap = columns_gap | default: 1
+-%}
+
+{%- case type -%}
+
+{%- when 'product' -%}
+	{%- render 'html-theme-card-product',
+		product: product,
+		layout: card_layout,
+		image_ratio: image_ratio,
+		image_loading: image_loading,
+		image_priority: image_priority,
+		columns_desktop: cols_desktop,
+		columns_tablet: cols_tablet,
+		columns_mobile: cols_mobile,
+		columns_width: cols_width,
+		columns_gap: cols_gap,
+		show_secondary_image: show_secondary_image,
+		show_vendor: show_vendor,
+		show_price: show_price,
+		show_stock: show_stock,
+		show_delivery: show_delivery,
+		show_rating: show_rating,
+		show_badges: show_badges,
+		show_volume_pricing: show_volume_pricing,
+		quick_add: quick_add,
+		quick_add_behavior: quick_add_behavior
+	-%}
+
+{%- when 'collection' -%}
+	{%- render 'html-theme-card-collection',
+		collection: collection,
+		layout: card_layout,
+		image_ratio: image_ratio,
+		image_loading: image_loading,
+		image_priority: image_priority,
+		columns_desktop: cols_desktop,
+		columns_tablet: cols_tablet,
+		columns_mobile: cols_mobile,
+		columns_width: cols_width,
+		columns_gap: cols_gap,
+		show_count: show_count,
+		heading_level: heading_level
+	-%}
+
+{%- when 'article' -%}
+	{%- render 'html-theme-card-article',
+		article: article,
+		blog_title: blog_title,
+		layout: card_layout,
+		image_ratio: image_ratio,
+		image_loading: image_loading,
+		image_priority: image_priority,
+		columns_desktop: cols_desktop,
+		columns_tablet: cols_tablet,
+		columns_mobile: cols_mobile,
+		columns_width: cols_width,
+		columns_gap: cols_gap,
+		show_image: show_image,
+		show_blog: show_blog,
+		show_date: show_date,
+		show_author: show_author,
+		show_excerpt: show_excerpt,
+		show_cta: show_cta
+	-%}
+
+{%- when 'blog' -%}
+	{%- render 'html-theme-card-blog',
+		blog: blog,
+		layout: card_layout,
+		image_ratio: image_ratio,
+		image_loading: image_loading,
+		image_priority: image_priority,
+		columns_desktop: cols_desktop,
+		columns_tablet: cols_tablet,
+		columns_mobile: cols_mobile,
+		columns_width: cols_width,
+		columns_gap: cols_gap,
+		show_image: show_image,
+		show_count: show_count,
+		heading_level: heading_level
+	-%}
+
+{%- endcase -%}

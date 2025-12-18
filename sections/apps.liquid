@@ -21,7 +21,7 @@
   #shopify-section-{{ section.id }}.block-apps {
     background-color: {{ section.settings.background_color | default: '#ffffff' }};
     color: {{ section.settings.text_color | default: '#111111' }};
-    padding-block: 0;
+    padding-block: {{ section.settings.padding_block }}em;
   }
 {% endstyle %}
 
@@ -40,12 +40,23 @@
       "id": "width",
       "label": "Width",
       "options": [
-        { "value": "alignsmall", "label": "Narrow" },
-        { "value": "align", "label": "Regular" },
-        { "value": "alignwide", "label": "Wide" },
-        { "value": "alignfull", "label": "Full" }
+        { "value": "is-align-narrow", "label": "Narrow" },
+        { "value": "is-align-small", "label": "Small" },
+        { "value": "is-align", "label": "Regular" },
+        { "value": "is-align-wide", "label": "Wide" },
+        { "value": "is-align-full", "label": "Full" }
       ],
-      "default": "align"
+      "default": "is-align"
+    },
+    {
+      "type": "range",
+      "id": "padding_block",
+      "label": "Vertical padding",
+      "min": 0,
+      "max": 6,
+      "step": 0.5,
+      "default": 0,
+      "unit": "em"
     },
     {
       "type": "header",

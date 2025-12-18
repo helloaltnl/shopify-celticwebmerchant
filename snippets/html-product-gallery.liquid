@@ -1,10 +1,33 @@
 {%- comment -%}
-Snippet: html-product-gallery
-Params:
-	product / product_handle
-	img_width_main (default 800)
-	img_width_thumb (default 240)
-	loading ('lazy'|'eager', default 'lazy')
+============================================================================
+HTML-PRODUCT-GALLERY
+============================================================================
+Product media gallery with Swiper slider and fullscreen mode.
+
+PARAMS:
+- product / product_handle
+- img_width_main (default 1200, generates srcset up to 2400)
+- img_width_thumb (default 240)
+- image_loading ('lazy'|'eager', default 'lazy')
+
+LAYOUT:
+- Mobile/Tablet (< 60em): Horizontal slider, 100vw wide, thumbs below
+  - Mobile (< 30em): per 1 slide
+  - Tablet (30-60em): continuous slides, max-height 70vh
+- Desktop (60em+): Vertical slider, per 1 slide, thumbs left
+
+STRUCTURE:
+<figure class="product-gallery__media">
+  <picture>  <!-- image via html-theme-media-image -->
+  <video>    <!-- video via html-theme-media-video -->
+</figure>
+
+DEPENDENCIES:
+- Swiper.js (loaded in theme head)
+- html-theme-media-image snippet
+- html-theme-media-video snippet
+- html-theme-icons snippet
+============================================================================
 {%- endcomment -%}
 
 {%- assign p = product -%}
@@ -12,41 +35,98 @@ Params:
 	{%- assign p = all_products[product_handle] -%}
 {%- endif -%}
 
-{%- assign img_w_main  = img_width_main  | default: 800 -%}
-{%- assign img_w_thumb = img_width_thumb | default: 240 -%}
-{%- assign loading     = loading         | default: 'lazy' -%}
+{%- liquid
+	assign image_loading = image_loading | default: 'lazy'
+	assign gallery_id = 'gallery-' | append: p.id
 
-<div class="product-gallery" data-product-gallery>
+	comment
+		Main image srcset widths
+	endcomment
+	assign main_w1 = img_width_main | default: 1200
+	assign main_w2 = main_w1 | times: 1.5 | round
+	assign main_w3 = main_w1 | times: 2 | round
+	assign main_sizes = '(min-width: 60em) ' | append: main_w1 | append: 'px, 100vw'
+
+	comment
+		Thumb image srcset widths
+	endcomment
+	assign thumb_w1 = img_width_thumb | default: 160
+	assign thumb_w2 = thumb_w1 | times: 1.5 | round
+	assign thumb_w3 = thumb_w1 | times: 2 | round
+	assign thumb_sizes = thumb_w1 | append: 'px'
+-%}
+
+<div class="product-gallery" id="{{ gallery_id }}" data-product-gallery>
 	{%- comment -%} Main Slider {%- endcomment -%}
-	<div class="product-gallery__main"
-		data-swiper
-		data-swiper-id="{{ product.id }}"
-		data-swiper-options='{ "slidesPerView": "auto", "spaceBetween": 8, "speed": 300 }'
-	>
-		<ul class="product-gallery__slides" data-swiper-wrapper>
+	<div class="product-gallery__main swiper">
+		<div class="product-gallery__slides swiper-wrapper">
 			{%- for media in p.media -%}
-				<li class="product-gallery__slide" data-media-id="{{ media.id }}">
-					{%- render 'html-product-media',
-						media: media,
-						product: p,
-						mode: 'main',
-						img_w: img_w_main,
-						loading: loading
-					-%}
-				</li>
+				<div class="product-gallery__slide swiper-slide" data-media-id="{{ media.id }}" data-media-type="{{ media.media_type }}">
+					<figure class="product-gallery__media product-gallery__media--{{ media.media_type | replace: '_', '-' }}">
+						{%- liquid
+							assign media_alt = media.alt | default: p.title
+							assign img_loading = 'lazy'
+							assign img_priority = 'auto'
+							if forloop.first
+								assign img_loading = 'eager'
+								assign img_priority = 'high'
+							endif
+						-%}
+						{%- case media.media_type -%}
+							{%- when 'image' -%}
+								{%- render 'html-theme-media-image',
+									image: media,
+									alt: media_alt,
+									w1: main_w1,
+									w2: main_w2,
+									w3: main_w3,
+									sizes: main_sizes,
+									image_loading: img_loading,
+									image_priority: img_priority,
+									zoom: true
+								-%}
+							{%- when 'video' -%}
+								{%- render 'html-theme-media-video',
+									video: media,
+									alt: media_alt,
+									mode: 'main',
+									w1: main_w1,
+									w2: main_w2,
+									w3: main_w3,
+									sizes: main_sizes,
+									image_loading: 'lazy'
+								-%}
+							{%- when 'external_video' -%}
+								{%- render 'html-theme-media-video',
+									video: media,
+									alt: media_alt,
+									mode: 'main',
+									w1: main_w1,
+									w2: main_w2,
+									w3: main_w3,
+									sizes: main_sizes,
+									image_loading: 'lazy',
+									external: true,
+									host: media.host,
+									video_id: media.external_id
+								-%}
+							{%- when 'model' -%}
+								{{ media | model_viewer_tag: reveal: 'interaction', toggleable: true }}
+						{%- endcase -%}
+					</figure>
+				</div>
 			{%- endfor -%}
-		</ul>
+		</div>
 
 		{%- if p.media.size > 1 -%}
-			<button class="product-gallery__nav product-gallery__nav--prev" data-swiper-prev aria-label="{{ 'accessibility.slider.previous' | t }}">
+			<button class="product-gallery__nav product-gallery__nav--prev" data-gallery-prev aria-label="{{ 'accessibility.slider.previous' | t }}">
 				{% render 'html-theme-icons', icon: 'chevron-left', size: 24 %}
 			</button>
-			<button class="product-gallery__nav product-gallery__nav--next" data-swiper-next aria-label="{{ 'accessibility.slider.next' | t }}">
+			<button class="product-gallery__nav product-gallery__nav--next" data-gallery-next aria-label="{{ 'accessibility.slider.next' | t }}">
 				{% render 'html-theme-icons', icon: 'chevron-right', size: 24 %}
 			</button>
 		{%- endif -%}
 
-		{%- comment -%} Share button (triggers global share modal) {%- endcomment -%}
 		<button 
 			class="product-gallery__share-btn" 
 			type="button" 
@@ -59,7 +139,6 @@ Params:
 			{% render 'html-theme-icons', icon: 'share', size: 20 %}
 		</button>
 
-		{%- comment -%} Fullscreen button {%- endcomment -%}
 		<button 
 			class="product-gallery__fullscreen-btn" 
 			type="button" 
@@ -72,28 +151,40 @@ Params:
 
 	{%- comment -%} Thumbs {%- endcomment -%}
 	{%- if p.media.size > 1 -%}
-		<div class="product-gallery__thumbs"
-			data-swiper
-			data-swiper-slave="{{ product.id }}"
-			data-swiper-options='{ "slidesPerView": "auto", "spaceBetween": 4, "freeMode": true, "watchSlidesProgress": true }'
-		>
-			<ul class="product-gallery__slides" data-swiper-wrapper>
+		<div class="product-gallery__thumbs swiper">
+			<div class="product-gallery__slides swiper-wrapper">
 				{%- for media in p.media -%}
-					<li class="product-gallery__slide product-gallery__slide--thumb" data-media-id="{{ media.id }}">
-						{%- render 'html-product-media',
-							media: media,
-							product: p,
-							mode: 'thumb',
-							img_w: img_w_thumb,
-							loading: 'lazy'
-						-%}
-					</li>
+					<div class="product-gallery__slide product-gallery__slide--thumb swiper-slide" data-media-id="{{ media.id }}">
+						<figure class="product-gallery__thumb">
+							{%- liquid
+								assign thumb_image = media.preview_image | default: media
+								assign media_alt = media.alt | default: p.title
+							-%}
+							{%- render 'html-theme-media-image',
+							image: thumb_image,
+							alt: media_alt,
+							w1: thumb_w1,
+							w2: thumb_w2,
+							w3: thumb_w3,
+							sizes: thumb_sizes,
+							image_loading: 'lazy'
+							-%}
+							{%- if media.media_type == 'video' or media.media_type == 'external_video' -%}
+								<span class="product-gallery__thumb-icon" aria-hidden="true">
+									{%- render 'html-theme-icons', icon: 'play', size: 16 -%}
+								</span>
+							{%- elsif media.media_type == 'model' -%}
+								<span class="product-gallery__thumb-icon" aria-hidden="true">
+									{%- render 'html-theme-icons', icon: '3d', size: 16 -%}
+								</span>
+							{%- endif -%}
+						</figure>
+					</div>
 				{%- endfor -%}
-			</ul>
+			</div>
 		</div>
 	{%- endif -%}
 
-	{%- comment -%} Close button (visible in fullscreen) {%- endcomment -%}
 	<button 
 		class="product-gallery__fullscreen-close" 
 		type="button" 
@@ -105,9 +196,10 @@ Params:
 </div>
 
 <style>
+/* ============================================
+   PRODUCT GALLERY - Mobile First
+   ============================================ */
 .product-gallery {
-	--gallery-height: 80vh;
-	--gallery-max: 800px;
 	--thumb-size: 80px;
 	
 	position: sticky;
@@ -117,52 +209,64 @@ Params:
 	gap: 0.5em;
 }
 
-/* Main slider */
+/* ============================================
+   MAIN SLIDER
+   ============================================ */
 .product-gallery__main {
 	position: relative;
-	width: 100%;
-	aspect-ratio: 1;
+	width: 100vw;
+	margin-left: calc(50% - 50vw);
 	overflow: hidden;
 }
 
-/* Slides container */
+/* ============================================
+   SLIDES
+   ============================================ */
 .product-gallery__slides {
 	display: flex;
-	width: 100%;
-	height: 100%;
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
 
-/* Individual slide */
 .product-gallery__slide {
-	flex: 0 0 auto;
-	width: auto;
-	height: 100%;
+	flex-shrink: 0;
+	width: 100%;
 	min-width: 0;
 }
 
-.product-gallery__slide .product-media__figure {
-	height: 100%;
-	width: auto;
-	aspect-ratio: 2/3;
+/* ============================================
+   MEDIA FIGURE
+   ============================================ */
+.product-gallery__media {
+	width: 100%;
+	margin: 0;
 }
 
-/* Desktop: full width slides */
-@media (min-width: 960px) {
-	.product-gallery__slide {
-		flex: 0 0 100%;
-		width: 100%;
-	}
-	
-	.product-gallery__slide .product-media__figure {
-		width: 100%;
-		aspect-ratio: auto;
-	}
+.product-gallery__media .theme-media__picture {
+	display: block;
+	width: 100%;
 }
 
-/* Thumb slide */
+.product-gallery__media .theme-media__img {
+	aspect-ratio: 2 / 3;
+	object-fit: contain;
+}
+
+/* Horizontal: width determines height */
+.product-gallery__main .theme-media__img {
+	width: 100%;
+	height: auto;
+}
+
+/* ============================================
+   THUMBS
+   ============================================ */
+.product-gallery__thumbs {
+	width: 100%;
+	overflow: hidden;
+}
+
 .product-gallery__slide--thumb {
 	flex: 0 0 var(--thumb-size);
 	width: var(--thumb-size);
@@ -172,19 +276,44 @@ Params:
 	transition: opacity 0.2s;
 }
 
+/* Thumb figure */
+.product-gallery__thumb {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+}
+
+.product-gallery__thumb .theme-media__img {
+	height: 100%;
+	aspect-ratio: 1;
+	object-fit: cover;
+}
+
+/* Thumb icon overlay for video/3D */
+.product-gallery__thumb-icon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	background: rgba(255, 255, 255, 0.9);
+	border-radius: 50%;
+	pointer-events: none;
+}
+
 .product-gallery__slide--thumb:hover,
-.swiper-slide-thumb-active {
+.product-gallery__slide--thumb.swiper-slide-thumb-active {
 	opacity: 1;
 }
 
-/* Thumbs container */
-.product-gallery__thumbs {
-	width: 100%;
-	height: var(--thumb-size);
-	overflow: hidden;
-}
-
-/* Navigation */
+/* ============================================
+   NAVIGATION
+   ============================================ */
 .product-gallery__nav {
 	position: absolute;
 	z-index: 2;
@@ -193,74 +322,161 @@ Params:
 	justify-content: center;
 	width: 40px;
 	height: 40px;
-	background: rgba(255,255,255,0.9);
-	border: 1px solid var(--theme-color-grey, #ddd);
+	background: rgba(255, 255, 255, 0.9);
+	border: 1px solid var(--theme-color-border, rgba(0, 0, 0, 0.1));
 	cursor: pointer;
-	opacity: 0;
-	transition: opacity 0.2s;
+	transition: background-color 0.2s;
 }
 
-.product-gallery__main:hover .product-gallery__nav {
-	opacity: 1;
+.product-gallery__nav:hover {
+	background: #fff;
 }
 
-.product-gallery__nav[disabled] { display: none; }
-
-/* Horizontal mode: left/right */
-.product-gallery__nav--prev { top: 50%; left: 0.5em; transform: translateY(-50%); }
-.product-gallery__nav--next { top: 50%; right: 0.5em; transform: translateY(-50%); }
-
-/* Vertical mode (via Swiper class): top/bottom with rotated icons */
-.swiper-vertical .product-gallery__nav--prev {
-	top: 0.5em;
-	left: 50%;
-	right: auto;
-	transform: translateX(-50%) rotate(90deg);
+/* Horizontal nav (mobile) */
+.product-gallery__nav--prev {
+	top: 50%;
+	left: 0.5em;
+	transform: translateY(-50%);
 }
 
-.swiper-vertical .product-gallery__nav--next {
-	top: auto;
-	bottom: 0.5em;
-	left: 50%;
-	right: auto;
-	transform: translateX(-50%) rotate(90deg);
+.product-gallery__nav--next {
+	top: 50%;
+	right: 0.5em;
+	transform: translateY(-50%);
 }
 
-/* Media figure (from html-product-media) */
-.product-gallery .product-media__figure {
-	width: 100%;
-	height: 100%;
-	margin: 0;
+.product-gallery__nav:disabled,
+.product-gallery__nav.swiper-button-disabled {
+	opacity: 0.3;
+	cursor: not-allowed;
 }
 
-.product-gallery .product-media__picture {
-	display: block;
-	width: 100%;
-	height: 100%;
+/* ============================================
+   ACTION BUTTONS
+   ============================================ */
+.product-gallery__fullscreen-btn,
+.product-gallery__share-btn {
+	position: absolute;
+	z-index: 3;
+	right: 0.75em;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	background: rgba(255, 255, 255, 0.95);
+	border: 1px solid var(--theme-color-grey, #ddd);
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.2s;
 }
 
-.product-gallery .product-media__img {
-	width: 100%;
-	height: 100%;
-	object-fit: contain;
+.product-gallery__fullscreen-btn { bottom: 0.75em; }
+.product-gallery__share-btn { bottom: calc(0.75em + 48px); }
+
+.product-gallery__fullscreen-btn:hover,
+.product-gallery__share-btn:hover {
+	background: #fff;
 }
 
-.product-gallery__slide--thumb .product-media__img {
-	object-fit: cover;
+.product-gallery__fullscreen-close {
+	display: none;
 }
 
-/* Desktop: horizontal layout */
-@media (min-width: 960px) {
+/* ============================================
+   TABLET (30em - 60em): Continuous slides, max-height
+   ============================================ */
+@media (min-width: 30em) and (max-width: 59.99em) {
+	.product-gallery {
+		max-height: 70vh;
+	}
+	
+	.product-gallery__main {
+		height: 100%;
+	}
+	
+	.product-gallery__slide {
+		width: auto;
+	}
+	
+	.product-gallery__main .theme-media__img {
+		width: auto;
+		height: 100%;
+		max-height: 60vh;
+	}
+}
+
+/* ============================================
+   DESKTOP (60em+): Vertical slider, thumbs left
+   ============================================ */
+@media (min-width: 60em) {
 	.product-gallery {
 		flex-direction: row;
-		height: min(var(--gallery-height), var(--gallery-max));
+		height: min(80vh, 800px);
 	}
 	
 	.product-gallery__main {
 		order: 1;
 		flex: 1;
-		aspect-ratio: auto;
+		width: 100%;
+		margin-left: 0;
 		height: 100%;
+	}
+	
+	.product-gallery__main .product-gallery__slides {
+		flex-direction: column;
+		height: 100%;
+	}
+	
+	.product-gallery__main .product-gallery__slide {
+		position: relative;
+		width: 100%;
+		height: 100%;
+	}
+	
+	.product-gallery__main .product-gallery__media {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.product-gallery__main .product-gallery__media .theme-media__picture {
+		max-width: 100%;
+		height: 100%;
+	}
+	
+	/* Vertical: contained in slide */
+	.product-gallery__main .theme-media__img {
+		width: auto;
+		height: 100%;
+		max-width: 100%;
+		margin-inline: auto;
+	}
+	
+	/* Vertical nav (desktop) */
+	.product-gallery__nav--prev {
+		top: 0.5em;
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+	}
+	
+	.product-gallery__nav--next {
+		top: auto;
+		bottom: 0.5em;
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+	}
+	
+	.product-gallery__nav--prev svg {
+		transform: rotate(90deg);
+	}
+	
+	.product-gallery__nav--next svg {
+		transform: rotate(90deg);
 	}
 	
 	.product-gallery__thumbs {
@@ -270,147 +486,117 @@ Params:
 		height: 100%;
 	}
 	
-	.product-gallery__slide--thumb {
-		flex: 0 0 var(--thumb-size);
-		width: var(--thumb-size);
+	.product-gallery__thumbs .product-gallery__slides {
+		flex-direction: column;
+		height: 100%;
 	}
 }
 
 /* ============================================
-   FULLSCREEN BUTTON
+   FULLSCREEN MODE
+   Skeleton approach: container fills viewport,
+   media centers itself as large as possible
    ============================================ */
-.product-gallery__fullscreen-btn {
-	position: absolute;
-	z-index: 3;
-	right: 0.75em;
-	bottom: 0.75em;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 40px;
-	height: 40px;
-	background: rgba(255, 255, 255, 0.95);
-	border: 1px solid var(--theme-color-grey, #ddd);
-	border-radius: 4px;
-	cursor: pointer;
-	transition: background-color 0.2s;
+body.has-gallery-fullscreen {
+	overflow: hidden;
 }
 
-.product-gallery__fullscreen-btn:hover {
-	background: #fff;
-}
-
-/* ============================================
-   SHARE BUTTON
-   ============================================ */
-.product-gallery__share-btn {
-	position: absolute;
-	z-index: 3;
-	right: 0.75em;
-	bottom: calc(0.75em + 48px);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 40px;
-	height: 40px;
-	background: rgba(255, 255, 255, 0.95);
-	border: 1px solid var(--theme-color-grey, #ddd);
-	border-radius: 4px;
-	cursor: pointer;
-	transition: background-color 0.2s;
-}
-
-.product-gallery__share-btn:hover {
-	background: #fff;
-}
-
-/* Hide share button in fullscreen */
-.product-gallery.is-fullscreen .product-gallery__share-btn {
-	display: none;
-}
-
-/* ============================================
-   FULLSCREEN CLOSE BUTTON (hidden by default)
-   ============================================ */
-.product-gallery__fullscreen-close {
-	display: none;
-}
-
-/* ============================================
-   BODY CLASS: suppress header z-index
-   ============================================ */
-body.gallery-fullscreen-open .shopify-section-header,
-body.gallery-fullscreen-open [class*="header"],
-body.gallery-fullscreen-open header {
+body.has-gallery-fullscreen .shopify-section-header,
+body.has-gallery-fullscreen [class*="header"],
+body.has-gallery-fullscreen header {
 	z-index: 0 !important;
 }
 
-/* ============================================
-   FULLSCREEN MODE
-   ============================================ */
+/* Container: fills viewport */
 .product-gallery.is-fullscreen {
 	position: fixed;
 	inset: 0;
 	z-index: 9999999995;
-	background: rgba(0, 0, 0, 0.95);
-	padding: 1em;
-	height: 100vh;
+	display: flex;
+	gap: 0.5em;
+	padding: 0.5em;
 	height: 100dvh;
 	max-height: none;
-	top: 0;
-	
-	/* Altijd horizontal layout in fullscreen */
-	flex-direction: row;
-	gap: 1em;
+	background: rgba(0, 0, 0, 0.95);
 }
 
-/* Fullscreen: main slider neemt resterende ruimte */
+/* Main slider: fills remaining space */
 .product-gallery.is-fullscreen .product-gallery__main {
-	order: 1;
-	flex: 1;
-	aspect-ratio: auto;
-	height: 100%;
+	flex: 1 1 0;
+	min-width: 0;
+	min-height: 0;
 	width: auto;
+	height: auto;
+	margin: 0;
+	overflow: hidden;
 }
 
-/* Fullscreen: thumbs verticaal links, volledige hoogte */
-.product-gallery.is-fullscreen .product-gallery__thumbs {
-	order: 0;
-	flex: 0 0 var(--thumb-size);
-	width: var(--thumb-size);
+/* Slides wrapper: fills main */
+.product-gallery.is-fullscreen .product-gallery__main .product-gallery__slides {
 	height: 100%;
 }
 
-/* Fullscreen: main slides 100% width */
-.product-gallery.is-fullscreen .product-gallery__slide {
-	flex: 0 0 100%;
-	width: 100%;
-}
-
-.product-gallery.is-fullscreen .product-gallery__slide .product-media__figure {
+/* Slide: fills wrapper, centers content */
+.product-gallery.is-fullscreen .product-gallery__main .product-gallery__slide {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	width: 100%;
 	height: 100%;
+}
+
+/* Media: resets, fills slide, image contained and centered */
+.product-gallery.is-fullscreen .product-gallery__main .product-gallery__media {
+	position: static;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	max-width: 100%;
+	max-height: 100%;
+	margin: 0;
+}
+
+.product-gallery.is-fullscreen .product-gallery__main .product-gallery__media .theme-media__picture {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.product-gallery.is-fullscreen .product-gallery__main .product-gallery__media .theme-media__img {
+	display: block;
+	width: auto;
+	height: auto;
+	max-width: 100%;
+	max-height: 100%;
+	margin: 0;
 	aspect-ratio: auto;
-}
-
-.product-gallery.is-fullscreen .product-media__img {
 	object-fit: contain;
+	background: transparent;
 }
 
-/* Fullscreen: thumb slides */
-.product-gallery.is-fullscreen .product-gallery__slide--thumb {
-	flex: 0 0 var(--thumb-size);
-	width: var(--thumb-size);
-	height: var(--thumb-size);
+/* Thumbs: fixed size */
+.product-gallery.is-fullscreen .product-gallery__thumbs {
+	flex: 0 0 auto;
+	overflow: hidden;
 }
 
-/* Fullscreen: show close button */
+/* Hide action buttons */
+.product-gallery.is-fullscreen .product-gallery__fullscreen-btn,
+.product-gallery.is-fullscreen .product-gallery__share-btn {
+	display: none;
+}
+
+/* Close button */
 .product-gallery.is-fullscreen .product-gallery__fullscreen-close {
 	display: flex;
 	position: absolute;
 	z-index: 10;
-	top: 1em;
-	right: 1em;
+	top: 0.5em;
+	right: 0.5em;
 	align-items: center;
 	justify-content: center;
 	width: 48px;
@@ -419,81 +605,193 @@ body.gallery-fullscreen-open header {
 	border: none;
 	border-radius: 4px;
 	cursor: pointer;
-	transition: background-color 0.2s;
 }
 
-.product-gallery__fullscreen-close:hover {
-	background: #fff;
-}
-
-/* Fullscreen: hide expand button */
-.product-gallery.is-fullscreen .product-gallery__fullscreen-btn {
-	display: none;
-}
-
-/* Fullscreen: navigation always visible */
-.product-gallery.is-fullscreen .product-gallery__nav {
-	opacity: 1;
-	background: rgba(255, 255, 255, 0.9);
-}
-
-/* ============================================
-   FULLSCREEN MOBILE: thumbs onderaan
-   ============================================ */
-@media (max-width: 749px) {
+/* --------------------------------------------
+   Fullscreen Horizontal (< 60em)
+   -------------------------------------------- */
+@media (max-width: 59.99em) {
 	.product-gallery.is-fullscreen {
 		flex-direction: column;
 	}
 	
 	.product-gallery.is-fullscreen .product-gallery__main {
 		order: 0;
-		flex: 1;
-		height: auto;
+	}
+	
+	.product-gallery.is-fullscreen .product-gallery__main .product-gallery__slides {
+		flex-direction: row;
 	}
 	
 	.product-gallery.is-fullscreen .product-gallery__thumbs {
 		order: 1;
-		flex: 0 0 var(--thumb-size);
 		width: 100%;
 		height: var(--thumb-size);
+	}
+	
+	.product-gallery.is-fullscreen .product-gallery__thumbs .product-gallery__slides {
+		flex-direction: row;
+	}
+	
+	/* Horizontal nav */
+	.product-gallery.is-fullscreen .product-gallery__nav--prev {
+		top: 50%;
+		left: 0.5em;
+		right: auto;
+		bottom: auto;
+		transform: translateY(-50%);
+	}
+	
+	.product-gallery.is-fullscreen .product-gallery__nav--next {
+		top: 50%;
+		right: 0.5em;
+		left: auto;
+		bottom: auto;
+		transform: translateY(-50%);
+	}
+	
+	.product-gallery.is-fullscreen .product-gallery__nav svg {
+		transform: none;
+	}
+}
+
+/* --------------------------------------------
+   Fullscreen Vertical (60em+)
+   -------------------------------------------- */
+@media (min-width: 60em) {
+	.product-gallery.is-fullscreen {
+		flex-direction: row;
+	}
+	
+	.product-gallery.is-fullscreen .product-gallery__main {
+		order: 1;
+	}
+	
+	.product-gallery.is-fullscreen .product-gallery__main .product-gallery__slides {
+		flex-direction: column;
+	}
+	
+	.product-gallery.is-fullscreen .product-gallery__thumbs {
+		order: 0;
+		width: var(--thumb-size);
+		height: 100%;
+	}
+	
+	.product-gallery.is-fullscreen .product-gallery__thumbs .product-gallery__slides {
+		flex-direction: column;
+		height: 100%;
+	}
+	
+	/* Vertical nav */
+	.product-gallery.is-fullscreen .product-gallery__nav--prev {
+		top: 0.5em;
+		left: 50%;
+		right: auto;
+		bottom: auto;
+		transform: translateX(-50%);
+	}
+	
+	.product-gallery.is-fullscreen .product-gallery__nav--next {
+		top: auto;
+		bottom: 0.5em;
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
+	}
+	
+	.product-gallery.is-fullscreen .product-gallery__nav svg {
+		transform: rotate(90deg);
 	}
 }
 </style>
 
 <script>
 (function() {
-	const gallery = document.querySelector('[data-product-gallery]');
-	if (!gallery) return;
+	const gallery = document.getElementById('{{ gallery_id }}');
+	if (!gallery || typeof Swiper === 'undefined') return;
 
-	// Fullscreen functionality
+	const mainEl = gallery.querySelector('.product-gallery__main');
+	const thumbsEl = gallery.querySelector('.product-gallery__thumbs');
+	const prevBtn = gallery.querySelector('[data-gallery-prev]');
+	const nextBtn = gallery.querySelector('[data-gallery-next]');
 	const openBtn = gallery.querySelector('[data-gallery-fullscreen-open]');
 	const closeBtn = gallery.querySelector('[data-gallery-fullscreen-close]');
-	
+
+	let mainSwiper = null;
+	let thumbsSwiper = null;
+
+	// Initialize Swiper
+	function initSwipers() {
+		// Destroy existing instances
+		if (thumbsSwiper) thumbsSwiper.destroy(true, true);
+		if (mainSwiper) mainSwiper.destroy(true, true);
+
+		const isDesktop = window.matchMedia('(min-width: 60em)').matches;
+		const isTablet = window.matchMedia('(min-width: 30em) and (max-width: 59.99em)').matches;
+		const isFullscreen = gallery.classList.contains('is-fullscreen');
+		
+		// Vertical only on desktop, mobile/tablet stays horizontal
+		const isVertical = isDesktop;
+		
+		// Continuous slides only on tablet and not in fullscreen
+		const isContinuous = isTablet && !isFullscreen;
+
+		// Initialize thumbs first (if exists)
+		if (thumbsEl) {
+			thumbsSwiper = new Swiper(thumbsEl, {
+				slidesPerView: 'auto',
+				spaceBetween: 4,
+				freeMode: true,
+				watchSlidesProgress: true,
+				direction: isVertical ? 'vertical' : 'horizontal',
+			});
+		}
+
+		// Initialize main slider
+		mainSwiper = new Swiper(mainEl, {
+			slidesPerView: isContinuous ? 'auto' : 1,
+			spaceBetween: 0,
+			direction: isVertical ? 'vertical' : 'horizontal',
+			zoom: isFullscreen ? { maxRatio: 3 } : false,
+			navigation: {
+				prevEl: prevBtn,
+				nextEl: nextBtn,
+			},
+			thumbs: thumbsSwiper ? { swiper: thumbsSwiper } : undefined,
+		});
+	}
+
+	// Fullscreen
 	function openFullscreen() {
+		// Remember current slide index
+		const currentIndex = mainSwiper ? mainSwiper.activeIndex : 0;
+		
 		gallery.classList.add('is-fullscreen');
-		document.body.classList.add('gallery-fullscreen-open');
-		document.body.style.overflow = 'hidden';
+		document.body.classList.add('has-gallery-fullscreen');
 		
 		gallery.querySelectorAll('.product-gallery__main img').forEach(img => {
 			img.dataset.originalSizes = img.getAttribute('sizes');
 			img.setAttribute('sizes', '100vw');
 		});
 		
-		const swiperEl = gallery.querySelector('[data-swiper-id]');
-		if (swiperEl && swiperEl.swiper) {
-			setTimeout(() => swiperEl.swiper.update(), 100);
-		}
-		
-		const thumbsEl = gallery.querySelector('[data-swiper-slave]');
-		if (thumbsEl && thumbsEl.swiper) {
-			setTimeout(() => thumbsEl.swiper.update(), 100);
-		}
+		setTimeout(() => {
+			initSwipers();
+			// Restore slide position
+			if (mainSwiper) mainSwiper.slideTo(currentIndex, 0);
+		}, 50);
 	}
 
 	function closeFullscreen() {
+		// Remember current slide index
+		const currentIndex = mainSwiper ? mainSwiper.activeIndex : 0;
+		
+		// Reset zoom before closing
+		if (mainSwiper && mainSwiper.zoom) {
+			mainSwiper.zoom.out();
+		}
+		
 		gallery.classList.remove('is-fullscreen');
-		document.body.classList.remove('gallery-fullscreen-open');
-		document.body.style.overflow = '';
+		document.body.classList.remove('has-gallery-fullscreen');
 		
 		gallery.querySelectorAll('.product-gallery__main img').forEach(img => {
 			if (img.dataset.originalSizes) {
@@ -501,19 +799,16 @@ body.gallery-fullscreen-open header {
 			}
 		});
 		
-		const swiperEl = gallery.querySelector('[data-swiper-id]');
-		if (swiperEl && swiperEl.swiper) {
-			setTimeout(() => swiperEl.swiper.update(), 100);
-		}
-		
-		const thumbsEl = gallery.querySelector('[data-swiper-slave]');
-		if (thumbsEl && thumbsEl.swiper) {
-			setTimeout(() => thumbsEl.swiper.update(), 100);
-		}
+		setTimeout(() => {
+			initSwipers();
+			// Restore slide position
+			if (mainSwiper) mainSwiper.slideTo(currentIndex, 0);
+		}, 50);
 	}
 
-	if (openBtn) openBtn.addEventListener('click', openFullscreen);
-	if (closeBtn) closeBtn.addEventListener('click', closeFullscreen);
+	// Event listeners
+	openBtn?.addEventListener('click', openFullscreen);
+	closeBtn?.addEventListener('click', closeFullscreen);
 
 	document.addEventListener('keydown', (e) => {
 		if (e.key === 'Escape' && gallery.classList.contains('is-fullscreen')) {
@@ -526,5 +821,14 @@ body.gallery-fullscreen-open header {
 			closeFullscreen();
 		}
 	});
+
+	// Responsive: reinit on breakpoint change
+	const desktopQuery = window.matchMedia('(min-width: 60em)');
+	const tabletQuery = window.matchMedia('(min-width: 30em)');
+	desktopQuery.addEventListener('change', initSwipers);
+	tabletQuery.addEventListener('change', initSwipers);
+
+	// Init
+	initSwipers();
 })();
 </script>

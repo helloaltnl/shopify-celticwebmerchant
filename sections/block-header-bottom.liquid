@@ -9,11 +9,11 @@
 {%- if menu.links.size > 0 -%}
 <header-bottom class="block-header-bottom__wrapper">
 	<nav class="block-header-bottom__nav" aria-label="{{ section.settings.menu | replace: '-', ' ' | capitalize }}">
-		<div class="block-header-bottom__menu-wrapper alignwide">
+		<div class="block-header-bottom__menu-wrapper is-align-wide">
 			<ul class="block-header-bottom__menu">
 			{%- for link in menu.links -%}
 				<li class="block-header-bottom__item{% if link.links.size > 0 %} has-dropdown{% endif %}">
-					<a href="{{ link.url }}" {% if link.current %}aria-current="page"{% endif %}>
+					<a href="{{ link.url }}" aria-label="{{ link.title }}" {% if link.current %}aria-current="page"{% endif %}>
 						<span>{{ link.title }}</span>
 					</a>
 
@@ -32,7 +32,7 @@
 						-%}
 
 						<div class="block-header-bottom__dropdown">
-							<div class="block-header-bottom__dropdown-inner alignwide{% if detected_assist %} has-assist{% endif %}">
+							<div class="block-header-bottom__dropdown-inner is-align-wide{% if detected_assist %} has-assist{% endif %}">
 								<section class="block-header-bottom__links">
 									<ul>
 										{%- for child in link.links -%}
@@ -46,16 +46,18 @@
 											-%}
 
 											<li class="{% if child.links.size > 0 %}has-dropdown{% endif %}">
-												<a href="{{ child.url }}" class="block-header-bottom__link">
+												<a href="{{ child.url }}" aria-label="{{ child.title }}" class="block-header-bottom__link">
 													{%- if link_collection.image -%}
-														<img 
-															class="block-header-bottom__link-image" 
-															src="{{ link_collection.image | image_url: width: 96 }}" 
-															alt="{{ link_collection.image.alt | default: link_collection.title | escape }}"
-															width="80"
-															height="80"
-															loading="lazy"
-														>
+														<div class="block-header-bottom__link-image">
+															{%- render 'html-theme-media',
+															media: link_collection.image,
+															alt: link_collection.image.alt | default: link_collection.title,
+															width: 96,
+															sizes: '72px',
+															image_ratio: 'square',
+															image_loading: 'lazy'
+															-%}
+														</div>
 													{%- endif -%}
 													<span>{{ child.title }}</span>
 													{%- if child.links.size > 0 -%}
@@ -67,15 +69,15 @@
 
 												{%- if child.links.size > 0 -%}
 													<div class="block-header-bottom__dropdown block-header-bottom__dropdown--nested">
-														<div class="block-header-bottom__dropdown-inner alignwide{% if detected_assist %} has-assist{% endif %}">
+														<div class="block-header-bottom__dropdown-inner is-align-wide{% if detected_assist %} has-assist{% endif %}">
 															<section class="block-header-bottom__links">
 																<ul>
 																	<li class="block-header-bottom__navigate block-header-bottom__navigate--top">
-																		<a href="{{ link.url }}" class="block-header-bottom__link block-header-bottom__link--back">
+																		<a href="{{ link.url }}" aria-label="{{ link.title }}" class="block-header-bottom__link block-header-bottom__link--back">
 																			<i>{% render 'html-theme-icons', icon: 'arrow', size: 16 %}</i>
 																			<span>{{ link.title }}</span>
 																		</a>
-																		<a href="{{ child.url }}" class="block-header-bottom__link block-header-bottom__link--all">
+																		<a href="{{ child.url }}" aria-label="{{ child.title }}" class="block-header-bottom__link block-header-bottom__link--all">
 																			<span>{{ child.title }}</span>
 																			<i>{% render 'html-theme-icons', icon: 'arrow', size: 16 %}</i>
 																		</a>
@@ -92,16 +94,18 @@
 																		-%}
 
 																		<li>
-																			<a href="{{ subchild.url }}" class="block-header-bottom__link">
+																			<a href="{{ subchild.url }}" aria-label="{{ subchild.title }}" class="block-header-bottom__link">
 																				{%- if sublink_collection.image -%}
-																					<img 
-																						class="block-header-bottom__link-image" 
-																						src="{{ sublink_collection.image | image_url: width: 96 }}" 
-																						alt="{{ sublink_collection.image.alt | default: sublink_collection.title | escape }}"
-																						width="80"
-																						height="80"
-																						loading="lazy"
-																					>
+																					<div class="block-header-bottom__link-image">
+																						{%- render 'html-theme-media',
+																						media: sublink_collection.image,
+																						alt: sublink_collection.image.alt | default: sublink_collection.title,
+																						width: 96,
+																						sizes: '72px',
+																						image_ratio: 'square',
+																						image_loading: 'lazy'
+																						-%}
+																					</div>
 																				{%- endif -%}
 																				<span>{{ subchild.title }}</span>
 																			</a>
@@ -109,11 +113,11 @@
 																	{%- endfor -%}
 
 																	<li class="block-header-bottom__navigate block-header-bottom__navigate--bottom">
-																		<a href="{{ link.url }}" class="block-header-bottom__link block-header-bottom__link--back">
+																		<a href="{{ link.url }}" aria-label="{{ link.title }}" class="block-header-bottom__link block-header-bottom__link--back">
 																			<i>{% render 'html-theme-icons', icon: 'arrow', size: 16 %}</i>
 																			<span>{{ link.title }}</span>
 																		</a>
-																		<a href="{{ child.url }}" class="block-header-bottom__link block-header-bottom__link--all">
+																		<a href="{{ child.url }}" aria-label="{{ child.title }}" class="block-header-bottom__link block-header-bottom__link--all">
 																			<span>{{ child.title }}</span>
 																			<i>{% render 'html-theme-icons', icon: 'arrow', size: 16 %}</i>
 																		</a>
@@ -125,31 +129,38 @@
 																{%- assign assist = detected_assist.value -%}
 																<section class="block-header-bottom__assist">
 																	<article class="block-header-bottom__assist-item">
-																		{%- if assist.link -%}
-																			<a href="{{ assist.link }}" class="block-header-bottom__assist-overlay"></a>
+																		{%- if assist.page -%}
+																			<a href="{{ assist.page.value.url }}" aria-label="{{ assist.title }}" class="block-header-bottom__assist-overlay"></a>
 																		{%- endif -%}
 																		{%- if assist.image -%}
-																			<figure class="block-header-bottom__assist-image">
-																				<img src="{{ assist.image | image_url: width: 496 }}" alt="{{ assist.title | escape }}">
-																			</figure>
-																		{%- endif -%}
-																		<section class="block-header-bottom__assist-content">
-																			<h3>{{ assist.title }}</h3>
-																			{%- if assist.link -%}
+																			<div class="block-header-bottom__assist-image">
+																				{%- render 'html-theme-media',
+																				media: assist.image,
+																				alt: assist.title,
+																				width: 520,
+																				sizes: '260px',
+																				image_ratio: 'portrait',
+																				image_loading: 'lazy'
+																				-%}
+																				</div>
+																				{%- endif -%}
+																				<section class="block-header-bottom__assist-content">
+																				<h3>{{ assist.title }}</h3>
+																				{%- if assist.page.value -%}
 																				<span class="block-header-bottom__assist-link">
-																					<span>{{ assist_link_text }}</span>
-																					<i>{% render 'html-theme-icons', icon: 'arrow', size: 16 %}</i>
+																				<span>{{ assist_link_text }}</span>
+																				<i>{% render 'html-theme-icons', icon: 'arrow', size: 16 %}</i>
 																				</span>
-																			{%- endif -%}
-																		</section>
-																	</article>
-																</section>
-															{%- endif -%}
-														</div>
-													</div>
-												{%- endif -%}
-											</li>
-										{%- endfor -%}
+																				{%- endif -%}
+																				</section>
+																				</article>
+																				</section>
+																				{%- endif -%}
+																				</div>
+																				</div>
+																				{%- endif -%}
+																				</li>
+																				{%- endfor -%}
 
 										<li class="block-header-bottom__navigate block-header-bottom__navigate--bottom">
 											<a href="{{ link.url }}" class="block-header-bottom__link block-header-bottom__link--all">
@@ -164,17 +175,24 @@
 									{%- assign assist = detected_assist.value -%}
 									<section class="block-header-bottom__assist">
 										<article class="block-header-bottom__assist-item">
-											{%- if assist.link -%}
-												<a href="{{ assist.link }}" class="block-header-bottom__assist-overlay"></a>
+											{%- if assist.page -%}
+												<a href="{{ assist.page.value.url }}" class="block-header-bottom__assist-overlay"></a>
 											{%- endif -%}
 											{%- if assist.image -%}
-												<figure class="block-header-bottom__assist-image">
-													<img src="{{ assist.image | image_url: width: 496 }}" alt="{{ assist.title | escape }}">
-												</figure>
+												<div class="block-header-bottom__assist-image">
+													{%- render 'html-theme-media',
+													media: assist.image,
+													alt: assist.title,
+													width: 520,
+													sizes: '260px',
+													image_ratio: 'portrait',
+													image_loading: 'lazy'
+													-%}
+												</div>
 											{%- endif -%}
 											<section class="block-header-bottom__assist-content">
 												<h3>{{ assist.title }}</h3>
-												{%- if assist.link -%}
+												{%- if assist.page.value -%}
 													<span class="block-header-bottom__assist-link">
 														<span>{{ assist_link_text }}</span>
 														<i>{% render 'html-theme-icons', icon: 'arrow', size: 16 %}</i>
@@ -196,331 +214,9 @@
 {%- endif -%}
 
 {% style %}
-	.block-header-bottom {
-		background-color: {{ section.settings.background_color }};
-		color: {{ section.settings.text_color }};
-		position: relative;
-		z-index: var(--theme-z-sticky);
-	}
-
-	.block-header-bottom__wrapper {
-		display: block;
-	}
-
-	.block-header-bottom__nav {
-		position: relative;
-	}
-
-	.block-header-bottom__menu {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		justify-content: space-between;
-		align-items: center;
-		gap: 0.5em;
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	.block-header-bottom__item {
-		position: static;
-	}
-
-	.block-header-bottom__item > a {
-		display: inline-flex;
-		align-items: center;
-		height: var(--header-bottom-height, 3.5em);
-		padding: 0;
-		color: inherit;
-		text-decoration: none;
-		font-weight: 500;
-		position: relative;
-	}
-
-	.block-header-bottom__item > a span {
-		font-size: 0.9em;
-		white-space: nowrap;
-		letter-spacing: -0.02em;
-	}
-
-	.block-header-bottom__item > a:hover {
-		opacity: 0.8;
-	}
-
-	.block-header-bottom__item.has-dropdown > a::after {
-		content: '';
-		position: absolute;
-		left: 50%;
-		bottom: 0.25em;
-		transform: translateX(-50%);
-		width: 1em;
-		height: 1em;
-		opacity: 0.4;
-		background-color: currentColor;
-		mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>');
-		mask-repeat: no-repeat;
-		mask-position: center;
-		mask-size: 100%;
-		-webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>');
-		-webkit-mask-repeat: no-repeat;
-		-webkit-mask-position: center;
-		-webkit-mask-size: 100%;
-	}
-
-	.block-header-bottom__dropdown {
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 100%;
-		width: 100%;
-		background-color: var(--theme-color-grey);
-		opacity: 0;
-		visibility: hidden;
-		transform: translateY(-0.5em);
-		transition: opacity 150ms ease, transform 150ms ease, visibility 150ms ease;
-		pointer-events: none;
-	}
-
-	.block-header-bottom__item.has-dropdown:hover > .block-header-bottom__dropdown,
-	.block-header-bottom__item.has-dropdown:focus-within > .block-header-bottom__dropdown {
-		opacity: 1;
-		visibility: visible;
-		transform: translateY(0);
-		pointer-events: auto;
-	}
-
-	.block-header-bottom__dropdown-inner {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		gap: 1.5em;
-		padding-block: 2em;
-	}
-
-	.block-header-bottom__dropdown--nested {
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 0;
-		min-height: 100%;
-		z-index: 3;
-		transform: none;
-	}
-
-	.block-header-bottom__links > ul > li.has-dropdown.is-selected > .block-header-bottom__dropdown--nested {
-		opacity: 1;
-		visibility: visible;
-		pointer-events: auto;
-	}
-
-	.block-header-bottom__links {
-		flex: 1 1 auto;
-	}
-
-	.block-header-bottom__links > ul {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(256px, 1fr));
-		gap: 0.5em;
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	.block-header-bottom__links > ul > li {
-		position: static;
-		background-color: var(--theme-color-white);
-	}
-
-	.block-header-bottom__link {
-		position: relative;
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.75em;
-		width: 100%;
-		height: 100%;
-		min-height: 72px;
-		padding: 0.75em;
-		overflow: hidden;
-		color: inherit;
-		text-decoration: none;
-		transition: background-color 150ms ease, color 150ms ease;
-	}
-
-	.block-header-bottom__link:hover {
-		background-color: var(--theme-color-blue);
-		color: var(--theme-color-white);
-	}
-
-	.block-header-bottom__link-image {
-		position: absolute;
-		left: 0;
-		top: 0;
-		bottom: 0;
-		width: 72px;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.block-header-bottom__link-image + span {
-		padding-inline-start: 72px;
-	}
-
-	.block-header-bottom__link span {
-		font-size: 0.85em;
-		line-height: 1.3;
-	}
-
-	.block-header-bottom__caret {
-		flex: 0 0 1em;
-		line-height: 1;
-	}
-
-	.block-header-bottom__caret svg {
-		transform: rotate(-90deg);
-	}
-
-	.block-header-bottom__navigate {
-		grid-column: 1 / -1;
-		text-align: center;
-		background-color: transparent !important;
-		display: flex;
-		justify-content: center;
-		gap: 0.5em;
-	}
-
-	.block-header-bottom__navigate--top {
-		display: none;
-	}
-
-	.block-header-bottom__navigate .block-header-bottom__link {
-		width: auto;
-		height: auto;
-		min-height: auto;
-		display: inline-flex;
-	}
-
-	.block-header-bottom__link--back {
-		background-color: var(--theme-color-white);
-		color: var(--theme-color-blue);
-	}
-
-	.block-header-bottom__link--back span { order: 1; }
-	.block-header-bottom__link--back i { order: 0; }
-	.block-header-bottom__link--back i svg { transform: rotate(180deg); }
-
-	.block-header-bottom__link--all {
-		background-color: var(--theme-color-blue);
-		color: var(--theme-color-white);
-	}
-
-	.block-header-bottom__assist {
-		flex: 0 0 260px;
-	}
-
-	.block-header-bottom__assist-item {
-		position: relative;
-		width: 100%;
-		height: 320px;
-		overflow: hidden;
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
-		background-color: var(--theme-color-blue);
-	}
-
-	.block-header-bottom__assist-overlay {
-		position: absolute;
-		inset: 0;
-		z-index: 2;
-	}
-
-	.block-header-bottom__assist-image {
-		position: absolute;
-		inset: 0;
-		z-index: 0;
-		margin: 0;
-		padding: 0;
-	}
-
-	.block-header-bottom__assist-image img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		opacity: 0.8;
-		transition: opacity 150ms ease, transform 150ms ease;
-	}
-
-	.block-header-bottom__assist-item:hover .block-header-bottom__assist-image img {
-		opacity: 1;
-		transform: scale(1.02);
-	}
-
-	.block-header-bottom__assist-content {
-		position: relative;
-		z-index: 1;
-		padding: 1em;
-		background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 100%);
-	}
-
-	.block-header-bottom__assist-content h3 {
-		font-family: var(--theme-font-family-serif);
-		font-size: 1.25em;
-		font-weight: 700;
-		color: #fff;
-		margin: 0 0 0.5em 0;
-	}
-
-	.block-header-bottom__assist-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4em;
-		padding: 0.4em 0.75em;
-		background-color: var(--theme-color-blue);
-		color: #fff;
-		text-decoration: none;
-		font-size: 0.9em;
-		transition: background-color 150ms ease, color 150ms ease;
-	}
-
-	.block-header-bottom__assist-link:hover {
-		background-color: #fff;
-		color: var(--theme-color-blue);
-	}
-
-	.block-header-bottom__assist-link i {
-		width: 1em;
-		height: 1em;
-		line-height: 1;
-	}
-
-	.block-header-bottom__nav::after {
-		content: '';
-		position: absolute;
-		z-index: -1;
-		top: 100%;
-		left: 0;
-		right: 0;
-		height: 100vh;
-		background-color: rgba(0, 0, 0, 0.6);
-		opacity: 0;
-		visibility: hidden;
-		transition: opacity 150ms ease, visibility 150ms ease;
-		pointer-events: none;
-	}
-
-	.block-header-bottom__item.has-dropdown:hover ~ .block-header-bottom__nav::after,
-	.block-header-bottom__nav:has(.has-dropdown:hover)::after {
-		opacity: 1;
-		visibility: visible;
-	}
-
-	@media (max-width: 1024px) {
-		.block-header-bottom__nav {
-			display: none;
-		}
+	#shopify-section-{{ section.id }}.block-header-bottom {
+		background-color: {{ section.settings.background_color | default: '#ffffff' }};
+		color: {{ section.settings.text_color | default: '#2e130d' }};
 	}
 {% endstyle %}
 
@@ -624,14 +320,20 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#2e130d"
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Select a menu with nested links. Dropdowns show collection images when links point to collections. Assist content is pulled from collection metafields."
 		}
 	],
 	"presets": [

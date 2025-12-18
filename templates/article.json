@@ -26,9 +26,10 @@
         "featured_image": {
           "type": "featured_image",
           "settings": {
+            "image_width": "contained",
             "image_height": "adapt",
             "focus_x": 50,
-            "focus_y": 50
+            "focus_y": 20
           }
         },
         "content": {
@@ -50,7 +51,12 @@
         "share"
       ],
       "settings": {
-        "width": "align"
+        "width": "is-align-small",
+        "show_sidebar": false,
+        "background_color": "#f8f8f8",
+        "article_background": "#ffffff",
+        "text_color": "",
+        "custom_class": ""
       }
     },
     "block_marketing_cover_qcQaMG": {
@@ -59,10 +65,10 @@
         "button_iMYKK8": {
           "type": "button",
           "settings": {
-            "text": "Maak het verschil. Doneer nu!",
+            "text": "Doneer ook",
             "url": "shopify://products/donatie",
             "style": "primary",
-            "button_color": "",
+            "button_color": "#000000",
             "button_text_color": ""
           }
         }
@@ -73,16 +79,19 @@
       "name": "Cover",
       "settings": {
         "subheading": "",
-        "heading": "Doneer",
+        "heading": "Maak het verschil, doneer nu!",
         "text": "",
-        "image": "shopify://shop_images/DSC03349-Verbeterd-NR_2_83db5634-51b2-4e46-8162-50b740744b43.jpg",
+        "image": "shopify://shop_images/Banner_Blog_v1.jpg",
         "focus_x": 50,
         "focus_y": 50,
         "overlay": "medium",
-        "width": "alignfull",
+        "loading": "lazy",
+        "fetchpriority": "auto",
+        "width": "is-align-full",
         "height": "medium",
         "text_position": "center",
         "text_alignment": "center",
+        "anchor": "",
         "custom_class": ""
       }
     },
@@ -92,8 +101,6 @@
       "settings": {
         "heading": "",
         "subheading": "",
-        "max_articles": 4,
-        "show_fallback": true,
         "card_layout": "vertical",
         "show_image": true,
         "image_ratio": "portrait",
@@ -101,48 +108,56 @@
         "show_date": true,
         "show_excerpt": true,
         "show_cta": true,
-        "width": "alignwide",
+        "max_articles": 4,
+        "show_fallback": true,
+        "width": "is-align-wide",
         "text_align": "center",
         "columns_desktop": 4,
-        "columns_tablet": "2",
-        "columns_mobile": "2",
+        "columns_tablet": 2,
+        "columns_mobile": 2,
+        "grid_gap": 0.5,
+        "padding_block": 3,
         "background_color": "#f8f8f8",
         "text_color": "#111111",
         "card_background_color": "#ffffff",
         "card_text_color": "#111111",
+        "anchor": "",
         "custom_class": ""
       }
     },
     "block_marketing_cover_xGxRnh": {
       "type": "block-marketing-cover",
       "blocks": {
-        "button_GQny87": {
+        "button_bjHAj9": {
           "type": "button",
           "settings": {
-            "text": "",
-            "url": "",
-            "style": "primary",
-            "button_color": "",
+            "text": "Ga terug naar het overzicht",
+            "url": "shopify://pages/blog-lookbook",
+            "style": "outline",
+            "button_color": "#ffffff",
             "button_text_color": ""
           }
         }
       },
       "block_order": [
-        "button_GQny87"
+        "button_bjHAj9"
       ],
       "name": "Cover",
       "settings": {
         "subheading": "Lees onze nieuwste blogs!",
         "heading": "",
         "text": "",
-        "image": "shopify://shop_images/DSC03349-Verbeterd-NR_2_83db5634-51b2-4e46-8162-50b740744b43.jpg",
-        "focus_x": 50,
-        "focus_y": 50,
+        "image": "shopify://shop_images/Dec2025_-_Banners_blog_detailpagina.webp",
+        "focus_x": 80,
+        "focus_y": 10,
         "overlay": "medium",
-        "width": "alignfull",
+        "loading": "lazy",
+        "fetchpriority": "auto",
+        "width": "is-align-full",
         "height": "medium",
         "text_position": "center",
         "text_alignment": "center",
+        "anchor": "",
         "custom_class": ""
       }
     }

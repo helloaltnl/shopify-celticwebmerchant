@@ -1,0 +1,149 @@
+{%- comment -%}
+============================================================================
+BLOCK-LOYALTY-LOGIN
+============================================================================
+Login prompt for loyalty program pages.
+Shown when customer is not logged in.
+============================================================================
+{%- endcomment -%}
+
+<div class="block-loyalty-login__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+	<div class="block-loyalty-login__inner">
+		{%- if section.settings.heading != blank -%}
+			<h1 class="block-loyalty-login__heading">{{ section.settings.heading }}</h1>
+		{%- endif -%}
+		
+		{%- if section.settings.text != blank -%}
+			<div class="block-loyalty-login__text">{{ section.settings.text }}</div>
+		{%- endif -%}
+		
+		<a href="{{ routes.account_login_url }}?return_url={{ request.path }}" class="block-loyalty-login__button is-button is-button--primary">
+			{%- if section.settings.button_text != blank -%}
+				{{ section.settings.button_text }}
+			{%- else -%}
+				{{ 'customer.log_in' | t }}
+			{%- endif -%}
+		</a>
+	</div>
+</div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.block-loyalty-login {
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {{ section.settings.padding_block | default: 4 }}em;
+	}
+
+	#shopify-section-{{ section.id }} .block-loyalty-login__inner {
+		text-align: center;
+		padding: 4em 2em;
+	}
+
+	#shopify-section-{{ section.id }} .block-loyalty-login__heading {
+		font-family: var(--theme-font-family-serif);
+		font-size: clamp(1.5em, 4vw, 2.5em);
+		font-weight: 500;
+		margin: 0 0 0.5em;
+	}
+
+	#shopify-section-{{ section.id }} .block-loyalty-login__text {
+		font-size: 1.1em;
+		line-height: 1.6;
+		max-width: 40em;
+		margin: 0 auto 1.5em;
+		opacity: 0.8;
+	}
+
+	#shopify-section-{{ section.id }} .block-loyalty-login__button {
+		display: inline-block;
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "Loyalty login",
+	"tag": "section",
+	"class": "block-loyalty-login",
+	"limit": 1,
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading",
+			"default": "Log in om je beloningen te bekijken"
+		},
+		{
+			"type": "richtext",
+			"id": "text",
+			"label": "Text",
+			"default": "<p>Log in op je account om je spaarpunten te bekijken, beloningen te verzilveren en je voortgang te volgen.</p>"
+		},
+		{
+			"type": "text",
+			"id": "button_text",
+			"label": "Button text",
+			"info": "Leave empty to use locale default"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
+			],
+			"default": "is-align"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 4,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class"
+		}
+	]
+}
+{% endschema %}

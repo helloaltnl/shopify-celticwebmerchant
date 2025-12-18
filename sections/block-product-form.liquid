@@ -91,7 +91,7 @@
                   </div>
                   
                 {%- when 'trust_payments' -%}
-                  {%- render 'html-product-payments', method_1: block.settings.method_1, method_2: block.settings.method_2, method_3: block.settings.method_3, method_4: block.settings.method_4, method_5: block.settings.method_5 -%}
+                  {%- render 'html-product-payments', method_1: block.settings.method_1, method_2: block.settings.method_2, method_3: block.settings.method_3, method_4: block.settings.method_4, method_5: block.settings.method_5, method_6: block.settings.method_6, method_7: block.settings.method_7, method_8: block.settings.method_8, method_9: block.settings.method_9, method_10: block.settings.method_10 -%}
                   
                 {%- when 'dynamic_checkout' -%}
                   {%- render 'html-product-dynamic_checkout', product: p -%}
@@ -122,8 +122,8 @@
 
 <style>
   .block-product-form {
-    background-color: {{ section.settings.background_color }};
-    color: {{ section.settings.text_color }};
+    background-color: {{ section.settings.background_color | default: '#ffffff' }};
+    color: {{ section.settings.text_color | default: '#111111' }};
   }
 
   .block-product-form__content {
@@ -132,6 +132,7 @@
     flex-wrap: nowrap;
     align-items: stretch;
     justify-content: center;
+	column-gap: 2em;
   }
 
   .block-product-form__media {
@@ -175,7 +176,7 @@
   }
 
   /* Responsive */
-  @media (max-width: 960px) {
+  @media (max-width: 60em) {
     .block-product-form__content {
       flex-wrap: wrap;
     }
@@ -274,6 +275,11 @@
   .block-product-form__form .product-stock--low-in-stock,
   .block-product-form__form .product-stock--low-in-stock-backorder {
 	  background-color: #f05a22; color:#fff;
+  }
+
+  /* Price sizing in product form */
+  .block-product-form__form .product-price {
+    font-size: 2em;
   }
 </style>
 
@@ -392,12 +398,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "range",
@@ -416,14 +423,20 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Main product form with media gallery and configurable blocks. Add blocks for rating, heading, price, variant picker, add to cart, etc."
 		}
 	],
 	"blocks": [
@@ -617,6 +630,7 @@
 						{ "value": "none", "label": "None" },
 						{ "value": "visa", "label": "Visa" },
 						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "maestro", "label": "Maestro" },
 						{ "value": "amex", "label": "American Express" },
 						{ "value": "paypal", "label": "PayPal" },
 						{ "value": "ideal", "label": "iDEAL" },
@@ -625,8 +639,8 @@
 						{ "value": "apple_pay", "label": "Apple Pay" },
 						{ "value": "google_pay", "label": "Google Pay" },
 						{ "value": "shop_pay", "label": "Shop Pay" },
-						{ "value": "maestro", "label": "Maestro" },
-						{ "value": "sofort", "label": "Sofort" }
+						{ "value": "blik", "label": "BLIK" },
+						{ "value": "unionpay", "label": "Union Pay" }
 					],
 					"default": "ideal"
 				},
@@ -638,6 +652,7 @@
 						{ "value": "none", "label": "None" },
 						{ "value": "visa", "label": "Visa" },
 						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "maestro", "label": "Maestro" },
 						{ "value": "amex", "label": "American Express" },
 						{ "value": "paypal", "label": "PayPal" },
 						{ "value": "ideal", "label": "iDEAL" },
@@ -646,8 +661,8 @@
 						{ "value": "apple_pay", "label": "Apple Pay" },
 						{ "value": "google_pay", "label": "Google Pay" },
 						{ "value": "shop_pay", "label": "Shop Pay" },
-						{ "value": "maestro", "label": "Maestro" },
-						{ "value": "sofort", "label": "Sofort" }
+						{ "value": "blik", "label": "BLIK" },
+						{ "value": "unionpay", "label": "Union Pay" }
 					],
 					"default": "visa"
 				},
@@ -659,6 +674,7 @@
 						{ "value": "none", "label": "None" },
 						{ "value": "visa", "label": "Visa" },
 						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "maestro", "label": "Maestro" },
 						{ "value": "amex", "label": "American Express" },
 						{ "value": "paypal", "label": "PayPal" },
 						{ "value": "ideal", "label": "iDEAL" },
@@ -667,8 +683,8 @@
 						{ "value": "apple_pay", "label": "Apple Pay" },
 						{ "value": "google_pay", "label": "Google Pay" },
 						{ "value": "shop_pay", "label": "Shop Pay" },
-						{ "value": "maestro", "label": "Maestro" },
-						{ "value": "sofort", "label": "Sofort" }
+						{ "value": "blik", "label": "BLIK" },
+						{ "value": "unionpay", "label": "Union Pay" }
 					],
 					"default": "mastercard"
 				},
@@ -680,6 +696,7 @@
 						{ "value": "none", "label": "None" },
 						{ "value": "visa", "label": "Visa" },
 						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "maestro", "label": "Maestro" },
 						{ "value": "amex", "label": "American Express" },
 						{ "value": "paypal", "label": "PayPal" },
 						{ "value": "ideal", "label": "iDEAL" },
@@ -688,8 +705,8 @@
 						{ "value": "apple_pay", "label": "Apple Pay" },
 						{ "value": "google_pay", "label": "Google Pay" },
 						{ "value": "shop_pay", "label": "Shop Pay" },
-						{ "value": "maestro", "label": "Maestro" },
-						{ "value": "sofort", "label": "Sofort" }
+						{ "value": "blik", "label": "BLIK" },
+						{ "value": "unionpay", "label": "Union Pay" }
 					],
 					"default": "paypal"
 				},
@@ -701,6 +718,7 @@
 						{ "value": "none", "label": "None" },
 						{ "value": "visa", "label": "Visa" },
 						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "maestro", "label": "Maestro" },
 						{ "value": "amex", "label": "American Express" },
 						{ "value": "paypal", "label": "PayPal" },
 						{ "value": "ideal", "label": "iDEAL" },
@@ -709,10 +727,120 @@
 						{ "value": "apple_pay", "label": "Apple Pay" },
 						{ "value": "google_pay", "label": "Google Pay" },
 						{ "value": "shop_pay", "label": "Shop Pay" },
-						{ "value": "maestro", "label": "Maestro" },
-						{ "value": "sofort", "label": "Sofort" }
+						{ "value": "blik", "label": "BLIK" },
+						{ "value": "unionpay", "label": "Union Pay" }
 					],
 					"default": "klarna"
+				},
+				{
+					"type": "select",
+					"id": "method_6",
+					"label": "Method 6",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "visa", "label": "Visa" },
+						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "maestro", "label": "Maestro" },
+						{ "value": "amex", "label": "American Express" },
+						{ "value": "paypal", "label": "PayPal" },
+						{ "value": "ideal", "label": "iDEAL" },
+						{ "value": "bancontact", "label": "Bancontact" },
+						{ "value": "klarna", "label": "Klarna" },
+						{ "value": "apple_pay", "label": "Apple Pay" },
+						{ "value": "google_pay", "label": "Google Pay" },
+						{ "value": "shop_pay", "label": "Shop Pay" },
+						{ "value": "blik", "label": "BLIK" },
+						{ "value": "unionpay", "label": "Union Pay" }
+					],
+					"default": "none"
+				},
+				{
+					"type": "select",
+					"id": "method_7",
+					"label": "Method 7",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "visa", "label": "Visa" },
+						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "maestro", "label": "Maestro" },
+						{ "value": "amex", "label": "American Express" },
+						{ "value": "paypal", "label": "PayPal" },
+						{ "value": "ideal", "label": "iDEAL" },
+						{ "value": "bancontact", "label": "Bancontact" },
+						{ "value": "klarna", "label": "Klarna" },
+						{ "value": "apple_pay", "label": "Apple Pay" },
+						{ "value": "google_pay", "label": "Google Pay" },
+						{ "value": "shop_pay", "label": "Shop Pay" },
+						{ "value": "blik", "label": "BLIK" },
+						{ "value": "unionpay", "label": "Union Pay" }
+					],
+					"default": "none"
+				},
+				{
+					"type": "select",
+					"id": "method_8",
+					"label": "Method 8",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "visa", "label": "Visa" },
+						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "maestro", "label": "Maestro" },
+						{ "value": "amex", "label": "American Express" },
+						{ "value": "paypal", "label": "PayPal" },
+						{ "value": "ideal", "label": "iDEAL" },
+						{ "value": "bancontact", "label": "Bancontact" },
+						{ "value": "klarna", "label": "Klarna" },
+						{ "value": "apple_pay", "label": "Apple Pay" },
+						{ "value": "google_pay", "label": "Google Pay" },
+						{ "value": "shop_pay", "label": "Shop Pay" },
+						{ "value": "blik", "label": "BLIK" },
+						{ "value": "unionpay", "label": "Union Pay" }
+					],
+					"default": "none"
+				},
+				{
+					"type": "select",
+					"id": "method_9",
+					"label": "Method 9",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "visa", "label": "Visa" },
+						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "maestro", "label": "Maestro" },
+						{ "value": "amex", "label": "American Express" },
+						{ "value": "paypal", "label": "PayPal" },
+						{ "value": "ideal", "label": "iDEAL" },
+						{ "value": "bancontact", "label": "Bancontact" },
+						{ "value": "klarna", "label": "Klarna" },
+						{ "value": "apple_pay", "label": "Apple Pay" },
+						{ "value": "google_pay", "label": "Google Pay" },
+						{ "value": "shop_pay", "label": "Shop Pay" },
+						{ "value": "blik", "label": "BLIK" },
+						{ "value": "unionpay", "label": "Union Pay" }
+					],
+					"default": "none"
+				},
+				{
+					"type": "select",
+					"id": "method_10",
+					"label": "Method 10",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "visa", "label": "Visa" },
+						{ "value": "mastercard", "label": "Mastercard" },
+						{ "value": "maestro", "label": "Maestro" },
+						{ "value": "amex", "label": "American Express" },
+						{ "value": "paypal", "label": "PayPal" },
+						{ "value": "ideal", "label": "iDEAL" },
+						{ "value": "bancontact", "label": "Bancontact" },
+						{ "value": "klarna", "label": "Klarna" },
+						{ "value": "apple_pay", "label": "Apple Pay" },
+						{ "value": "google_pay", "label": "Google Pay" },
+						{ "value": "shop_pay", "label": "Shop Pay" },
+						{ "value": "blik", "label": "BLIK" },
+						{ "value": "unionpay", "label": "Union Pay" }
+					],
+					"default": "none"
 				}
 			]
 		},

@@ -105,6 +105,9 @@
     "filtering": {
       "title": "絞り込みと並び替え",
       "button": "絞り込む",
+      "filters": "フィルター",
+      "active_filters": "適用中のフィルター",
+      "remove_filter": "フィルターを削除",
       "apply": "適用",
       "clear": "クリア",
       "clear_all": "すべてクリア",

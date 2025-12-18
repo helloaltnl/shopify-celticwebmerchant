@@ -43,13 +43,13 @@
       <input type="hidden" name="type" value="product">
     {%- endif -%}
 
-    <div class="facets__groups" role="list">
+    <div class="facets__groups" role="group" aria-label="{{ 'collection.filtering.filters' | t }}">
       {%- for filter in obj.filters -%}
         {%- case filter.type -%}
           {%- when 'boolean','list' -%}
-            <details class="facet" data-index="{{ forloop.index }}" data-param="{{ filter.param_name }}">
+            <details class="facet" data-index="{{ forloop.index }}" data-param="{{ filter.param_name }}" role="group" aria-labelledby="facet-label-{{ filter.param_name }}-{{ section_id }}">
               <summary class="facet__summary">
-                <span class="facet__name">{{ filter.label | escape }}</span>
+                <span class="facet__name" id="facet-label-{{ filter.param_name }}-{{ section_id }}">{{ filter.label | escape }}</span>
                 <span class="facet__icon">
                   {%- render 'html-theme-icons', icon: 'caret', size: 20 -%}
                 </span>
@@ -88,9 +88,9 @@
               assign max_value = filter.max_value.value | default: filter.range_max | divided_by: 100.0
               assign range_max = filter.range_max | divided_by: 100.0
             -%}
-            <details class="facet facet--price" data-index="{{ forloop.index }}" data-param="{{ filter.param_name }}">
+            <details class="facet facet--price" data-index="{{ forloop.index }}" data-param="{{ filter.param_name }}" role="group" aria-labelledby="facet-label-{{ filter.param_name }}-{{ section_id }}">
               <summary class="facet__summary">
-                <span class="facet__name">{{ filter.label | escape }}</span>
+                <span class="facet__name" id="facet-label-{{ filter.param_name }}-{{ section_id }}">{{ filter.label | escape }}</span>
                 <span class="facet__icon">
                   {%- render 'html-theme-icons', icon: 'caret', size: 20 -%}
                 </span>

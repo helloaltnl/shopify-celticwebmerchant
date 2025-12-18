@@ -1,0 +1,32 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "custom.loyalty_loggedout",
+  "name": "Loyalty (uitgelogd)",
+  "sections": {
+    "login": {
+      "type": "block-loyalty-login",
+      "settings": {
+        "heading": "Log in om je beloningen te bekijken",
+        "text": "<p>Log in op je account om je spaarpunten te bekijken, beloningen te verzilveren en je voortgang te volgen.</p><p>(uitgelogd)</p>",
+        "button_text": "",
+        "width": "is-align",
+        "padding_block": 4,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    }
+  },
+  "order": [
+    "login"
+  ]
+}

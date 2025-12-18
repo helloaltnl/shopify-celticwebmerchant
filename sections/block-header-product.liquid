@@ -1,5 +1,5 @@
 {% if request.page_type == 'product' %}
-<div class="block-header-product__content alignwide" id="block-header-product-{{ section.id }}">
+<div class="block-header-product__content is-align-wide" id="block-header-product-{{ section.id }}">
 	<div class="block-header-product__info">
 		<figure class="block-header-product__media">
 			{%- if product.featured_media -%}
@@ -41,7 +41,7 @@
 			const bar = content.closest('.block-header-product');
 			if (!bar) return;
 
-			const target = document.querySelector('.block-product-form__form');
+			const target = document.querySelector('.block-product-form');
 			if (!target) return;
 
 			const observer = new IntersectionObserver((entries) => {
@@ -183,7 +183,7 @@
 		opacity: 0.9;
 	}
 
-	@media (max-width: 960px) {
+	@media (max-width: 60em) {
 		.block-header-product__button {
 			padding: 1em;
 		}
@@ -211,7 +211,16 @@
 	"enabled_on": {
 		"groups": ["header"]
 	},
-	"settings": [],
+	"settings": [
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Sticky bar that appears when scrolling past the product form. Only visible on product pages."
+		}
+	],
 	"presets": [
 		{
 			"name": "Product bar",

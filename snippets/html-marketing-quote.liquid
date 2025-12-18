@@ -1,193 +1,190 @@
-{% comment %}
-  HTML Marketing Component: Quote
-  Testimonial/quote with attribution
-  
-  Parameters:
-  - quote: {String} Quote text (required)
-  - author: {String} Author name
-  - author_title: {String} Author title/position
-  - author_image: {Object} Author photo
-  - rating: {Number} Star rating (1-5)
-  - alignment: {String} left | center | right - default: center
-  - style: {String} minimal | boxed | accent - default: minimal
-{% endcomment %}
+{%- comment -%}
+============================================================================
+HTML-MARKETING-QUOTE
+============================================================================
+Reusable testimonial/quote component.
 
-{%- liquid
-  assign quote = quote | default: 'Add your testimonial here...'
-  assign author = author | default: ''
-  assign author_title = author_title | default: ''
-  assign author_image = author_image | default: ''
-  assign rating = rating | default: 0
-  assign alignment = alignment | default: 'center'
-  assign style = style | default: 'minimal'
+PARAMS:
+- quote         : Quote text (required)
+- author        : Author name
+- author_title  : Author title/position
+- author_image  : Author photo (image object)
+- rating        : Star rating 0-5 (default: 0)
+- alignment     : left | center (default: center)
+- style         : minimal | boxed | accent (default: minimal)
+
+USAGE:
+{%- render 'html-marketing-quote',
+    quote: block.settings.quote,
+    author: block.settings.author,
+    author_title: block.settings.author_title,
+    author_image: block.settings.author_image,
+    rating: block.settings.rating,
+    alignment: 'center',
+    style: 'boxed'
 -%}
 
-<div class="marketing-quote marketing-quote--{{ style }} marketing-quote--align-{{ alignment }}">
-  <blockquote class="marketing-quote__content">
-    {%- if rating > 0 -%}
-      <div class="marketing-quote__rating">
-        {%- for i in (1..5) -%}
-          <span class="marketing-quote__star{% if i <= rating %} marketing-quote__star--filled{% endif %}">★</span>
-        {%- endfor -%}
-      </div>
-    {%- endif -%}
-    
-    <p class="marketing-quote__text">{{ quote }}</p>
-    
-    {%- if author != blank or author_image != blank -%}
-      <footer class="marketing-quote__footer">
-        {%- if author_image != blank -%}
-          <div class="marketing-quote__avatar">
-            <img
-              src="{{ author_image | image_url: width: 100 }}"
-              alt="{{ author | escape }}"
-              width="60"
-              height="60"
-              loading="lazy"
-            />
-          </div>
-        {%- endif -%}
-        
-        <div class="marketing-quote__author">
-          {%- if author != blank -%}
-            <cite class="marketing-quote__name">{{ author | escape }}</cite>
-          {%- endif -%}
-          {%- if author_title != blank -%}
-            <p class="marketing-quote__title">{{ author_title | escape }}</p>
-          {%- endif -%}
-        </div>
-      </footer>
-    {%- endif -%}
-  </blockquote>
-</div>
+STYLING:
+Sections can override with scoped CSS:
+#shopify-section-{{ section.id }} .marketing-quote { ... }
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	assign quote = quote | default: ''
+	assign author = author | default: ''
+	assign author_title = author_title | default: ''
+	assign author_image = author_image | default: nil
+	assign rating = rating | default: 0
+	assign alignment = alignment | default: 'center'
+	assign style = style | default: 'minimal'
+-%}
+
+{%- if quote != blank -%}
+<blockquote class="marketing-quote marketing-quote--{{ style }} marketing-quote--align-{{ alignment }}">
+	{%- if rating > 0 -%}
+		<div class="marketing-quote__rating" role="img" aria-label="{{ 'general.rating' | t | default: 'Rating' }}: {{ rating }}/5">
+			{%- for i in (1..5) -%}
+				<span class="marketing-quote__star{% if i <= rating %} marketing-quote__star--filled{% endif %}">★</span>
+			{%- endfor -%}
+		</div>
+	{%- endif -%}
+	
+	<p class="marketing-quote__text">{{ quote }}</p>
+	
+	{%- if author != blank or author_image != blank -%}
+		<footer class="marketing-quote__footer">
+			{%- if author_image != blank -%}
+				<div class="marketing-quote__avatar">
+					<img
+						src="{{ author_image | image_url: width: 120 }}"
+						alt="{{ author | escape }}"
+						width="60"
+						height="60"
+						loading="lazy"
+					>
+				</div>
+			{%- endif -%}
+			
+			<div class="marketing-quote__author">
+				{%- if author != blank -%}
+					<cite class="marketing-quote__name">{{ author | escape }}</cite>
+				{%- endif -%}
+				{%- if author_title != blank -%}
+					<p class="marketing-quote__title">{{ author_title | escape }}</p>
+				{%- endif -%}
+			</div>
+		</footer>
+	{%- endif -%}
+</blockquote>
+{%- endif -%}
 
 <style>
-  .marketing-quote {
-    padding: 2rem 0;
-  }
-  
-  .marketing-quote__content {
-    margin: 0 auto;
-    max-width: 700px;
-    padding: 0;
-  }
-  
-  /* Style variations */
-  .marketing-quote--minimal .marketing-quote__content {
-    border: none;
-  }
-  
-  .marketing-quote--boxed .marketing-quote__content {
-    border: 2px solid #e0e0e0;
-    padding: 2rem;
-    border-radius: 8px;
-  }
-  
-  .marketing-quote--accent .marketing-quote__content {
-    border-left: 4px solid #000;
-    padding-left: 2rem;
-  }
-  
-  /* Alignment */
-  .marketing-quote--align-left .marketing-quote__content {
-    text-align: left;
-    margin-left: 0;
-  }
-  
-  .marketing-quote--align-center .marketing-quote__content {
-    text-align: center;
-  }
-  
-  .marketing-quote--align-right .marketing-quote__content {
-    text-align: right;
-    margin-right: 0;
-  }
-  
-  /* Rating */
-  .marketing-quote__rating {
-    margin-bottom: 1rem;
-    font-size: 1.25rem;
-  }
-  
-  .marketing-quote__star {
-    color: #e0e0e0;
-  }
-  
-  .marketing-quote__star--filled {
-    color: #ffa500;
-  }
-  
-  /* Quote text */
-  .marketing-quote__text {
-    font-size: 1.25rem;
-    line-height: 1.6;
-    margin: 0 0 1.5rem;
-    font-style: italic;
-  }
-  
-  .marketing-quote__text::before {
-    content: '"';
-  }
-  
-  .marketing-quote__text::after {
-    content: '"';
-  }
-  
-  /* Footer */
-  .marketing-quote__footer {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1.5rem;
-  }
-  
-  .marketing-quote--align-center .marketing-quote__footer {
-    justify-content: center;
-  }
-  
-  .marketing-quote--align-right .marketing-quote__footer {
-    justify-content: flex-end;
-  }
-  
-  /* Avatar */
-  .marketing-quote__avatar {
-    flex-shrink: 0;
-  }
-  
-  .marketing-quote__avatar img {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  
-  /* Author */
-  .marketing-quote__author {
-    text-align: left;
-  }
-  
-  .marketing-quote__name {
-    display: block;
-    font-weight: 700;
-    font-size: 1rem;
-    font-style: normal;
-    margin-bottom: 0.25rem;
-  }
-  
-  .marketing-quote__title {
-    font-size: 0.875rem;
-    color: #666;
-    margin: 0;
-  }
-  
-  /* Responsive */
-  @media (max-width: 749px) {
-    .marketing-quote__text {
-      font-size: 1.125rem;
-    }
-    
-    .marketing-quote--boxed .marketing-quote__content {
-      padding: 1.5rem;
-    }
-  }
+.marketing-quote {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+/* Style variations */
+.marketing-quote--minimal {
+	padding: 1em 0;
+}
+
+.marketing-quote--boxed {
+	padding: 2em;
+	border: 1px solid var(--theme-color-border, rgba(0, 0, 0, 0.1));
+}
+
+.marketing-quote--accent {
+	padding: 1em 0 1em 2em;
+	border-left: 4px solid var(--theme-color-blue, #0f1f38);
+}
+
+/* Alignment */
+.marketing-quote--align-left { text-align: left; }
+.marketing-quote--align-center { text-align: center; }
+
+/* Rating */
+.marketing-quote__rating {
+	margin-bottom: 1em;
+	font-size: 1.25em;
+	letter-spacing: 0.1em;
+}
+
+.marketing-quote__star {
+	color: var(--theme-color-border, rgba(0, 0, 0, 0.2));
+}
+
+.marketing-quote__star--filled {
+	color: #f5a623;
+}
+
+/* Quote text */
+.marketing-quote__text {
+	font-family: var(--theme-font-family-serif);
+	font-size: 1.25em;
+	font-style: italic;
+	line-height: 1.6;
+	margin: 0 0 1.5em;
+}
+
+.marketing-quote__text::before { content: '"'; }
+.marketing-quote__text::after { content: '"'; }
+
+/* Footer */
+.marketing-quote__footer {
+	display: flex;
+	align-items: center;
+	gap: 1em;
+	margin-top: auto;
+}
+
+.marketing-quote--align-center .marketing-quote__footer {
+	justify-content: center;
+}
+
+/* Avatar */
+.marketing-quote__avatar {
+	flex-shrink: 0;
+}
+
+.marketing-quote__avatar img {
+	width: 3.75em;
+	height: 3.75em;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+/* Author */
+.marketing-quote__author {
+	text-align: left;
+}
+
+.marketing-quote__name {
+	display: block;
+	font-family: var(--theme-font-family-sans);
+	font-size: 1em;
+	font-style: normal;
+	font-weight: 600;
+}
+
+.marketing-quote__title {
+	font-size: 0.875em;
+	opacity: 0.7;
+	margin: 0.25em 0 0;
+}
+
+/* Responsive */
+@media (max-width: 40em) {
+	.marketing-quote__text {
+		font-size: 1.125em;
+	}
+
+	.marketing-quote--boxed {
+		padding: 1.5em;
+	}
+}
 </style>

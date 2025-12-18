@@ -11,6 +11,19 @@
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
     {%- endif -%}
 
+    {%- comment -%} Preloads - Critical resources for above-the-fold {%- endcomment -%}
+    <link rel="preload" href="{{ 'AbsaraSansPro-Regular.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraSansPro-Bold.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraSansPro-Italic.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraSansPro-BoldItalic.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraPro-Regular.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraPro-Medium.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraPro-Bold.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'vendor-swiperjs.min.css' | asset_url }}" as="style">
+    <link rel="preload" href="{{ 'vendor-swiperjs.min.js' | asset_url }}" as="script">
+    <link rel="preload" href="{{ 'theme-ui.min.css' | asset_url }}" as="style">
+    <link rel="preload" href="{{ 'theme-ux.min.css' | asset_url }}" as="style">
+
     <title>
       {{ page_title }}
       {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
@@ -18,34 +31,20 @@
       {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
     </title>
 
-    {% if page_description %}
-      <meta name="description" content="{{ page_description | escape }}">
+    {%- liquid
+	assign meta_description = page_description
+	if meta_description == blank and request.page_type == 'index'
+		assign meta_description = settings.seo_description
+	endif
+	
+	assign meta_title = page_title | default: shop.name
+    -%}
+    {% if meta_description != blank %}
+      <meta name="description" content="{{ meta_description | escape }}">
     {% endif %}
 
-    {% render 'html-meta-tags' %}
-    {% render 'html-schema-org' %}
-
-    {%- comment -%} Theme Stylesheets {%- endcomment -%}
-    {{ 'theme-ui.min.css' | asset_url | stylesheet_tag }}
-    {{ 'theme-ux.min.css' | asset_url | stylesheet_tag }}
-    {{ 'vendor-swiperjs.min.css' | asset_url | stylesheet_tag }}
-    {{ 'theme-maurits.css' | asset_url | stylesheet_tag }}
-    
-
-    {%- comment -%} Theme Scripts {%- endcomment -%}
-    <script src="{{ 'theme-lazyload.min.js' | asset_url }}"></script>
-    <script src="{{ 'vendor-swiperjs.min.js' | asset_url }}"></script>
-    <script src="{{ 'theme-swiper.min.js' | asset_url }}" defer="defer"></script>
-    <script src="{{ 'theme-modal.min.js' | asset_url }}" defer="defer"></script>
-    <script src="{{ 'theme-drawer.min.js' | asset_url }}" defer="defer"></script>
-    <script src="{{ 'theme-search.min.js' | asset_url }}" defer="defer"></script>
-    <script src="{{ 'theme-ux.js' | asset_url }}" defer="defer"></script>
-    <script src="{{ 'pubsub.js' | asset_url }}" defer="defer"></script>
-    <script src="{{ 'global.js' | asset_url }}" defer="defer"></script>
-    <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
-    <script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
-
-    {{ content_for_header }}
+    {% render 'html-theme-meta', title: meta_title, description: meta_description %}
+    {% render 'html-theme-schema' %}
 
     {% style %}
       {%- comment -%} Absara Font Family {%- endcomment -%}
@@ -129,11 +128,28 @@
         background-color: rgb(var(--color-background));
       }
     {% endstyle %}
-
+    
+    {%- comment -%} Theme Stylesheets {%- endcomment -%}
+    {{ 'vendor-swiperjs.min.css' | asset_url | stylesheet_tag }}
+    {{ 'theme-ui.min.css' | asset_url | stylesheet_tag }}
+    {{ 'theme-ux.min.css' | asset_url | stylesheet_tag }}
+    {{ 'theme-maurits.css' | asset_url | stylesheet_tag }}
+    
+    {%- comment -%} Theme Scripts {%- endcomment -%}
+    <script src="{{ 'vendor-swiperjs.min.js' | asset_url }}"></script>
+    <script src="{{ 'theme-lazyload.min.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'theme-modal.min.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'theme-drawer.min.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'theme-search.min.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'theme-ux.min.js' | asset_url }}" defer="defer"></script>
+    {%- comment -%} <script src="{{ 'global.js' | asset_url }}" defer="defer"></script> {%- endcomment -%}
+    
     {%- if localization.available_countries.size > 1 or localization.available_languages.size > 1 -%}
       <script src="{{ 'localization-form.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
-
+        
+    {{ content_for_header }}
+    
     <script>
       if (Shopify.designMode) {
         document.documentElement.classList.add('shopify-design-mode');

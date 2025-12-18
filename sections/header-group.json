@@ -59,7 +59,7 @@
       ],
       "settings": {
         "show_region_selector": true,
-        "width": "alignwide",
+        "width": "is-align-wide",
         "background_color": "#2e130d",
         "text_color": "#ffffff"
       }
@@ -73,9 +73,9 @@
         "show_search": true,
         "show_account": true,
         "show_wishlist": true,
-        "wishlist_url": "/apps/wishlist",
         "show_cart": true,
-        "width": "alignwide",
+        "login_return_url": "shopify://pages/loyalty",
+        "width": "is-align-wide",
         "background_color": "#2e130d",
         "text_color": "#ffffff"
       }
@@ -84,7 +84,7 @@
       "type": "block-header-bottom",
       "settings": {
         "menu": "product-menu",
-        "assist_link_text": "Lees meer",
+        "assist_link_text": "",
         "background_color": "#ffffff",
         "text_color": "#2e130d"
       }

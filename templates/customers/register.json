@@ -10,7 +10,7 @@
 {
   "sections": {
     "main": {
-      "type": "main-register",
+      "type": "main-account-register",
       "settings": {}
     }
   },

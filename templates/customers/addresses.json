@@ -10,7 +10,7 @@
 {
   "sections": {
     "main": {
-      "type": "main-addresses",
+      "type": "main-account-addresses",
       "settings": {}
     }
   },

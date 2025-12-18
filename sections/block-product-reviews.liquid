@@ -27,7 +27,7 @@
 	#shopify-section-{{ section.id }}.block-product-reviews {
 		background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
 		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: {% if section.blocks.size > 0 %}4em{% else %}0{% endif %};
+		padding-block: {% if section.blocks.size > 0 %}{{ section.settings.padding_block }}em{% else %}0{% endif %};
 	}
 
 	#shopify-section-{{ section.id }} .block-product-reviews__content {
@@ -53,12 +53,23 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "align"
+			"default": "is-align"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 4,
+			"unit": "em"
 		},
 		{
 			"type": "header",
@@ -67,14 +78,12 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#f8f8f8"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "header",
@@ -95,11 +104,11 @@
 		},
 		{
 			"type": "header",
-			"content": "How to use"
+			"content": "Howto"
 		},
 		{
 			"type": "paragraph",
-			"content": "Add a reviews app block to display product reviews. The anchor ID is used as scroll target from the rating block in the product form."
+			"content": "Add reviews app block. Anchor ID is used as scroll target from rating block in product form."
 		}
 	],
 	"blocks": [

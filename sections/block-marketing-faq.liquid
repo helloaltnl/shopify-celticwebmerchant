@@ -1,0 +1,206 @@
+{%- comment -%}
+  ============================================================================
+  BLOCK-MARKETING-FAQ
+  ============================================================================
+  FAQ section with collapsible Q&A items.
+  Reusable marketing component with heading and intro text.
+  ============================================================================
+{%- endcomment -%}
+
+<div class="block-marketing-faq__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+	{%- if section.settings.heading != blank -%}
+		<h2 class="block-marketing-faq__heading">{{ section.settings.heading }}</h2>
+	{%- endif -%}
+	
+	{%- if section.settings.text != blank -%}
+		<div class="block-marketing-faq__text">{{ section.settings.text }}</div>
+	{%- endif -%}
+	
+	{%- if section.blocks.size > 0 -%}
+		<div class="block-marketing-faq__items">
+			{%- for block in section.blocks -%}
+				<details class="block-marketing-faq__item" {{ block.shopify_attributes }}>
+					<summary class="block-marketing-faq__question">
+						<span>{{ block.settings.question }}</span>
+						<i class="block-marketing-faq__icon">
+							{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+						</i>
+					</summary>
+					<div class="block-marketing-faq__answer">
+						{{ block.settings.answer }}
+					</div>
+				</details>
+			{%- endfor -%}
+		</div>
+	{%- endif -%}
+</div>
+
+{% style %}
+	#shopify-section-{{ section.id }}.block-marketing-faq {
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {{ section.settings.padding_block }}em;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-faq__heading {
+		font-size: clamp(1.5em, 3vw, 2em);
+		margin: 0 0 0.5em;
+		font-weight: 500;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-faq__text {
+		font-size: 1.1em;
+		line-height: 1.6;
+		margin-bottom: 2em;
+		opacity: 0.8;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-faq__items {
+		max-width: 100%;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-faq__item {
+		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-faq__question {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1em;
+		padding: 1.25em 0;
+		font-weight: 500;
+		cursor: pointer;
+		list-style: none;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-faq__question::-webkit-details-marker {
+		display: none;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-faq__icon {
+		flex-shrink: 0;
+		transition: transform 200ms ease;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-faq__item[open] .block-marketing-faq__icon {
+		transform: rotate(180deg);
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-faq__answer {
+		padding: 0 0 1.5em;
+		line-height: 1.6;
+		opacity: 0.8;
+	}
+{% endstyle %}
+
+{% schema %}
+{
+	"name": "FAQ",
+	"tag": "section",
+	"class": "block-marketing-faq",
+	"disabled_on": {
+		"groups": ["header", "footer"]
+	},
+	"settings": [
+		{
+			"type": "header",
+			"content": "Content"
+		},
+		{
+			"type": "text",
+			"id": "heading",
+			"label": "Heading",
+			"default": "Veelgestelde vragen"
+		},
+		{
+			"type": "richtext",
+			"id": "text",
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
+			],
+			"default": "is-align"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Colors"
+		},
+		{
+			"type": "color",
+			"id": "background_color",
+			"label": "Background"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class for styling"
+		}
+	],
+	"blocks": [
+		{
+			"type": "question",
+			"name": "Question",
+			"settings": [
+				{
+					"type": "text",
+					"id": "question",
+					"label": "Question",
+					"default": "Question goes here"
+				},
+				{
+					"type": "richtext",
+					"id": "answer",
+					"label": "Answer",
+					"default": "<p>Answer goes here.</p>"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "FAQ",
+			"category": "Marketing"
+		}
+	]
+}
+{% endschema %}

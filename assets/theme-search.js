@@ -147,16 +147,22 @@
 
       this.previousFocus = document.activeElement;
       this.overlay.hidden = false;
-      this.overlay.classList.add('is-open');
       document.body.classList.add('has-search-open');
 
-      // Focus input
+      // Add open class after a frame to trigger CSS transition
       requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.overlay.classList.add('is-open');
+        });
+      });
+
+      // Focus input after visibility transition (175ms)
+      setTimeout(() => {
         if (this.input) {
           this.input.focus();
           this.input.select();
         }
-      });
+      }, 175);
 
       // Show results based on input state
       if (this.input) {
@@ -184,7 +190,7 @@
       // Wait for animation
       setTimeout(() => {
         this.overlay.hidden = true;
-      }, 300);
+      }, 175);
 
       // Restore focus
       if (this.previousFocus) {
@@ -448,12 +454,19 @@
       const items = products.slice(0, block.settings.limit || 6);
       const columns = block.settings.columns || '2';
       const heading = block.settings.heading || this.config.strings.products;
+      const showCompare = this.config.showComparePrice !== false;
+      const showTaxNotice = this.config.showTaxNotice === true;
+      const taxNotice = this.config.taxIncluded ? this.config.strings.taxIncluded : this.config.strings.taxExcluded;
       
       return `
         <div class="search-results__section search-results__section--products" data-columns="${columns}">
           <h3 class="search-results__heading">${heading}</h3>
           <div class="search-results__items">
-            ${items.map(p => `
+            ${items.map(p => {
+              // API returns compare_at_price_min for products with variants
+              const comparePrice = p.compare_at_price_min || p.compare_at_price_max;
+              const hasCompare = showCompare && comparePrice && parseFloat(comparePrice) > 0 && parseFloat(comparePrice) > parseFloat(p.price);
+              return `
               <a href="${p.url}" class="search-results__item">
                 ${p.featured_image ? `
                   <img src="${this.getImageUrl(p.featured_image, '100x100')}" alt="${p.title}" loading="lazy" width="50" height="50">
@@ -461,10 +474,16 @@
                 <div class="search-results__content">
                   ${block.settings.show_vendor && p.vendor ? `<span class="search-results__vendor">${p.vendor}</span>` : ''}
                   <span class="search-results__title">${p.title}</span>
-                  ${block.settings.show_price && p.price ? `<span class="search-results__price">${this.formatMoney(p.price)}</span>` : ''}
+                  ${block.settings.show_price && p.price ? `
+                    <span class="product-price">
+                      <span class="product-price__current">${this.formatMoney(p.price)}</span>
+                      ${hasCompare ? `<span class="product-price__compare">${this.formatMoney(comparePrice)}</span>` : ''}
+                      ${showTaxNotice ? `<span class="product-price__tax-notice">${taxNotice}</span>` : ''}
+                    </span>
+                  ` : ''}
                 </div>
               </a>
-            `).join('')}
+            `}).join('')}
           </div>
         </div>
       `;
@@ -538,19 +557,14 @@
     formatMoney(price) {
       // Shopify API returns price as string like "51.25" or number
       const amount = parseFloat(price).toFixed(2);
-      const format = this.config.moneyFormat || '€{{amount}}';
       
-      // Split amount into whole and decimal parts
+      // Split into whole and decimal parts
       const parts = amount.split('.');
-      const whole = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-      const decimal = parts[1];
+      const before = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      const after = parts[1];
       
-      return format
-        .replace('{{amount}}', amount.replace('.', ','))
-        .replace('{{amount_no_decimals}}', whole)
-        .replace('{{amount_with_comma_separator}}', whole + ',' + decimal)
-        .replace('{{amount_no_decimals_with_comma_separator}}', whole)
-        .replace('{{amount_with_apostrophe_separator}}', whole.replace(/\./g, "'") + '.' + decimal);
+      // Return same structure as html-product-price
+      return `<span class="price"><span class="valuta">€</span><span class="before_seperator">${before}</span><span class="seperator">,</span><span class="after_seperator">${after}</span></span>`;
     },
 
     getRecentSearches(limit) {

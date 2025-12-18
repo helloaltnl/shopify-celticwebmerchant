@@ -97,6 +97,7 @@
                     {%- render 'html-cart-subtotal', 
                       cart: cart,
                       show_cart_note: block.settings.show_cart_note,
+                      show_discount_code: block.settings.show_discount_code,
                       context: 'page'
                     -%}
                   </div>
@@ -150,9 +151,9 @@
 
 <style>
   .block-cart-order {
-    padding: 2em 0;
-    background-color: {{ section.settings.background_color }};
-    color: {{ section.settings.text_color }};
+    padding-block: {{ section.settings.padding_block }}em;
+    background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
+    color: {{ section.settings.text_color | default: '#111111' }};
   }
 
   .block-cart-order__header {
@@ -187,7 +188,7 @@
     gap: 2em;
   }
 
-  @media (min-width: 960px) {
+  @media (min-width: 60em) {
     .block-cart-order__grid {
       grid-template-columns: 1fr 380px;
       gap: 3em;
@@ -281,11 +282,23 @@
       "id": "width",
       "label": "Width",
       "options": [
-        { "value": "align", "label": "Regular" },
-        { "value": "alignwide", "label": "Wide" },
-        { "value": "alignfull", "label": "Full" }
+        { "value": "is-align-narrow", "label": "Narrow" },
+        { "value": "is-align-small", "label": "Small" },
+        { "value": "is-align", "label": "Regular" },
+        { "value": "is-align-wide", "label": "Wide" },
+        { "value": "is-align-full", "label": "Full" }
       ],
-      "default": "alignwide"
+      "default": "is-align-wide"
+    },
+    {
+      "type": "range",
+      "id": "padding_block",
+      "label": "Vertical padding",
+      "min": 0,
+      "max": 6,
+      "step": 0.5,
+      "default": 2,
+      "unit": "em"
     },
     {
       "type": "header",
@@ -294,14 +307,20 @@
     {
       "type": "color",
       "id": "background_color",
-      "label": "Background",
-      "default": "#f8f8f8"
+      "label": "Background"
     },
     {
       "type": "color",
       "id": "text_color",
-      "label": "Text",
-      "default": "#111111"
+      "label": "Text"
+    },
+    {
+      "type": "header",
+      "content": "Howto"
+    },
+    {
+      "type": "paragraph",
+      "content": "Main cart page section. Add blocks to configure items, subtotal, and checkout. App slots allow third-party integrations."
     }
   ],
   "blocks": [
@@ -359,6 +378,12 @@
         },
         {
           "type": "checkbox",
+          "id": "show_discount_code",
+          "label": "Show discount code field",
+          "default": true
+        },
+        {
+          "type": "checkbox",
           "id": "show_cart_note",
           "label": "Show cart note field",
           "default": true
@@ -371,6 +396,10 @@
       "limit": 1,
       "settings": [
         {
+          "type": "header",
+          "content": "Content"
+        },
+        {
           "type": "text",
           "id": "button_text",
           "label": "Button text",
@@ -380,7 +409,7 @@
           "type": "checkbox",
           "id": "show_additional_buttons",
           "label": "Show dynamic checkout buttons",
-          "info": "Apple Pay, Google Pay, etc. Configure in Shopify payment settings.",
+          "info": "Apple Pay, Google Pay, etc.",
           "default": true
         },
         {
@@ -397,7 +426,7 @@
           "type": "textarea",
           "id": "terms_text",
           "label": "Terms text",
-          "info": "Leave empty to use locale default. Supports HTML links."
+          "info": "Leave empty to use locale default. Supports HTML."
         }
       ]
     },

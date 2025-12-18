@@ -82,10 +82,23 @@
 
 			{%- if shop.customer_accounts_enabled and section.settings.show_account -%}
 				<li>
+					{%- liquid
+						if customer
+							assign account_url = routes.account_url
+							assign account_label = 'customer.account' | t
+						else
+							if section.settings.login_return_url != blank
+								assign account_url = routes.storefront_login_url | append: '&return_url=' | append: section.settings.login_return_url
+							else
+								assign account_url = routes.account_login_url
+							endif
+							assign account_label = 'customer.log_in' | t
+						endif
+					-%}
 					<a 
 						class="block-header-middle__action" 
-						href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}" 
-						aria-label="{%- if customer -%}{{ 'customer.account' | t }}{%- else -%}{{ 'customer.log_in' | t }}{%- endif -%}"
+						href="{{ account_url }}" 
+						aria-label="{{ account_label }}"
 					>
 						<i class="block-header-middle__icon">
 							{% render 'html-theme-icons', icon: 'account', size: 24 %}
@@ -98,7 +111,7 @@
 				<li>
 					<a 
 						class="block-header-middle__action th_wlc_position_relative" 
-						href="{{ section.settings.wishlist_url | default: '/apps/wishlist' }}"
+						href="/apps/wishlist"
 						aria-label="{{ 'customer.wishlist' | t }}"
 					>
 						<i class="block-header-middle__icon">
@@ -120,8 +133,8 @@
 
 {% style %}
 	.block-header-middle {
-		background-color: {{ section.settings.background_color }};
-		color: {{ section.settings.text_color }};
+		background-color: {{ section.settings.background_color | default: '#2e130d' }};
+		color: {{ section.settings.text_color | default: '#ffffff' }};
 	}
 
 	.block-header-middle__content {
@@ -324,7 +337,7 @@
 		height: 1.5em;
 	}
 
-	@media (max-width: 1024px) {
+	@media (max-width: 60em) {
 		.block-header-middle__nav {
 			display: none;
 		}
@@ -388,10 +401,10 @@
 			"label": "Primary menu"
 		},
 		{
-			"type": "text",
+			"type": "link_list",
 			"id": "menu_secondary",
-			"label": "Secondary menu handle",
-			"info": "Menu handle for highlighted links (e.g. sale-menu)"
+			"label": "Secondary menu",
+			"info": "Highlighted links (e.g. sale). Only top-level items shown."
 		},
 		{
 			"type": "header",
@@ -416,15 +429,20 @@
 			"default": true
 		},
 		{
-			"type": "url",
-			"id": "wishlist_url",
-			"label": "Wishlist URL"
-		},
-		{
 			"type": "checkbox",
 			"id": "show_cart",
 			"label": "Show cart",
 			"default": true
+		},
+		{
+			"type": "header",
+			"content": "Misc"
+		},
+		{
+			"type": "url",
+			"id": "login_return_url",
+			"label": "Login return URL",
+			"info": "Redirect guests here after login"
 		},
 		{
 			"type": "header",
@@ -435,12 +453,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "header",
@@ -449,14 +468,20 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#2e130d"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#ffffff"
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Logo is set in Theme Settings. On mobile, navigation moves to drawer."
 		}
 	],
 	"presets": [

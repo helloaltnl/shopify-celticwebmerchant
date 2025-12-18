@@ -1,3 +1,23 @@
+{%- comment -%}
+============================================================================
+BLOCK-MARKETING-MEDIA-TEXT
+============================================================================
+Image + text side-by-side layouts.
+
+FEATURES:
+- Mobile-first: media always renders first in HTML
+- Desktop: CSS order controls left/right positioning
+- Configurable aspect ratios, widths, alignments
+- Focus point support for images (CSS object-position)
+- Quality compression (70%)
+
+DEPENDENCIES:
+- html-theme-media-image snippet (direct, for focus point support)
+- html-marketing-cta snippet
+- html-marketing-headline snippet
+============================================================================
+{%- endcomment -%}
+
 {%- liquid
 	assign has_heading = false
 	if section.settings.heading != blank or section.settings.subheading != blank
@@ -5,162 +25,287 @@
 	endif
 -%}
 
-<div class="block-marketing-media-text__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+<div class="block-marketing-media-text__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	{%- if section.settings.heading != blank -%}
 		{%- render 'html-marketing-headline',
 			heading: section.settings.heading,
 			subheading: section.settings.subheading,
-			alignment: 'center'
+			alignment: section.settings.text_align
 		-%}
 	{%- endif -%}
 	
 	<div class="block-marketing-media-text__items{% if has_heading %} block-marketing-media-text__items--has-heading{% endif %}">
 		{%- for block in section.blocks -%}
-			<div class="block-marketing-media-text__item" {{ block.shopify_attributes }}>
-				{%- case block.type -%}
-					{%- when 'image_text' -%}
-						{%- render 'html-marketing-split',
-							image: block.settings.image,
-							heading: block.settings.heading,
-							text: block.settings.text,
-							cta_text: block.settings.cta_text,
-							cta_url: block.settings.cta_url,
-							cta_style: block.settings.cta_style,
-							image_position: block.settings.image_position,
-							vertical_alignment: block.settings.vertical_alignment,
-							image_width: block.settings.image_width,
-							image_height: block.settings.image_height,
-							focus_x: block.settings.focus_x,
-							focus_y: block.settings.focus_y,
-							background_color: block.settings.background_color,
-							text_color: block.settings.text_color,
-							button_color: block.settings.button_color,
-							button_text_color: block.settings.button_text_color
-						-%}
-					{%- when 'video_text' -%}
-						{%- liquid
-							case block.settings.video_height
-								when 'square'
-									assign video_aspect = '1-1'
-								when 'portrait'
-									assign video_aspect = '2-3'
-								when 'landscape'
-									assign video_aspect = '3-2'
-								else
-									assign video_aspect = '16-9'
-							endcase
-						-%}
-						<div class="block-marketing-media-text__split block-marketing-media-text__split--{{ block.settings.video_position }}{% if block.settings.video_height == 'fill' %} block-marketing-media-text__split--fill{% endif %}">
-							<div class="block-marketing-media-text__media block-marketing-media-text__media--{{ block.settings.video_height | default: 'landscape' }}">
-								{%- render 'html-marketing-video',
-									video_url: block.settings.video_url,
-									cover_image: block.settings.cover_image,
-									width: 'full',
-									aspect_ratio: video_aspect,
-									focus_x: block.settings.focus_x,
-									focus_y: block.settings.focus_y
-								-%}
-							</div>
-							<div class="block-marketing-media-text__text"{% if block.settings.background_color != blank or block.settings.text_color != blank %} style="{% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}{% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}"{% endif %}>
-								{%- if block.settings.heading != blank -%}
-									<h3 class="block-marketing-media-text__heading">{{ block.settings.heading | escape }}</h3>
-								{%- endif -%}
-								{%- if block.settings.text != blank -%}
-									<div class="block-marketing-media-text__description">{{ block.settings.text }}</div>
-								{%- endif -%}
-								{%- if block.settings.cta_url != blank -%}
-								{%- render 'html-marketing-cta',
-								 text: block.settings.cta_text,
-								 url: block.settings.cta_url,
-								 style: block.settings.cta_style,
-								 alignment: 'left',
-								 button_color: block.settings.button_color,
-								  button_text_color: block.settings.button_text_color
-								-%}
+			{%- liquid
+				assign media_position = block.settings.image_position | default: 'left'
+				assign media_width = block.settings.image_width | default: '50'
+				assign media_height = block.settings.image_height | default: 'adapt'
+				assign vertical_alignment = block.settings.vertical_alignment | default: 'center'
+				assign focus_x = block.settings.focus_x | default: 50
+				assign focus_y = block.settings.focus_y | default: 50
+				
+				comment
+					Calculate sizing for responsive images
+					Media takes 40-60% of container on desktop, 100% on mobile
+				endcomment
+				case section.settings.width
+					when 'is-align-narrow'
+						assign container_px = 480
+					when 'is-align-small'
+						assign container_px = 640
+					when 'is-align'
+						assign container_px = 960
+					when 'is-align-wide'
+						assign container_px = 1280
+					when 'is-align-full'
+						assign container_px = 1600
+					else
+						assign container_px = 960
+				endcase
+				
+				assign media_fraction = media_width | times: 0.01
+				assign desktop_px = container_px | times: media_fraction | round
+				assign mobile_px = 480
+				
+				assign img_sizes = '(min-width: 40em) ' | append: desktop_px | append: 'px, ' | append: mobile_px | append: 'px'
+				
+				comment
+					Srcset widths based on desktop size (largest)
+				endcomment
+				assign base_width = desktop_px
+				if base_width < 200
+					assign base_width = 200
+				endif
+				
+				assign w1 = base_width | round
+				assign w2 = base_width | times: 1.5 | round
+				assign w3 = base_width | times: 2 | round
+				assign w4 = base_width | times: 2.5 | round
+				assign w5 = base_width | times: 3 | round
+				if w5 > 2048
+					assign w5 = 2048
+				endif
+				if w4 > 2048
+					assign w4 = 2048
+				endif
+			-%}
+			
+			<article 
+				class="media-text media-text--{{ media_position }} media-text--width-{{ media_width }} media-text--align-{{ vertical_alignment }}" 
+				{{ block.shopify_attributes }}
+			>
+				{%- comment -%} Media - always first in HTML (mobile-first) {%- endcomment -%}
+				<div class="media-text__media media-text__media--{{ media_height }}">
+					{%- case block.type -%}
+						{%- when 'image_text' -%}
+							{%- if block.settings.image != blank -%}
+								<figure class="media-text__figure">
+									{%- render 'html-theme-media-image',
+									image: block.settings.image,
+									alt: block.settings.image.alt | default: block.settings.heading,
+									w1: w1,
+									w2: w2,
+									w3: w3,
+									w4: w4,
+									w5: w5,
+									sizes: img_sizes,
+									image_loading: 'lazy',
+									focus_x: focus_x,
+									focus_y: focus_y
+									-%}
+								</figure>
+							{%- else -%}
+								<div class="media-text__placeholder">
+									{%- render 'html-theme-icons', icon: 'image', size: 64 -%}
+								</div>
 							{%- endif -%}
-							</div>
+					{%- endcase -%}
+				</div>
+				
+				{%- comment -%} Content - always second in HTML {%- endcomment -%}
+				<div class="media-text__content"{% if block.settings.background_color != blank or block.settings.text_color != blank %} style="{% if block.settings.background_color != blank %}background-color: {{ block.settings.background_color }};{% endif %}{% if block.settings.text_color != blank %}color: {{ block.settings.text_color }};{% endif %}"{% endif %}>
+					{%- if block.settings.heading != blank -%}
+						<h3 class="media-text__heading">{{ block.settings.heading | escape }}</h3>
+					{%- endif -%}
+					{%- if block.settings.text != blank -%}
+						<div class="media-text__text rte">{{ block.settings.text }}</div>
+					{%- endif -%}
+					{%- if block.settings.cta_url != blank -%}
+						<div class="media-text__cta">
+							{%- render 'html-marketing-cta',
+								text: block.settings.cta_text,
+								url: block.settings.cta_url,
+								style: block.settings.cta_style,
+								alignment: 'left',
+								button_color: block.settings.button_color,
+								button_text_color: block.settings.button_text_color
+							-%}
 						</div>
-				{%- endcase -%}
-			</div>
+					{%- endif -%}
+				</div>
+			</article>
 		{%- endfor -%}
 	</div>
 </div>
 
 {% style %}
-	#shopify-section-{{ section.id }}.block-marketing-media-text {
-		background-color: {{ section.settings.background_color | default: '#ffffff' }};
-		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: 3em;
-	}
+#shopify-section-{{ section.id }}.block-marketing-media-text {
+	background-color: {{ section.settings.background_color }};
+	color: {{ section.settings.text_color }};
+	padding-block: {{ section.settings.padding_block }}em;
+}
 
-	.block-marketing-media-text__items--has-heading {
-		margin-block-start: 2em;
-	}
+.block-marketing-media-text__items--has-heading {
+	margin-block-start: 2em;
+}
 
-	.block-marketing-media-text__item + .block-marketing-media-text__item {
-		margin-block-start: 3em;
-	}
+.block-marketing-media-text__items > * + * {
+	margin-block-start: 3em;
+}
 
-	.block-marketing-media-text__split {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 2em;
-		align-items: center;
-	}
+/* ===========================================
+   Media + Text Layout
+   =========================================== */
 
-	.block-marketing-media-text__split--right .block-marketing-media-text__media {
-		order: 2;
-	}
+.media-text {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0;
+	align-items: stretch;
+}
 
-	.block-marketing-media-text__split--fill {
-		align-items: stretch;
-	}
+.media-text > * {
+	min-width: 0;
+}
 
-	.block-marketing-media-text__media--fill {
-		height: 100%;
-		min-height: 20em;
-		position: relative;
-	}
+/* Desktop: side-by-side */
+@media (min-width: 40em) {
+	/* Width variations */
+	.media-text--width-40 { grid-template-columns: 40% 60%; }
+	.media-text--width-50 { grid-template-columns: 50% 50%; }
+	.media-text--width-60 { grid-template-columns: 60% 40%; }
+	
+	/* Position right: media moves to second column via order */
+	.media-text--right .media-text__media { order: 2; }
+	.media-text--right .media-text__content { order: 1; }
+	
+	/* Flip grid columns when media is on right */
+	.media-text--right.media-text--width-40 { grid-template-columns: 60% 40%; }
+	.media-text--right.media-text--width-60 { grid-template-columns: 40% 60%; }
+}
 
-	.block-marketing-media-text__media--fill .marketing-video {
+/* ===========================================
+   Media Container
+   =========================================== */
+
+.media-text__media {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+}
+
+.media-text__figure {
+	margin: 0;
+}
+
+.media-text__figure .theme-media__img {
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+}
+
+/* Mobile: fixed ratios op media container */
+.media-text__media--square { aspect-ratio: 1 / 1; }
+.media-text__media--portrait { aspect-ratio: 2 / 3; }
+.media-text__media--landscape { aspect-ratio: 3 / 2; }
+
+/* Mobile: fill heeft min-height, adapt toont natuurlijke ratio */
+.media-text__media--fill {
+	aspect-ratio: auto;
+	min-height: 296px;
+}
+
+.media-text__media--adapt {
+	/* Natuurlijke afbeelding ratio behouden */
+}
+
+/* Desktop: figure vult media container */
+@media (min-width: 40em) {
+	.media-text__figure {
 		position: absolute;
 		inset: 0;
-		width: 100%;
+	}
+	
+	.media-text__figure .theme-media__img {
 		height: 100%;
 	}
-
-	.block-marketing-media-text__media--fill .marketing-video__wrapper {
-		height: 100%;
-		padding-bottom: 0 !important;
+	
+	/* Fill: content bepaalt hoogte, media vult mee */
+	.media-text__media--fill {
+		min-height: 20em;
 	}
-
-	.block-marketing-media-text__text {
-		max-width: 600px;
-		padding: 2em;
+	
+	/* Adapt: afbeelding behoudt natuurlijke ratio, content strekt mee */
+	.media-text__media--adapt .media-text__figure {
+		position: relative;
+		inset: auto;
 	}
-
-	.block-marketing-media-text__heading {
-		font-family: var(--theme-font-family-serif);
-		font-size: 2em;
-		font-weight: 400;
-		margin: 0 0 0.5em;
+	
+	.media-text__media--adapt .theme-media__img {
+		height: auto;
 	}
+}
 
-	.block-marketing-media-text__description {
-		font-size: 1em;
-		line-height: 1.6;
-		margin-block-end: 1.5em;
+/* Placeholder */
+.media-text__placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 300px;
+	background-color: var(--theme-color-grey-light, #f5f5f5);
+	color: var(--theme-color-grey, #999);
+	gap: 1em;
+}
+
+/* ===========================================
+   Content Container
+   =========================================== */
+
+.media-text__content {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 2em 1.5em;
+}
+
+/* Vertical alignment within content */
+.media-text--align-top .media-text__content { justify-content: flex-start; }
+.media-text--align-center .media-text__content { justify-content: center; }
+.media-text--align-bottom .media-text__content { justify-content: flex-end; }
+
+@media (min-width: 40em) {
+	.media-text__content {
+		padding: 3em;
 	}
+}
 
-	@media (max-width: 989px) {
-		.block-marketing-media-text__split {
-			grid-template-columns: 1fr;
-		}
+.media-text__heading {
+	font-family: var(--theme-font-family-serif);
+	font-size: 2em;
+	font-weight: 400;
+	line-height: 1.2;
+	margin: 0 0 0.5em;
+}
 
-		.block-marketing-media-text__split--right .block-marketing-media-text__media {
-			order: unset;
-		}
-	}
+.media-text__text {
+	margin: 0;
+}
+
+.media-text__cta {
+	margin-top: 2em;
+}
 {% endstyle %}
 
 {% schema %}
@@ -187,6 +332,16 @@
 			"label": "Subheading"
 		},
 		{
+			"type": "select",
+			"id": "text_align",
+			"label": "Header alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" }
+			],
+			"default": "center"
+		},
+		{
 			"type": "header",
 			"content": "Layout"
 		},
@@ -195,12 +350,23 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
 		},
 		{
 			"type": "header",
@@ -209,18 +375,22 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",
@@ -244,8 +414,8 @@
 					"id": "image_height",
 					"label": "Image height",
 					"options": [
-						{ "value": "adapt", "label": "Adapt to media" },
-						{ "value": "fill", "label": "Adapt to content" },
+						{ "value": "adapt", "label": "Adapt to image" },
+						{ "value": "fill", "label": "Fill to content" },
 						{ "value": "square", "label": "Square (1:1)" },
 						{ "value": "portrait", "label": "Portrait (2:3)" },
 						{ "value": "landscape", "label": "Landscape (3:2)" }
@@ -347,132 +517,12 @@
 				{
 					"type": "color",
 					"id": "background_color",
-					"label": "Text background"
+					"label": "Content background"
 				},
 				{
 					"type": "color",
 					"id": "text_color",
-					"label": "Text color"
-				},
-				{
-					"type": "color",
-					"id": "button_color",
-					"label": "Button color"
-				},
-				{
-					"type": "color",
-					"id": "button_text_color",
-					"label": "Button text color"
-				}
-			]
-		},
-		{
-			"type": "video_text",
-			"name": "Video + text",
-			"settings": [
-				{
-					"type": "text",
-					"id": "video_url",
-					"label": "Video URL",
-					"info": "YouTube or Vimeo URL"
-				},
-				{
-					"type": "image_picker",
-					"id": "cover_image",
-					"label": "Cover image"
-				},
-				{
-					"type": "select",
-					"id": "video_height",
-					"label": "Video height",
-					"options": [
-						{ "value": "adapt", "label": "Adapt to media" },
-						{ "value": "fill", "label": "Adapt to content" },
-						{ "value": "square", "label": "Square (1:1)" },
-						{ "value": "portrait", "label": "Portrait (2:3)" },
-						{ "value": "landscape", "label": "Landscape (3:2)" }
-					],
-					"default": "landscape"
-				},
-				{
-					"type": "range",
-					"id": "focus_x",
-					"label": "Horizontal focus",
-					"min": 0,
-					"max": 100,
-					"step": 5,
-					"default": 50,
-					"unit": "%"
-				},
-				{
-					"type": "range",
-					"id": "focus_y",
-					"label": "Vertical focus",
-					"min": 0,
-					"max": 100,
-					"step": 5,
-					"default": 50,
-					"unit": "%"
-				},
-				{
-					"type": "text",
-					"id": "heading",
-					"label": "Heading"
-				},
-				{
-					"type": "richtext",
-					"id": "text",
-					"label": "Text"
-				},
-				{
-					"type": "text",
-					"id": "cta_text",
-					"label": "Button text",
-					"info": "Leave empty to use locale default"
-				},
-				{
-					"type": "url",
-					"id": "cta_url",
-					"label": "Button link"
-				},
-				{
-					"type": "select",
-					"id": "cta_style",
-					"label": "Button style",
-					"options": [
-						{ "value": "primary", "label": "Primary" },
-						{ "value": "secondary", "label": "Secondary" },
-						{ "value": "outline", "label": "Outline" }
-					],
-					"default": "outline"
-				},
-				{
-					"type": "header",
-					"content": "Layout"
-				},
-				{
-					"type": "select",
-					"id": "video_position",
-					"label": "Video position (desktop)",
-					"options": [
-						{ "value": "left", "label": "Left" },
-						{ "value": "right", "label": "Right" }
-					],
-					"default": "left"
-				},
-				{
-					"type": "header",
-					"content": "Colors"
-				},
-				{
-					"type": "color",
-					"id": "background_color",
-					"label": "Text background"
-				},
-				{
-					"type": "color",
-					"id": "text_color",
-					"label": "Text color"
+					"label": "Content text"
 				},
 				{
 					"type": "color",

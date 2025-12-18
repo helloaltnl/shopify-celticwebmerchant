@@ -1,0 +1,243 @@
+<!doctype html>
+<html class="js" lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="">
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- endif -%}
+
+    {%- comment -%} Preloads - Critical resources for above-the-fold {%- endcomment -%}
+    <link rel="preload" href="{{ 'AbsaraSansPro-Regular.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraSansPro-Bold.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraSansPro-Italic.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraSansPro-BoldItalic.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraPro-Regular.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraPro-Medium.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'AbsaraPro-Bold.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ 'vendor-swiperjs.min.css' | asset_url }}" as="style">
+    <link rel="preload" href="{{ 'vendor-swiperjs.min.js' | asset_url }}" as="script">
+    <link rel="preload" href="{{ 'theme-ui.min.css' | asset_url }}" as="style">
+    <link rel="preload" href="{{ 'theme-ux.min.css' | asset_url }}" as="style">
+
+    <title>
+      {{ page_title }}
+      {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
+      {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    </title>
+
+    {%- liquid
+	assign meta_description = page_description
+	if meta_description == blank and request.page_type == 'index'
+		assign meta_description = settings.seo_description
+	endif
+	
+	assign meta_title = page_title | default: shop.name
+    -%}
+    {% if meta_description != blank %}
+      <meta name="description" content="{{ meta_description | escape }}">
+    {% endif %}
+
+    {% render 'html-theme-meta', title: meta_title, description: meta_description %}
+    {% render 'html-theme-schema' %}
+
+    {% style %}
+      {%- comment -%} Absara Font Family {%- endcomment -%}
+      @font-face {
+        font-family: 'Absara Sans Pro';
+        src: url('{{ "AbsaraSansPro-Regular.woff2" | asset_url }}') format('woff2'),
+             url('{{ "AbsaraSansPro-Regular.woff" | asset_url }}') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Absara Sans Pro';
+        src: url('{{ "AbsaraSansPro-Bold.woff2" | asset_url }}') format('woff2'),
+             url('{{ "AbsaraSansPro-Bold.woff" | asset_url }}') format('woff');
+        font-weight: bold;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Absara Sans Pro';
+        src: url('{{ "AbsaraSansPro-Italic.woff2" | asset_url }}') format('woff2'),
+             url('{{ "AbsaraSansPro-Italic.woff" | asset_url }}') format('woff');
+        font-weight: normal;
+        font-style: italic;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Absara Sans Pro';
+        src: url('{{ "AbsaraSansPro-BoldItalic.woff2" | asset_url }}') format('woff2'),
+             url('{{ "AbsaraSansPro-BoldItalic.woff" | asset_url }}') format('woff');
+        font-weight: bold;
+        font-style: italic;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Absara Pro';
+        src: url('{{ "AbsaraPro-Regular.woff2" | asset_url }}') format('woff2'),
+             url('{{ "AbsaraPro-Regular.woff" | asset_url }}') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Absara Pro';
+        src: url('{{ "AbsaraPro-Medium.woff2" | asset_url }}') format('woff2'),
+             url('{{ "AbsaraPro-Medium.woff" | asset_url }}') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Absara Pro';
+        src: url('{{ "AbsaraPro-Bold.woff2" | asset_url }}') format('woff2'),
+             url('{{ "AbsaraPro-Bold.woff" | asset_url }}') format('woff');
+        font-weight: bold;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      {%- comment -%} Color Schemes from Theme Settings {%- endcomment -%}
+      {% for scheme in settings.color_schemes -%}
+        {% assign scheme_classes = scheme_classes | append: ', .color-' | append: scheme.id %}
+        {% if forloop.index == 1 -%}
+          :root,
+        {%- endif %}
+        .color-{{ scheme.id }} {
+          --color-background: {{ scheme.settings.background.red }},{{ scheme.settings.background.green }},{{ scheme.settings.background.blue }};
+          --color-foreground: {{ scheme.settings.text.red }},{{ scheme.settings.text.green }},{{ scheme.settings.text.blue }};
+          --color-shadow: {{ scheme.settings.shadow.red }},{{ scheme.settings.shadow.green }},{{ scheme.settings.shadow.blue }};
+          --color-button: {{ scheme.settings.button.red }},{{ scheme.settings.button.green }},{{ scheme.settings.button.blue }};
+          --color-button-text: {{ scheme.settings.button_label.red }},{{ scheme.settings.button_label.green }},{{ scheme.settings.button_label.blue }};
+          --color-secondary-button: {{ scheme.settings.background.red }},{{ scheme.settings.background.green }},{{ scheme.settings.background.blue }};
+          --color-secondary-button-text: {{ scheme.settings.secondary_button_label.red }},{{ scheme.settings.secondary_button_label.green }},{{ scheme.settings.secondary_button_label.blue }};
+          --color-link: {{ scheme.settings.secondary_button_label.red }},{{ scheme.settings.secondary_button_label.green }},{{ scheme.settings.secondary_button_label.blue }};
+        }
+      {% endfor %}
+
+      {{ scheme_classes | prepend: 'body' }} {
+        color: rgba(var(--color-foreground), 0.75);
+        background-color: rgb(var(--color-background));
+      }
+    {% endstyle %}
+    
+    {%- comment -%} Theme Stylesheets {%- endcomment -%}
+    {{ 'vendor-swiperjs.min.css' | asset_url | stylesheet_tag }}
+    {{ 'theme-ui.min.css' | asset_url | stylesheet_tag }}
+    {{ 'theme-ux.min.css' | asset_url | stylesheet_tag }}
+    {{ 'theme-maurits.css' | asset_url | stylesheet_tag }}
+    
+    {%- comment -%} Theme Scripts {%- endcomment -%}
+    <script src="{{ 'vendor-swiperjs.min.js' | asset_url }}"></script>
+    <script src="{{ 'theme-lazyload.min.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'theme-modal.min.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'theme-drawer.min.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'theme-search.min.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'theme-ux.min.js' | asset_url }}" defer="defer"></script>
+    
+    {%- if localization.available_countries.size > 1 or localization.available_languages.size > 1 -%}
+      <script src="{{ 'localization-form.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
+        
+    {{ content_for_header }}
+    
+    <script>
+      if (Shopify.designMode) {
+        document.documentElement.classList.add('shopify-design-mode');
+      }
+    </script>
+  </head>
+
+  <body class="gradient">
+    <a class="skip-to-content-link button visually-hidden" href="#MainContent" style="visibility:hidden; height:0; display:none;">
+      {{ 'accessibility.skip_to_text' | t }}
+    </a>
+
+    <header id="pageHeader">
+      {% sections 'header-group' %}
+    </header>
+
+    <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
+      {%- comment -%}
+        LOYALTY LAYOUT
+        - Public sections: visible to everyone (section group)
+        - Private sections: visible only when logged in (template sections)
+      {%- endcomment -%}
+      
+      {%- if request.design_mode -%}
+        {%- comment -%} Design mode: show both section groups {%- endcomment -%}
+        {% sections 'loyalty-loggedout' %}
+        <div class="loyalty-editor-divider"></div>
+        <style>
+          .loyalty-editor-divider {
+            height: 4px;
+            background: repeating-linear-gradient(90deg, #5c6ac4 0, #5c6ac4 10px, transparent 10px, transparent 20px);
+            margin: 2em 0;
+          }
+        </style>
+        {% sections 'loyalty-loggedin' %}
+      {%- elsif customer -%}
+        {%- comment -%} Logged in: show loggedin sections {%- endcomment -%}
+        {% sections 'loyalty-loggedin' %}
+      {%- else -%}
+        {%- comment -%} Not logged in: show loggedout sections {%- endcomment -%}
+        {% sections 'loyalty-loggedout' %}
+      {%- endif -%}
+      
+      {%- comment -%} Template sections: always visible {%- endcomment -%}
+      {{ content_for_layout }}
+    </main>
+
+    <footer id="pageFooter">
+      {% sections 'footer-group' %}
+    </footer>
+
+    <ul hidden>
+      <li id="a11y-refresh-page-message">{{ 'accessibility.refresh_page' | t }}</li>
+      <li id="a11y-new-window-message">{{ 'accessibility.link_messages.new_window' | t }}</li>
+    </ul>
+
+    <script>
+      window.shopUrl = '{{ request.origin }}';
+      window.routes = {
+        cart_add_url: '{{ routes.cart_add_url }}',
+        cart_change_url: '{{ routes.cart_change_url }}',
+        cart_update_url: '{{ routes.cart_update_url }}',
+        cart_url: '{{ routes.cart_url }}',
+        predictive_search_url: '{{ routes.predictive_search_url }}',
+      };
+
+      window.cartStrings = {
+        error: `{{ 'sections.cart.cart_error' | t }}`,
+        quantityError: `{{ 'sections.cart.cart_quantity_error_html' | t: quantity: '[quantity]' }}`,
+      };
+
+      window.variantStrings = {
+        addToCart: `{{ 'products.product.add_to_cart' | t }}`,
+        soldOut: `{{ 'products.product.sold_out' | t }}`,
+        unavailable: `{{ 'products.product.unavailable' | t }}`,
+        unavailable_with_option: `{{ 'products.product.value_unavailable' | t: option_value: '[value]' }}`,
+      };
+
+      window.accessibilityStrings = {
+        imageAvailable: `{{ 'products.product.media.image_available' | t: index: '[index]' }}`,
+        shareSuccess: `{{ 'general.share.success_message' | t }}`,
+        pauseSlideshow: `{{ 'sections.slideshow.pause_slideshow' | t }}`,
+        playSlideshow: `{{ 'sections.slideshow.play_slideshow' | t }}`,
+        recipientFormExpanded: `{{ 'recipient.form.expanded' | t }}`,
+        recipientFormCollapsed: `{{ 'recipient.form.collapsed' | t }}`,
+        countrySelectorSearchCount: `{{ 'localization.country_results_count' | t: count: '[count]' }}`,
+      };
+    </script>
+    {%- comment -%} SVG Icon Sprite {%- endcomment -%}
+    {% render 'html-theme-icons-sprite' %}
+  </body>
+</html>

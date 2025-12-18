@@ -55,7 +55,7 @@
   endif
 -%}
 
-<div class="block-product-information__content {{ section.settings.width }}" id="product-information">
+<div class="block-product-information__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
   <article class="block-product-information__article">
     <div class="block-product-information__main">
       {%- if product.description != blank -%}
@@ -468,10 +468,10 @@
 </script>
 
 <style>
-  .block-product-information {
-    background-color: {{ section.settings.background_color }};
-    color: {{ section.settings.text_color }};
-    padding-block: 4em 2em;
+  #shopify-section-{{ section.id }}.block-product-information {
+    background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
+    color: {{ section.settings.text_color | default: '#111111' }};
+    padding-block: {{ section.settings.padding_block }}em;
   }
 
   .block-product-information__content {
@@ -769,7 +769,7 @@
   }
 
   /* Responsive */
-  @media (max-width: 760px) {
+  @media (max-width: 40em) {
     .block-product-information__main {
       flex-basis: 100%;
       text-align: center;
@@ -834,12 +834,23 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "align"
+			"default": "is-align"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 4,
+			"unit": "em"
 		},
 		{
 			"type": "header",
@@ -848,26 +859,37 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#f8f8f8"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "header",
-			"content": "How to use"
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"default": "product-information",
+			"info": "ID for scroll links (without #)"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
 		},
 		{
 			"type": "paragraph",
-			"content": "Displays product description with read more/less, product details, size chart, and information references."
-		},
-		{
-			"type": "paragraph",
-			"content": "Metafields: custom.product_details, custom.product-sizechart, custom.product-information-references"
+			"content": "Displays product description, details, size chart, and information references from metafields (custom.product_details, custom.product-sizechart, custom.product-information-references)."
 		}
 	],
 	"presets": [

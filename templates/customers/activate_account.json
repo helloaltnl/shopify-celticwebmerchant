@@ -10,7 +10,7 @@
 {
   "sections": {
     "main": {
-      "type": "main-activate-account",
+      "type": "main-account-activate",
       "settings": {}
     }
   },

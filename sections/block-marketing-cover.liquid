@@ -1,19 +1,300 @@
-<div class="block-marketing-cover__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
-	{%- render 'html-marketing-cover',
-		image: section.settings.image,
-		video: section.settings.video,
-		focus_x: section.settings.focus_x,
-		focus_y: section.settings.focus_y,
-		heading: section.settings.heading,
-		subheading: section.settings.subheading,
-		text: section.settings.text,
-		buttons: section.blocks,
-		overlay_opacity: section.settings.overlay,
-		text_alignment: section.settings.text_alignment,
-		text_position: section.settings.text_position,
-		height: section.settings.height
-	-%}
+{%- comment -%}
+============================================================================
+BLOCK-MARKETING-COVER
+============================================================================
+Hero/cover section with image or video background, overlay text & CTAs.
+
+FEATURES:
+- Background image with focus point control
+- Background video (autoplay muted, image as poster)
+- Overlay opacity control
+- Text position (top/center/bottom) and alignment (left/center/right)
+- Height variants (small/medium/large/full)
+- Multiple CTA buttons with color customization
+- LCP optimization with loading/fetchpriority settings
+
+DEPENDENCIES:
+- html-theme-media-image snippet
+- html-theme-media-video snippet
+- html-marketing-cta snippet
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	assign has_video = false
+	if section.settings.video != blank and section.settings.video.sources.size > 0
+		assign has_video = true
+	endif
+
+	assign has_buttons = false
+	if section.blocks.size > 0
+		for block in section.blocks
+			if block.settings.url != blank
+				assign has_buttons = true
+				break
+			endif
+		endfor
+	endif
+-%}
+
+<div class="block-marketing-cover__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+	<div class="marketing-cover marketing-cover--height-{{ section.settings.height }} marketing-cover--overlay-{{ section.settings.overlay }} marketing-cover--align-{{ section.settings.text_alignment }} marketing-cover--position-{{ section.settings.text_position }}{% if has_video %} marketing-cover--has-video{% endif %}">
+		
+		{%- comment -%} Background Media {%- endcomment -%}
+		<figure class="marketing-cover__media">
+			{%- if section.settings.image -%}
+				{%- render 'html-theme-media-image',
+					image: section.settings.image,
+					alt: section.settings.image.alt,
+					w1: 1200,
+					w2: 1600,
+					w3: 1920,
+					sizes: '100vw',
+					image_loading: section.settings.loading,
+					image_priority: section.settings.fetchpriority,
+					focus_x: section.settings.focus_x,
+					focus_y: section.settings.focus_y
+				-%}
+			{%- elsif has_video == false -%}
+				<div class="marketing-cover__placeholder">
+					{{ 'lifestyle-1' | placeholder_svg_tag: 'marketing-cover__placeholder-svg' }}
+				</div>
+			{%- endif -%}
+
+			{%- if has_video -%}
+				{%- render 'html-theme-media-video',
+					video: section.settings.video,
+					mode: 'background',
+					focus_x: section.settings.focus_x,
+					focus_y: section.settings.focus_y,
+					image_loading: section.settings.loading,
+					image_priority: section.settings.fetchpriority
+				-%}
+			{%- endif -%}
+		</figure>
+
+		{%- comment -%} Overlay {%- endcomment -%}
+		<div class="marketing-cover__overlay"></div>
+
+		{%- comment -%} Content {%- endcomment -%}
+		<div class="marketing-cover__content">
+			<div class="marketing-cover__inner">
+				{%- if section.settings.subheading != blank -%}
+					<p class="marketing-cover__subheading">{{ section.settings.subheading | escape }}</p>
+				{%- endif -%}
+
+				{%- if section.settings.heading != blank -%}
+					<h2 class="marketing-cover__heading">{{ section.settings.heading | escape }}</h2>
+				{%- endif -%}
+
+				{%- if section.settings.text != blank -%}
+					<div class="marketing-cover__text">{{ section.settings.text }}</div>
+				{%- endif -%}
+
+				{%- if has_buttons -%}
+					<div class="marketing-cover__buttons">
+						{%- for block in section.blocks -%}
+							{%- if block.settings.url != blank -%}
+								{%- render 'html-marketing-cta',
+									text: block.settings.text,
+									url: block.settings.url,
+									style: block.settings.style,
+									size: 'large',
+									button_color: block.settings.button_color,
+									button_text_color: block.settings.button_text_color
+								-%}
+							{%- endif -%}
+						{%- endfor -%}
+					</div>
+				{%- endif -%}
+			</div>
+		</div>
+	</div>
 </div>
+
+{% style %}
+	#shopify-section-{{ section.id }} .marketing-cover {
+		position: relative;
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	/* Height variations */
+	#shopify-section-{{ section.id }} .marketing-cover--height-small { min-height: 300px; }
+	#shopify-section-{{ section.id }} .marketing-cover--height-medium { min-height: 500px; }
+	#shopify-section-{{ section.id }} .marketing-cover--height-large { min-height: 700px; }
+	#shopify-section-{{ section.id }} .marketing-cover--height-full { min-height: 100vh; }
+
+	/* Media container */
+	#shopify-section-{{ section.id }} .marketing-cover__media {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		margin: 0;
+		background-color: #111;
+	}
+
+	/* Picture element (overlay image) */
+	#shopify-section-{{ section.id }} .marketing-cover__media > .theme-media__picture {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		transition: opacity 0.6s ease;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover__media > .theme-media__picture .theme-media__img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	/* Picture fades out when video is playing */
+	#shopify-section-{{ section.id }} .marketing-cover.is-video-playing .theme-media__picture {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	/* Placeholder */
+	#shopify-section-{{ section.id }} .marketing-cover__placeholder {
+		position: absolute;
+		inset: 0;
+		background-color: #f0f0f0;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover__placeholder-svg {
+		width: 100%;
+		height: 100%;
+		opacity: 0.2;
+	}
+
+	/* Overlay */
+	#shopify-section-{{ section.id }} .marketing-cover__overlay {
+		position: absolute;
+		inset: 0;
+		background-color: #000;
+		z-index: 1;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover--overlay-none .marketing-cover__overlay { opacity: 0; }
+	#shopify-section-{{ section.id }} .marketing-cover--overlay-light .marketing-cover__overlay { opacity: 0.2; }
+	#shopify-section-{{ section.id }} .marketing-cover--overlay-medium .marketing-cover__overlay { opacity: 0.4; }
+	#shopify-section-{{ section.id }} .marketing-cover--overlay-dark .marketing-cover__overlay { opacity: 0.6; }
+
+	/* Content */
+	#shopify-section-{{ section.id }} .marketing-cover__content {
+		position: relative;
+		z-index: 2;
+		width: 100%;
+		padding: 2em;
+		color: #fff;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover__inner {
+		max-width: 50em;
+		margin: 0 auto;
+	}
+
+	/* Text position */
+	#shopify-section-{{ section.id }} .marketing-cover--position-top .marketing-cover__content {
+		align-self: flex-start;
+		padding-top: 4em;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover--position-center .marketing-cover__content {
+		align-self: center;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover--position-bottom .marketing-cover__content {
+		align-self: flex-end;
+		padding-bottom: 4em;
+	}
+
+	/* Text alignment */
+	#shopify-section-{{ section.id }} .marketing-cover--align-left .marketing-cover__inner {
+		text-align: left;
+		margin-left: 0;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover--align-center .marketing-cover__inner {
+		text-align: center;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover--align-right .marketing-cover__inner {
+		text-align: right;
+		margin-right: 0;
+	}
+
+	/* Typography */
+	#shopify-section-{{ section.id }} .marketing-cover__subheading {
+		font-size: 1em;
+		margin: 0 0 1em;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		opacity: 0.9;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover__heading {
+		font-family: var(--theme-font-family-serif);
+		font-size: clamp(2em, 5vw, 3em);
+		margin: 0 0 1rem;
+		font-weight: 500;
+		line-height: 1.2;
+		color: #fff;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover__text {
+		font-size: 1.25em;
+		margin: 0 0 2em;
+		line-height: 1.6;
+		color: #fff;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover__text p {
+		margin: 0;
+	}
+
+	/* Buttons container */
+	#shopify-section-{{ section.id }} .marketing-cover__buttons {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1em;
+		margin-top: 2em;
+	}
+
+	#shopify-section-{{ section.id }} .marketing-cover--align-left .marketing-cover__buttons { justify-content: flex-start; }
+	#shopify-section-{{ section.id }} .marketing-cover--align-center .marketing-cover__buttons { justify-content: center; }
+	#shopify-section-{{ section.id }} .marketing-cover--align-right .marketing-cover__buttons { justify-content: flex-end; }
+
+	#shopify-section-{{ section.id }} .marketing-cover__buttons .marketing-cta {
+		padding: 0;
+	}
+
+	/* Responsive */
+	@media (max-width: 40em) {
+		#shopify-section-{{ section.id }} .marketing-cover--height-medium { min-height: 400px; }
+		#shopify-section-{{ section.id }} .marketing-cover--height-large { min-height: 500px; }
+
+		#shopify-section-{{ section.id }} .marketing-cover__heading {
+			font-size: 2em;
+		}
+
+		#shopify-section-{{ section.id }} .marketing-cover__content {
+			padding: 1.5em;
+		}
+
+		#shopify-section-{{ section.id }} .marketing-cover__buttons {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		#shopify-section-{{ section.id }} .marketing-cover--align-center .marketing-cover__buttons,
+		#shopify-section-{{ section.id }} .marketing-cover--align-right .marketing-cover__buttons {
+			align-items: center;
+		}
+	}
+{% endstyle %}
 
 {% schema %}
 {
@@ -91,6 +372,29 @@
 			"default": "medium"
 		},
 		{
+			"type": "select",
+			"id": "loading",
+			"label": "Loading behavior",
+			"options": [
+				{ "value": "lazy", "label": "Lazy (default)" },
+				{ "value": "eager", "label": "Eager (above the fold)" }
+			],
+			"default": "lazy",
+			"info": "Use 'Eager' for images above the fold to improve LCP"
+		},
+		{
+			"type": "select",
+			"id": "fetchpriority",
+			"label": "Fetch priority",
+			"options": [
+				{ "value": "auto", "label": "Auto (default)" },
+				{ "value": "high", "label": "High (LCP image)" },
+				{ "value": "low", "label": "Low" }
+			],
+			"default": "auto",
+			"info": "Use 'High' for largest contentful paint images"
+		},
+		{
 			"type": "header",
 			"content": "Layout"
 		},
@@ -99,12 +403,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignfull"
+			"default": "is-align-full"
 		},
 		{
 			"type": "select",
@@ -143,6 +448,12 @@
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",

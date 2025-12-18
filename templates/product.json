@@ -64,8 +64,8 @@
             "method_1": "ideal",
             "method_2": "visa",
             "method_3": "mastercard",
-            "method_4": "paypal",
-            "method_5": "klarna"
+            "method_4": "google_pay",
+            "method_5": "apple_pay"
           }
         },
         "trust_identity_CTE9dt": {
@@ -104,7 +104,7 @@
       ],
       "settings": {
         "product": "",
-        "width": "alignwide",
+        "width": "is-align-wide",
         "block_gap": 0.8,
         "background_color": "#ffffff",
         "text_color": "#111111"
@@ -118,9 +118,12 @@
         "sizechart_heading": "",
         "read_more_text": "",
         "read_less_text": "",
-        "width": "align",
+        "width": "is-align",
+        "padding_block": 4,
         "background_color": "#f8f8f8",
-        "text_color": "#111111"
+        "text_color": "#111111",
+        "anchor": "product-information",
+        "custom_class": ""
       }
     },
     "block_product_recommended_afRGwD": {
@@ -137,12 +140,15 @@
         "show_vendor": false,
         "show_badges": false,
         "quick_add": true,
-        "width": "alignwide",
+        "width": "is-align-wide",
         "grid_columns": 3,
-        "grid_columns_tablet": "3",
-        "grid_columns_mobile": "1",
-        "background_color": "#f5f5f5",
-        "text_color": "#111111"
+        "grid_columns_tablet": 3,
+        "grid_columns_mobile": 1,
+        "padding_block": 4,
+        "background_color": "#f8f8f8",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
       }
     },
     "17622440393afaba32": {
@@ -170,7 +176,12 @@
         "shop_the_look_shop_the_look_awRawz"
       ],
       "settings": {
-        "include_margins": true
+        "width": "is-align-wide",
+        "padding_block": 0,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
       }
     },
     "product-discovery": {
@@ -178,18 +189,22 @@
       "settings": {
         "heading": "",
         "limit": 4,
+        "card_layout": "vertical",
         "image_ratio": "portrait",
         "show_secondary_image": true,
         "show_rating": false,
         "show_vendor": false,
         "show_badges": false,
         "quick_add": false,
-        "width": "alignwide",
+        "width": "is-align-wide",
         "grid_columns": 4,
-        "grid_columns_tablet": "3",
-        "grid_columns_mobile": "2",
+        "grid_columns_tablet": 3,
+        "grid_columns_mobile": 2,
+        "padding_block": 3,
         "background_color": "#f8f8f8",
-        "text_color": "#111111"
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
       }
     },
     "product-blog": {
@@ -197,11 +212,14 @@
       "settings": {
         "heading": "",
         "read_more_text": "",
-        "width": "align",
+        "width": "is-align",
+        "padding_block": 3,
         "background_color": "#f8f8f8",
         "text_color": "#111111",
         "knowledge_background_color": "#0f1f38",
-        "knowledge_text_color": "#ffffff"
+        "knowledge_text_color": "#ffffff",
+        "anchor": "",
+        "custom_class": ""
       }
     },
     "block_product_reviews_keNkJP": {
@@ -223,9 +241,12 @@
       ],
       "name": "Reviews",
       "settings": {
-        "width": "align",
+        "width": "is-align",
+        "padding_block": 4,
         "background_color": "#f8f8f8",
-        "text_color": "#111111"
+        "text_color": "#111111",
+        "anchor": "reviews",
+        "custom_class": ""
       }
     }
   },

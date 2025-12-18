@@ -41,8 +41,8 @@
 
 {% style %}
 	.block-footer-copyright {
-		background-color: {{ section.settings.background_color }};
-		color: {{ section.settings.text_color }};
+		background-color: {{ section.settings.background_color | default: '#0f1f38' }};
+		color: {{ section.settings.text_color | default: '#ffffff' }};
 		padding: 1.5em 0;
 	}
 
@@ -131,12 +131,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "align"
+			"default": "is-align"
 		},
 		{
 			"type": "header",
@@ -145,14 +146,12 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#0f1f38"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#ffffff"
+			"label": "Text"
 		},
 		{
 			"type": "header",

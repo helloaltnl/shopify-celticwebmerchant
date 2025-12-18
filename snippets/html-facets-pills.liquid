@@ -21,9 +21,9 @@
   endfor
 -%}
 
-<nav class="facets__active" data-active-pills>
+<nav class="facets__active" data-active-pills aria-label="{{ 'collection.filtering.active_filters' | t | default: 'Active filters' }}">
 	{%- if has_active -%}
-	<ul>
+	<ul role="list">
 		{%- for filter in obj.filters -%}
 			{%- if filter.type == 'price_range' -%}
 				{%- comment -%} Price range pill {%- endcomment -%}
@@ -53,7 +53,7 @@
 					  endif
 					-%}
 					<li>
-						<a class="pill" href="{{ price_clear_url }}">
+						<a class="pill" href="{{ price_clear_url }}" aria-label="{{ 'collection.filtering.remove_filter' | t | default: 'Remove filter' }}: {{ filter.label }} {{ price_display }}">
 							<span class="pill__info">
 								<span class="pill__label">{{ filter.label }}</span>
 								<span class="pill__value">{{ price_display }}</span>
@@ -66,7 +66,7 @@
 				{%- comment -%} Regular filter pills {%- endcomment -%}
 				{%- for val in filter.active_values -%}
 					<li>
-						<a class="pill" href="{{ val.url_to_remove }}">
+						<a class="pill" href="{{ val.url_to_remove }}" aria-label="{{ 'collection.filtering.remove_filter' | t | default: 'Remove filter' }}: {{ filter.label }} {{ val.label }}">
 							<span class="pill__info">
 								<span class="pill__label">{{ filter.label }}</span>
 								<span class="pill__value">{{ val.label }}</span>
@@ -78,7 +78,7 @@
 			{%- endif -%}
 		{%- endfor -%}
 		<li class="clear">
-			<a class="pill pill--clear" href="{{ clear_url }}">
+			<a class="pill pill--clear" href="{{ clear_url }}" aria-label="{{ 'collection.filtering.clear_all' | t }}">
 				<span>
 					{{ 'collection.filtering.clear_all' | t }}
 				</span>

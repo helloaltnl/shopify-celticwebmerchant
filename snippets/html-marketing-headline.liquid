@@ -1,86 +1,76 @@
-{% comment %}
-  HTML Marketing Component: Headline
-  Large headline/tagline block
-  
-  Parameters:
-  - heading: {String} Main heading text (required)
-  - subheading: {String} Optional subheading text
-  - heading_tag: {String} HTML tag (h1, h2, h3, etc.) - default: h2
-  - alignment: {String} text-left | text-center | text-right - default: text-center
-  - size: {String} small | medium | large - default: medium
-{% endcomment %}
+{%- comment -%}
+============================================================================
+HTML-MARKETING-HEADLINE
+============================================================================
+Reusable headline component for marketing sections.
 
-{%- liquid
-  assign heading = heading | default: 'Your Heading Here'
-  assign subheading = subheading | default: ''
-  assign heading_tag = heading_tag | default: 'h2'
-  assign alignment = alignment | default: 'text-center'
-  assign size = size | default: 'medium'
+PARAMS:
+- heading       : Main heading text (required)
+- subheading    : Optional subheading text
+- heading_tag   : HTML tag h1-h6 (default: h2)
+- alignment     : left | center | right (default: center)
+- size          : small | medium | large (default: medium)
+
+USAGE:
+{%- render 'html-marketing-headline',
+    heading: section.settings.heading,
+    subheading: section.settings.subheading,
+    alignment: 'center',
+    size: 'large'
 -%}
 
-<div class="marketing-headline marketing-headline--{{ size }} {{ alignment }}">
-  <{{ heading_tag }} class="marketing-headline__heading">
-    {{ heading | escape }}
-  </{{ heading_tag }}>
-  
-  {%- if subheading != blank -%}
-    <p class="marketing-headline__subheading">
-      {{ subheading | escape }}
-    </p>
-  {%- endif -%}
-</div>
+STYLING:
+Sections can override with scoped CSS:
+#shopify-section-{{ section.id }} .marketing-headline__heading { ... }
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	assign heading = heading | default: ''
+	assign subheading = subheading | default: ''
+	assign heading_tag = heading_tag | default: 'h2'
+	assign alignment = alignment | default: 'center'
+	assign size = size | default: 'medium'
+-%}
+
+{%- if heading != blank -%}
+<header class="marketing-headline marketing-headline--{{ size }} marketing-headline--align-{{ alignment }}">
+	<{{ heading_tag }} class="marketing-headline__heading">{{ heading | escape }}</{{ heading_tag }}>
+	{%- if subheading != blank -%}
+		<p class="marketing-headline__subheading">{{ subheading | escape }}</p>
+	{%- endif -%}
+</header>
+{%- endif -%}
 
 <style>
-  .marketing-headline {
-    padding: 0;
-  }
-  
-  .marketing-headline__heading {
-    margin: 0 0 0.5em;
-    font-weight: 500;
-    line-height: 1.2;
-  }
-  
-  .marketing-headline__subheading {
-    margin: 0;
-    font-size: 1.125rem;
-    line-height: 1.6;
-    opacity: 0.8;
-  }
-  
-  /* Size variations */
-  .marketing-headline--small .marketing-headline__heading {
-    font-size: 1.5em;
-  }
-  
-  .marketing-headline--medium .marketing-headline__heading {
-    font-size: 2em;
-  }
-  
-  .marketing-headline--large .marketing-headline__heading {
-    font-size: 2.5em;
-  }
-  
-  /* Alignment */
-  .marketing-headline.text-left {
-    text-align: left;
-  }
-  
-  .marketing-headline.text-center {
-    text-align: center;
-  }
-  
-  .marketing-headline.text-right {
-    text-align: right;
-  }
-  
-  /* Responsive */
-  @media (max-width: 749px) {
-    .marketing-headline--large .marketing-headline__heading {
-      font-size: 1.75em;
-    }
-    .marketing-headline--medium .marketing-headline__heading {
-      font-size: 1.5em;
-    }
-  }
+.marketing-headline {
+	margin-bottom: 1.5em;
+}
+
+.marketing-headline--align-left { text-align: left; }
+.marketing-headline--align-center { text-align: center; }
+.marketing-headline--align-right { text-align: right; }
+
+.marketing-headline__heading {
+	font-family: var(--theme-font-family-serif);
+	font-weight: 500;
+	line-height: 1.2;
+	margin: 0 0 0.5em;
+}
+
+.marketing-headline--small .marketing-headline__heading { font-size: 1.5em; }
+.marketing-headline--medium .marketing-headline__heading { font-size: 2em; }
+.marketing-headline--large .marketing-headline__heading { font-size: clamp(2em, 5vw, 2.5em); }
+
+.marketing-headline__subheading {
+	font-size: 1.125em;
+	line-height: 1.6;
+	opacity: 0.8;
+	margin: 0;
+}
+
+@media (max-width: 40em) {
+	.marketing-headline--large .marketing-headline__heading { font-size: 1.75em; }
+	.marketing-headline--medium .marketing-headline__heading { font-size: 1.5em; }
+}
 </style>

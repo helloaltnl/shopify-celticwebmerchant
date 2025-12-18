@@ -107,6 +107,9 @@
     "filtering": {
       "title": "Filter & Sort",
       "button": "Filter",
+      "filters": "Filters",
+      "active_filters": "Active filters",
+      "remove_filter": "Remove filter",
       "apply": "Apply",
       "clear": "Clear",
       "clear_all": "Clear all",
@@ -205,7 +208,12 @@
       "total": "Total"
     },
     "item_added": "Item added to your cart",
-    "quantity_error": "You can only add {{ quantity }} of this item to your cart."
+    "quantity_error": "You can only add {{ quantity }} of this item to your cart.",
+    "discount_code": "Discount code",
+    "discount_code_placeholder": "Enter code",
+    "discount_code_empty": "Please enter a discount code",
+    "apply": "Apply",
+    "remove_discount": "Remove discount"
   },
 
   "search": {

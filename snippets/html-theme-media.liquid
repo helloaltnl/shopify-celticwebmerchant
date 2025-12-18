@@ -1,0 +1,441 @@
+{%- comment -%}
+============================================================================
+HTML-THEME-MEDIA
+============================================================================
+Unified media hub for images, videos, and 3D models.
+Auto-detects media type and calculates responsive sizing.
+
+MEDIA:
+- media         : Media object (image, video, product.media, video_url, etc.)
+- type          : Force type: 'image' | 'video' | 'model' (auto-detect if blank)
+- alt           : Alt text (fallback: media.alt, then 'Media')
+
+SIZING MODE A - GRID (recommended):
+Use when media is displayed in a container/grid context.
+- columns           : Columns all breakpoints (shorthand)
+- columns_desktop   : Columns on desktop 60em+ (default: columns or 1)
+- columns_tablet    : Columns on tablet 40-60em (default: columns_desktop)
+- columns_mobile    : Columns on mobile <40em (default: columns_tablet)
+- columns_width     : 'is-align-narrow' | 'is-align-small' | 'is-align' | 'is-align-wide' | 'is-align-full'
+- columns_gap       : Gap between grid items in em (default 1)
+- layout            : 'vertical' | 'horizontal' (default 'vertical')
+
+SIZING MODE B - SIMPLE:
+Use when you know the exact display size.
+- width         : Base width in px (default 800)
+- sizes         : Sizes attribute (default '100vw')
+
+ASPECT RATIO:
+- image_ratio   : 'portrait' (2/3) | 'square' (1/1) | 'landscape' (3/2) | 'auto'
+- crop          : 'center' | 'top' | 'bottom' | 'left' | 'right' | blank
+- focus_x       : Object position X percentage (0-100, default 50)
+- focus_y       : Object position Y percentage (0-100, default 50)
+
+BEHAVIOR:
+- image_loading : 'lazy' | 'eager' (default 'lazy')
+- image_priority: 'high' | 'low' | 'auto' (default 'auto')
+- mode          : 'main' | 'thumb' | 'card' | 'background'
+- quality       : Image compression 1-100 (default 85)
+
+FEATURES:
+- zoom          : Add swiper-zoom-container (default false)
+- controls      : Show video controls (default true for main)
+- autoplay      : Video autoplay (default false)
+
+STYLING:
+- class         : Additional CSS classes
+- background    : Show placeholder background (default true)
+- wrapper       : Output figure wrapper (default true, false for nested in custom figure)
+
+MODE BEHAVIORS:
+- main       : Full media player with controls
+- thumb      : Small preview with icon overlay
+- card       : Compact controls for card context
+- background : Fullscreen cover (video: autoplay, muted, loop, no controls)
+
+USAGE EXAMPLES:
+
+Full-width hero:
+{% render 'html-theme-media', media: section.settings.image, columns: 1, columns_width: 'is-align-full' %}
+
+Product card in grid:
+{% render 'html-theme-media', media: product.featured_image, columns_desktop: 4, columns_tablet: 3, columns_mobile: 2, columns_width: 'is-align-wide' %}
+
+Horizontal card layout:
+{% render 'html-theme-media', media: product.featured_image, columns_desktop: 2, layout: 'horizontal' %}
+
+Simple (known size):
+{% render 'html-theme-media', media: block.settings.icon, width: 200, sizes: '200px' %}
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	comment
+		========================================
+		RESPONSIVE SIZING CALCULATION
+		========================================
+		- sizes: Dynamically calculated based on columns/container
+		- srcset: Fixed ladder (browser picks best match)
+		
+		Breakpoints for sizes:
+		- Desktop: 60em+ (960px)
+		- Tablet: 40-60em (640px)
+		- Mobile: <40em (480px avg)
+		========================================
+	endcomment
+
+	comment
+		Constants matching theme-ui.scss
+	endcomment
+	assign BP_SM = 640
+	assign BP_MD = 960
+	assign EM_TO_PX = 16
+	assign HORIZONTAL_RATIO = 0.35
+
+	comment
+		Container widths (px) - match theme-ui.scss
+		narrow: 30em, small: 40em, default: 60em, wide: 80em, full: 100em
+	endcomment
+	assign CONTAINER_NARROW = 480
+	assign CONTAINER_SMALL = 640
+	assign CONTAINER_DEFAULT = 960
+	assign CONTAINER_WIDE = 1280
+	assign CONTAINER_FULL = 1600
+
+	comment
+		========================================
+		FIXED SRCSET LADDER
+		========================================
+		Browser combines sizes + device pixel ratio to pick best option.
+		These widths cover most use cases efficiently.
+	endcomment
+	assign w1 = 200
+	assign w2 = 400
+	assign w3 = 600
+	assign w4 = 800
+	assign w5 = 1000
+	assign w6 = 1200
+	assign w7 = 1600
+	assign w8 = 2000
+
+	comment
+		========================================
+		DETECT SIZING MODE
+		========================================
+	endcomment
+	if columns != blank or columns_desktop != blank
+		assign sizing_mode = 'grid'
+	else
+		assign sizing_mode = 'simple'
+	endif
+
+	comment
+		========================================
+		MODE: GRID - Calculate sizes attribute
+		========================================
+	endcomment
+	if sizing_mode == 'grid'
+		comment
+			Column counts per breakpoint (cascade down)
+		endcomment
+		assign cols_desktop = columns_desktop | default: columns | default: 1 | plus: 0
+		assign cols_tablet = columns_tablet | default: cols_desktop | plus: 0
+		assign cols_mobile = columns_mobile | default: cols_tablet | plus: 0
+		if cols_mobile < 1
+			assign cols_mobile = 1
+		endif
+
+		comment
+		Gap in pixels
+		endcomment
+		assign gap_em = columns_gap | default: 1 | plus: 0
+		assign gap_px = gap_em | times: EM_TO_PX
+
+		comment
+		Container max-width
+		endcomment
+		case columns_width
+			when 'is-align-narrow'
+				assign max_container = CONTAINER_NARROW
+			when 'is-align-small'
+				assign max_container = CONTAINER_SMALL
+			when 'is-align-wide'
+				assign max_container = CONTAINER_WIDE
+			when 'is-align-full'
+				assign max_container = CONTAINER_FULL
+			else
+				assign max_container = CONTAINER_DEFAULT
+		endcase
+
+		comment
+			Layout multiplier (horizontal cards show smaller image)
+		endcomment
+		if layout == 'horizontal'
+			assign layout_mult = HORIZONTAL_RATIO
+		else
+			assign layout_mult = 1.0
+		endif
+
+		comment
+			DESKTOP (min-width: 60em)
+		endcomment
+		assign desktop_gaps = cols_desktop | minus: 1 | times: gap_px
+		assign desktop_available = max_container | minus: desktop_gaps
+		assign desktop_image = desktop_available | divided_by: cols_desktop | times: layout_mult | round
+
+		comment
+			TABLET (min-width: 40em)
+		endcomment
+		assign tablet_viewport = BP_MD
+		if max_container < tablet_viewport
+			assign tablet_viewport = max_container
+		endif
+		assign tablet_gaps = cols_tablet | minus: 1 | times: gap_px
+		assign tablet_available = tablet_viewport | minus: tablet_gaps
+		assign tablet_image = tablet_available | divided_by: cols_tablet | times: layout_mult | round
+
+		comment
+			MOBILE (default)
+		endcomment
+		assign mobile_viewport = 480
+		assign mobile_gaps = cols_mobile | minus: 1 | times: gap_px
+		assign mobile_available = mobile_viewport | minus: mobile_gaps
+		assign mobile_image = mobile_available | divided_by: cols_mobile | times: layout_mult | round
+
+		comment
+			Build sizes attribute
+		endcomment
+		assign img_sizes = '(min-width: 60em) ' | append: desktop_image | append: 'px, (min-width: 40em) ' | append: tablet_image | append: 'px, ' | append: mobile_image | append: 'px'
+	endif
+
+	comment
+		========================================
+		MODE: SIMPLE
+		========================================
+	endcomment
+	if sizing_mode == 'simple'
+		assign img_sizes = sizes | default: '100vw'
+	endif
+
+	comment
+		========================================
+		PARAMETER DEFAULTS
+		========================================
+	endcomment
+	assign image_loading = image_loading | default: 'lazy'
+	assign image_priority = image_priority | default: 'auto'
+	assign mode = mode | default: 'main'
+	assign quality = quality | default: 100
+	assign background = background | default: true
+	if wrapper == nil
+		assign wrapper = true
+	endif
+	assign controls = controls | default: true
+	assign focus_x = focus_x | default: 50 | plus: 0
+	assign focus_y = focus_y | default: 50 | plus: 0
+
+	comment
+		========================================
+		TYPE DETECTION
+		========================================
+	endcomment
+	unless type
+		if media.media_type
+			case media.media_type
+				when 'image'
+					assign type = 'image'
+				when 'video'
+					assign type = 'video'
+				when 'external_video'
+					assign type = 'external_video'
+				when 'model'
+					assign type = 'model'
+			endcase
+		elsif media.type == 'youtube' or media.type == 'vimeo'
+			assign type = 'external_video'
+			assign video_host = media.type
+			assign video_id = media.id
+		elsif media.sources
+			assign type = 'video'
+		elsif media.width and media.height
+			assign type = 'image'
+		elsif media.src or media.url
+			assign media_url = media.src | default: media.url
+			if media_url contains 'youtube' or media_url contains 'youtu.be'
+				assign type = 'external_video'
+				assign video_host = 'youtube'
+			elsif media_url contains 'vimeo'
+				assign type = 'external_video'
+				assign video_host = 'vimeo'
+			else
+				assign type = 'image'
+			endif
+		else
+			assign media_string = media | strip
+			if media_string contains 'youtube' or media_string contains 'youtu.be'
+				assign type = 'external_video'
+				assign video_host = 'youtube'
+				if media_string contains 'youtu.be/'
+					assign video_id = media_string | split: 'youtu.be/' | last | split: '?' | first
+				elsif media_string contains 'watch?v='
+					assign video_id = media_string | split: 'watch?v=' | last | split: '&' | first
+				elsif media_string contains '/embed/'
+					assign video_id = media_string | split: '/embed/' | last | split: '?' | first
+				endif
+			elsif media_string contains 'vimeo'
+				assign type = 'external_video'
+				assign video_host = 'vimeo'
+				assign video_id = media_string | split: 'vimeo.com/' | last | split: '/' | first | split: '?' | first
+			else
+				assign type = 'image'
+			endif
+		endif
+	endunless
+
+	comment
+		========================================
+		ASPECT RATIO
+		========================================
+	endcomment
+	case image_ratio
+		when 'portrait'
+			assign aspect_ratio = 0.6667
+			assign aspect_class = 'portrait'
+		when 'square'
+			assign aspect_ratio = 1
+			assign aspect_class = 'square'
+		when 'landscape'
+			assign aspect_ratio = 1.5
+			assign aspect_class = 'landscape'
+		else
+			if media.aspect_ratio
+				assign aspect_ratio = media.aspect_ratio
+			elsif media.width and media.height
+				assign aspect_ratio = media.width | times: 1.0 | divided_by: media.height
+			elsif media.preview_image.width and media.preview_image.height
+				assign aspect_ratio = media.preview_image.width | times: 1.0 | divided_by: media.preview_image.height
+			else
+				assign aspect_ratio = 1
+			endif
+			
+			if aspect_ratio > 1.2
+				assign aspect_class = 'landscape'
+			elsif aspect_ratio < 0.8
+				assign aspect_class = 'portrait'
+			else
+				assign aspect_class = 'square'
+			endif
+	endcase
+
+	comment
+		========================================
+		CROP
+		========================================
+	endcomment
+	if crop != blank
+		assign do_crop = true
+		assign crop_position = crop
+	elsif image_ratio == 'portrait' or image_ratio == 'square' or image_ratio == 'landscape'
+		assign do_crop = true
+		assign crop_position = 'center'
+	else
+		assign do_crop = false
+	endif
+
+	comment
+		========================================
+		ALT TEXT
+		========================================
+	endcomment
+	assign alt_text = alt | default: media.alt | default: 'Media'
+
+	comment
+		========================================
+		CSS CLASSES
+		========================================
+	endcomment
+	assign wrapper_class = 'theme-media is-type-' | append: type | append: ' is-aspect-' | append: aspect_class | append: ' is-mode-' | append: mode
+	if background
+		assign wrapper_class = wrapper_class | append: ' has-background'
+	endif
+	if class
+		assign wrapper_class = wrapper_class | append: ' ' | append: class
+	endif
+-%}
+
+{%- if wrapper -%}<figure class="{{ wrapper_class }}" style="--media-ratio: {{ aspect_ratio | round: 4 }};">{%- endif -%}
+	{%- case type -%}
+
+		{%- when 'image' -%}
+			{%- render 'html-theme-media-image',
+				image: media,
+				alt: alt_text,
+				w1: w1, w2: w2, w3: w3, w4: w4, w5: w5, w6: w6, w7: w7, w8: w8,
+				aspect_ratio: aspect_ratio,
+				crop: crop_position,
+				quality: quality,
+				sizes: img_sizes,
+				image_loading: image_loading,
+				image_priority: image_priority,
+				zoom: zoom,
+				focus_x: focus_x,
+				focus_y: focus_y,
+				class: class
+			-%}
+
+		{%- when 'video' -%}
+			{%- render 'html-theme-media-video',
+				video: media,
+				alt: alt_text,
+				w1: w1, w2: w2, w3: w3, w4: w4, w5: w5, w6: w6, w7: w7, w8: w8,
+				aspect_ratio: aspect_ratio,
+				crop: crop_position,
+				sizes: img_sizes,
+				image_loading: image_loading,
+				mode: mode,
+				controls: controls,
+				autoplay: autoplay,
+				focus_x: focus_x,
+				focus_y: focus_y,
+				class: class
+			-%}
+
+		{%- when 'external_video' -%}
+			{%- render 'html-theme-media-video',
+				video: media,
+				alt: alt_text,
+				w1: w1, w2: w2, w3: w3, w4: w4, w5: w5, w6: w6, w7: w7, w8: w8,
+				aspect_ratio: aspect_ratio,
+				crop: crop_position,
+				sizes: img_sizes,
+				image_loading: image_loading,
+				mode: mode,
+				external: true,
+				host: video_host | default: media.host,
+				video_id: video_id | default: media.external_id | default: media.id,
+				autoplay: autoplay,
+				focus_x: focus_x,
+				focus_y: focus_y,
+				class: class
+			-%}
+
+		{%- when 'model' -%}
+			{%- render 'html-theme-media-model',
+				model: media,
+				alt: alt_text,
+				w1: w1, w2: w2, w3: w3, w4: w4, w5: w5, w6: w6, w7: w7, w8: w8,
+				aspect_ratio: aspect_ratio,
+				crop: crop_position,
+				sizes: img_sizes,
+				image_loading: image_loading,
+				mode: mode,
+				class: class
+			-%}
+
+		{%- else -%}
+			<div class="theme-media__fallback">
+				{%- render 'html-theme-icons', icon: 'image', size: 48 -%}
+			</div>
+
+	{%- endcase -%}
+{%- if wrapper -%}</figure>{%- endif -%}

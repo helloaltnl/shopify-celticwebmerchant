@@ -1,0 +1,265 @@
+<div id="shopify-section-{{ section.id }}" class="main-account-reset {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+  <div class="main-account-reset__container">
+    <h1 class="main-account-reset__title">{{ 'customer.reset_password.title' | t }}</h1>
+    <p class="main-account-reset__subtitle">{{ 'customer.reset_password.subtext' | t }}</p>
+
+    {%- form 'reset_customer_password', class: 'main-account-reset__form' -%}
+      {%- if form.errors -%}
+        <div class="main-account-reset__errors" tabindex="-1" autofocus>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>{{ 'templates.contact.form.error_heading' | t }}</span>
+        </div>
+        <ul class="main-account-reset__error-list">
+          {%- for field in form.errors -%}
+            <li>
+              {%- if field == 'form' -%}
+                {{ form.errors.messages[field] }}
+              {%- else -%}
+                <a href="#{{ field }}">
+                  {{ form.errors.translated_fields[field] | capitalize }}
+                  {{ form.errors.messages[field] }}
+                </a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      <div class="main-account-reset__field">
+        <label for="password" class="main-account-reset__label">{{ 'customer.reset_password.password' | t }} <span aria-hidden="true">*</span></label>
+        <input
+          type="password"
+          name="customer[password]"
+          id="password"
+          class="main-account-reset__input{% if form.errors contains 'password' %} main-account-reset__input--error{% endif %}"
+          autocomplete="new-password"
+          aria-required="true"
+          {% if form.errors contains 'password' %}
+            aria-invalid="true"
+            aria-describedby="password-error"
+          {% endif %}
+        >
+        {%- if form.errors contains 'password' -%}
+          <span id="password-error" class="main-account-reset__field-error">
+            {{ form.errors.translated_fields.password | capitalize }} {{ form.errors.messages.password }}
+          </span>
+        {%- endif -%}
+      </div>
+
+      <div class="main-account-reset__field">
+        <label for="password_confirmation" class="main-account-reset__label">{{ 'customer.reset_password.password_confirm' | t }} <span aria-hidden="true">*</span></label>
+        <input
+          type="password"
+          name="customer[password_confirmation]"
+          id="password_confirmation"
+          class="main-account-reset__input{% if form.errors contains 'password_confirmation' %} main-account-reset__input--error{% endif %}"
+          autocomplete="new-password"
+          aria-required="true"
+          {% if form.errors contains 'password_confirmation' %}
+            aria-invalid="true"
+            aria-describedby="password_confirmation-error"
+          {% endif %}
+        >
+        {%- if form.errors contains 'password_confirmation' -%}
+          <span id="password_confirmation-error" class="main-account-reset__field-error">
+            {{ form.errors.translated_fields.password_confirmation | capitalize }} {{ form.errors.messages.password_confirmation }}
+          </span>
+        {%- endif -%}
+      </div>
+
+      <button type="submit" class="main-account-reset__submit">
+        {{ 'customer.reset_password.submit' | t }}
+      </button>
+    {%- endform -%}
+  </div>
+</div>
+
+<style>
+  #shopify-section-{{ section.id }}.main-account-reset {
+    --account-background: {{ section.settings.background_color | default: '#ffffff' }};
+    --account-text: {{ section.settings.text_color | default: '#111111' }};
+    --account-border: {{ section.settings.text_color | default: '#111111' | color_modify: 'alpha', 0.2 }};
+    --account-error: #dc2626;
+
+    background-color: var(--account-background);
+    color: var(--account-text);
+    padding-block: {{ section.settings.padding_block }}em;
+  }
+
+  .main-account-reset__container {
+    max-width: 28rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  .main-account-reset__title {
+    font-family: var(--theme-font-family-serif, Georgia, serif);
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 0.5rem;
+    text-align: center;
+  }
+
+  .main-account-reset__subtitle {
+    margin: 0 0 1.5rem;
+    text-align: center;
+    opacity: 0.7;
+  }
+
+  .main-account-reset__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .main-account-reset__errors {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background-color: color-mix(in srgb, var(--account-error) 10%, transparent);
+    border: 1px solid var(--account-error);
+    border-radius: 0.25rem;
+    color: var(--account-error);
+    font-weight: 500;
+  }
+
+  .main-account-reset__error-list {
+    margin: 0;
+    padding-left: 1.5rem;
+    font-size: 0.875rem;
+    color: var(--account-error);
+  }
+
+  .main-account-reset__error-list a {
+    color: inherit;
+  }
+
+  .main-account-reset__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .main-account-reset__label {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .main-account-reset__input {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--account-border);
+    border-radius: 0.25rem;
+    background-color: transparent;
+    color: inherit;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .main-account-reset__input:focus {
+    outline: none;
+    border-color: var(--account-text);
+  }
+
+  .main-account-reset__input--error {
+    border-color: var(--account-error);
+  }
+
+  .main-account-reset__field-error {
+    font-size: 0.875rem;
+    color: var(--account-error);
+  }
+
+  .main-account-reset__submit {
+    padding: 0.875rem 1.5rem;
+    background-color: var(--account-text);
+    color: var(--account-background);
+    border: none;
+    border-radius: 0.25rem;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .main-account-reset__submit:hover {
+    opacity: 0.85;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Account reset password",
+  "tag": "section",
+  "class": "main-account-reset-wrapper",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Width",
+      "options": [
+        { "value": "is-align-narrow", "label": "Narrow" },
+        { "value": "is-align-small", "label": "Small" },
+        { "value": "is-align", "label": "Regular" },
+        { "value": "is-align-wide", "label": "Wide" },
+        { "value": "is-align-full", "label": "Full" }
+      ],
+      "default": "is-align-full"
+    },
+    {
+      "type": "range",
+      "id": "padding_block",
+      "label": "Vertical padding",
+      "min": 0,
+      "max": 6,
+      "step": 0.5,
+      "default": 4,
+      "unit": "em"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text"
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Anchor",
+      "info": "ID for scroll links (without #)"
+    },
+    {
+      "type": "text",
+      "id": "custom_class",
+      "label": "Custom class",
+      "info": "Add custom CSS class"
+    },
+    {
+      "type": "header",
+      "content": "Howto"
+    },
+    {
+      "type": "paragraph",
+      "content": "Password reset form. Displays when customer clicks reset link in email."
+    }
+  ]
+}
+{% endschema %}

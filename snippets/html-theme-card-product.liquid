@@ -1,0 +1,241 @@
+{%- comment -%}
+============================================================================
+HTML-THEME-CARD-PRODUCT
+============================================================================
+Product card renderer. Called by html-theme-card.
+
+PARAMS (from hub):
+- product              : Product object (required)
+- layout               : 'vertical' | 'horizontal'
+- image_ratio          : 'adapt' | 'portrait' | 'square' | 'landscape'
+
+GRID CONTEXT (passed to html-theme-media):
+- columns_desktop      : Columns on desktop
+- columns_tablet       : Columns on tablet
+- columns_mobile       : Columns on mobile
+- columns_width        : Container width class
+- columns_gap          : Gap in em
+
+LOADING:
+- image_loading       : 'lazy' | 'eager'
+- image_priority      : 'high' | 'low' | 'auto'
+
+DISPLAY OPTIONS:
+- show_secondary_image : Show hover image
+- show_vendor          : Show vendor name
+- show_price           : Show price
+- show_stock           : Show stock status
+- show_delivery        : Show delivery date
+- show_rating          : Show rating stars
+- show_badges          : Show sale/soldout badges
+- show_volume_pricing  : Show B2B volume pricing
+- quick_add            : Show quick add button
+
+DEPENDENCIES:
+- html-theme-media snippet
+- html-theme-icons snippet
+- html-product-price snippet
+- html-product-stock snippet
+- html-product-delivery snippet
+- html-button-order snippet
+============================================================================
+{%- endcomment -%}
+
+{%- assign p = product -%}
+{%- if p and p != empty -%}
+{%- liquid
+	comment
+		Boolean defaults
+	endcomment
+	if show_secondary_image == nil
+		assign show_secondary_image = false
+	endif
+	if show_vendor == nil
+		assign show_vendor = false
+	endif
+	if show_price == nil
+		assign show_price = true
+	endif
+	if show_stock == nil
+		assign show_stock = false
+	endif
+	if show_delivery == nil
+		assign show_delivery = false
+	endif
+	if show_rating == nil
+		assign show_rating = false
+	endif
+	if show_badges == nil
+		assign show_badges = true
+	endif
+	if show_volume_pricing == nil
+		assign show_volume_pricing = false
+	endif
+	if quick_add == nil
+		assign quick_add = false
+	endif
+
+	assign has_secondary = false
+	if show_secondary_image and p.media[1]
+		assign has_secondary = true
+	endif
+
+	comment
+		Aspect ratio CSS and class
+		Vertical: ratio determines card height
+		Horizontal: ratio determines image shape within stretched figure
+	endcomment
+	case image_ratio
+		when 'square'
+			assign aspect_ratio_css = '1 / 1'
+			assign ratio_class = 'card--ratio-square'
+		when 'portrait'
+			assign aspect_ratio_css = '2 / 3'
+			assign ratio_class = 'card--ratio-portrait'
+		when 'landscape'
+			assign aspect_ratio_css = '3 / 2'
+			assign ratio_class = 'card--ratio-landscape'
+		else
+			assign aspect_ratio_css = 'auto'
+			assign ratio_class = 'card--ratio-adapt'
+	endcase
+
+	comment
+		Build class string
+	endcomment
+	assign card_classes = 'card card--product card--' | append: layout | append: ' ' | append: ratio_class
+	if has_secondary
+		assign card_classes = card_classes | append: ' card--has-secondary'
+	endif
+-%}
+
+<article class="{{ card_classes }}" style="--card-ratio: {{ aspect_ratio_css }};">
+	<a href="{{ p.url }}" class="card__link" aria-label="{{ p.title | escape }}"></a>
+	
+	<div class="card__media">
+		<figure class="card__figure">
+			{%- if p.featured_media -%}
+				{%- render 'html-theme-media',
+					media: p.featured_media,
+					alt: p.featured_media.alt | default: p.title,
+					image_ratio: image_ratio,
+					columns_desktop: columns_desktop,
+					columns_tablet: columns_tablet,
+					columns_mobile: columns_mobile,
+					columns_width: columns_width,
+					layout: layout,
+					columns_gap: columns_gap,
+					image_loading: image_loading,
+					image_priority: image_priority,
+					class: 'card__image card__image--primary',
+					background: false,
+					wrapper: false
+				-%}
+				{%- if has_secondary -%}
+					{%- render 'html-theme-media',
+						media: p.media[1],
+						alt: p.media[1].alt | default: p.title,
+						image_ratio: image_ratio,
+						columns_desktop: columns_desktop,
+						columns_tablet: columns_tablet,
+						columns_mobile: columns_mobile,
+						columns_width: columns_width,
+						layout: layout,
+						columns_gap: columns_gap,
+						image_loading: 'lazy',
+						class: 'card__image card__image--secondary',
+						background: false,
+						wrapper: false
+					-%}
+				{%- endif -%}
+			{%- else -%}
+				<div class="card__placeholder" aria-hidden="true">
+					{%- render 'html-theme-icons', icon: 'image', size: 48 -%}
+				</div>
+			{%- endif -%}
+		</figure>
+
+		{%- if show_badges -%}
+			<div class="card__badges">
+				{%- if p.available == false -%}
+					<span class="card__badge card__badge--soldout">{{ 'product.sold_out' | t }}</span>
+				{%- elsif p.compare_at_price > p.price -%}
+					<span class="card__badge card__badge--sale">{{ 'product.on_sale' | t }}</span>
+				{%- endif -%}
+			</div>
+		{%- endif -%}
+	</div>
+
+	<div class="card__content">
+		{%- if show_rating and p.metafields.reviews.rating.value != blank -%}
+			{%- assign rating = p.metafields.reviews.rating.value -%}
+			<div class="card__rating">⭐ {{ rating.rating }} / {{ rating.scale_max }} ({{ rating.rating_count }})</div>
+		{%- endif -%}
+
+		{%- if show_vendor -%}
+			<span class="card__vendor">{{ p.vendor }}</span>
+		{%- endif -%}
+
+		<h3 class="card__title"><a href="{{ p.url }}">{{ p.title | escape }}</a></h3>
+
+		{%- if show_price -%}
+			{%- render 'html-product-price', product: p, show: show_price, from: 'auto' -%}
+		{%- endif -%}
+
+		{%- if show_volume_pricing and p.quantity_price_breaks_configured? -%}
+			{%- assign variant = p.selected_or_first_available_variant -%}
+			{%- if variant.quantity_price_breaks.size > 0 -%}
+				<div class="card__volume-pricing">
+					<details class="volume-pricing-disclosure">
+						<summary class="volume-pricing-toggle">
+							<span>{{ 'product.volume_pricing.note' | t }}</span>
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"></polyline></svg>
+						</summary>
+						<ul class="volume-pricing-list">
+							<li class="volume-pricing-item">
+								<span class="volume-pricing-qty">{{ variant.quantity_rule.min }}+</span>
+								<span class="volume-pricing-price">{{ variant.price | money }}</span>
+							</li>
+							{%- for price_break in variant.quantity_price_breaks -%}
+								<li class="volume-pricing-item">
+									<span class="volume-pricing-qty">{{ price_break.minimum_quantity }}+</span>
+									<span class="volume-pricing-price">{{ price_break.price | money }}</span>
+								</li>
+							{%- endfor -%}
+						</ul>
+					</details>
+				</div>
+			{%- endif -%}
+
+			{%- assign quantity_rule = variant.quantity_rule -%}
+			{%- if quantity_rule.increment > 1 or quantity_rule.min > 1 or quantity_rule.max != null -%}
+				<div class="card__quantity-rules">
+					{%- if quantity_rule.increment > 1 -%}
+						<span class="quantity-rule">{{ 'product.quantity.multiples_of' | t: quantity: quantity_rule.increment }}</span>
+					{%- endif -%}
+					{%- if quantity_rule.min > 1 -%}
+						<span class="quantity-rule">{{ 'product.quantity.min_of' | t: quantity: quantity_rule.min }}</span>
+					{%- endif -%}
+					{%- if quantity_rule.max != null -%}
+						<span class="quantity-rule">{{ 'product.quantity.max_of' | t: quantity: quantity_rule.max }}</span>
+					{%- endif -%}
+				</div>
+			{%- endif -%}
+		{%- endif -%}
+
+		{%- if show_stock -%}
+			<div class="card__stock">{%- render 'html-product-stock', product: p, show_stock_count: false -%}</div>
+		{%- endif -%}
+
+		{%- if show_delivery -%}
+			<div class="card__delivery">{%- render 'html-product-delivery', product: p -%}</div>
+		{%- endif -%}
+
+		{%- if quick_add -%}
+			<div class="card__actions">
+				{%- render 'html-button-order', product: p, variant_behavior: quick_add_behavior, show_icon: true, button_style: 'primary' -%}
+			</div>
+		{%- endif -%}
+	</div>
+</article>
+{%- endif -%}

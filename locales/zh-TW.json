@@ -105,6 +105,9 @@
     "filtering": {
       "title": "篩選與排序",
       "button": "篩選",
+      "filters": "篩選條件",
+      "active_filters": "已啟用的篩選",
+      "remove_filter": "移除篩選",
       "apply": "套用",
       "clear": "清除",
       "clear_all": "全部清除",

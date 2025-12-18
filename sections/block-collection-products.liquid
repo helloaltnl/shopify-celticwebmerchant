@@ -15,7 +15,7 @@
   - html-facets-bar snippet
   - html-facets-pills snippet
   - html-facets-drawer snippet
-  - html-product-card snippet
+  - html-theme-card snippet
   - html-theme-pagination snippet
   ============================================================================
 {%- endcomment -%}
@@ -41,7 +41,7 @@
 	endif
 -%}
 
-<div class="block-collection-products__content {{ section.settings.width }}" data-section-root>
+<div class="block-collection-products__content {{ section.settings.width }}" data-section-root{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	{%- comment -%} Filters {%- endcomment -%}
 	{%- liquid
 		assign show_filters = false
@@ -76,22 +76,30 @@
 					<div id="results-meta" data-count="{{ paginate.items }}"></div>
 					<ul id="product-grid" class="block-collection-products__list" style="--grid-columns: {{ grid_columns }}; --grid-columns-tablet: {{ section.settings.grid_columns_tablet }}; --grid-columns-mobile: {{ section.settings.grid_columns_mobile }}; --grid-gap: {{ section.settings.grid_gap }}em;" data-columns="{{ grid_columns }}">
 						{%- for product in collection.products -%}
+							{%- comment -%} Priority logic - temporarily disabled for testing
 							{%- assign lazy_load = false -%}
+							{%- assign priority = false -%}
 							{%- if forloop.index > grid_columns -%}
 								{%- assign lazy_load = true -%}
+							{%- elsif paginate.current_page == 1 -%}
+								{%- assign priority = true -%}
 							{%- endif -%}
+							{%- endcomment -%}
 							<li class="block-collection-products__item">
-								{% render 'html-product-card', 
+								{% render 'html-theme-card', 
 									product: product, 
 									layout: section.settings.card_layout,
-									lazy_load: lazy_load,
 									image_ratio: section.settings.image_ratio,
+									columns_desktop: grid_columns,
+									columns_tablet: section.settings.grid_columns_tablet,
+									columns_mobile: section.settings.grid_columns_mobile,
+									columns_width: section.settings.width,
+									columns_gap: section.settings.grid_gap,
 									show_secondary_image: section.settings.show_secondary_image,
 									show_rating: section.settings.show_rating,
 									show_vendor: section.settings.show_vendor, 
 									show_price: true,
 									show_stock: true,
-									show_stock_from: 'auto',
 									show_delivery: true,
 									show_badges: section.settings.show_badges,
 									quick_add: section.settings.quick_add
@@ -109,16 +117,25 @@
 					{%- else -%}
 						<ul id="product-grid" class="block-collection-products__list" style="--grid-columns: {{ grid_columns }}; --grid-columns-tablet: {{ section.settings.grid_columns_tablet }}; --grid-columns-mobile: {{ section.settings.grid_columns_mobile }}; --grid-gap: {{ section.settings.grid_gap }}em;" data-columns="{{ grid_columns }}">
 							{%- for product in search.results -%}
+								{%- comment -%} Priority logic - temporarily disabled for testing
 								{%- assign lazy_load = false -%}
+								{%- assign priority = false -%}
 								{%- if forloop.index > grid_columns -%}
 									{%- assign lazy_load = true -%}
+								{%- elsif paginate.current_page == 1 -%}
+									{%- assign priority = true -%}
 								{%- endif -%}
+								{%- endcomment -%}
 								<li class="block-collection-products__item">
-									{% render 'html-product-card', 
+									{% render 'html-theme-card', 
 										product: product, 
 										layout: section.settings.card_layout,
-										lazy_load: lazy_load,
 										image_ratio: section.settings.image_ratio,
+										columns_desktop: grid_columns,
+										columns_tablet: section.settings.grid_columns_tablet,
+										columns_mobile: section.settings.grid_columns_mobile,
+										columns_width: section.settings.width,
+										columns_gap: section.settings.grid_gap,
 										show_secondary_image: section.settings.show_secondary_image,
 										show_rating: section.settings.show_rating,
 										show_vendor: section.settings.show_vendor, 
@@ -162,23 +179,19 @@
 		min-width: 0;
 	}
 
-	.block-collection-products__item > .product-card {
-		height: 100%;
-	}
-
 	.block-collection-products__empty {
 		text-align: center;
 		padding: 4em 2em;
 		opacity: 0.6;
 	}
 
-	@media (max-width: 64em) {
+	@media (max-width: 60em) {
 		.block-collection-products__list {
 			grid-template-columns: repeat(var(--grid-columns-tablet, 3), 1fr);
 		}
 	}
 
-	@media (max-width: 47.5em) {
+	@media (max-width: 40em) {
 		.block-collection-products__list {
 			grid-template-columns: repeat(var(--grid-columns-mobile, 2), 1fr);
 		}
@@ -198,8 +211,14 @@
 	}
 
 	.product-filter {
+		position: relative;
 		display: block;
 		padding-block-end: 2em;
+	}
+
+	.product-filter .facet {
+		position: relative;
+		z-index: 10;
 	}
 
 	.facets__resultcount {
@@ -569,58 +588,66 @@ if (!customElements.get('product-filter')) {
 		"templates": ["collection", "search"]
 	},
 	"settings": [
-		{ "type": "header", "content": "Layout" },
 		{
-			"type": "select",
-			"id": "width",
-			"label": "Width",
-			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
-			],
-			"default": "alignwide"
-		},
-		{
-			"type": "range",
-			"id": "grid_columns",
-			"label": "Columns (desktop)",
-			"min": 1,
-			"max": 4,
-			"step": 1,
-			"default": 4
+			"type": "header",
+			"content": "Product card"
 		},
 		{
 			"type": "select",
-			"id": "grid_columns_tablet",
-			"label": "Columns (tablet)",
+			"id": "card_layout",
+			"label": "Card layout",
 			"options": [
-				{ "value": "1", "label": "1" },
-				{ "value": "2", "label": "2" },
-				{ "value": "3", "label": "3" }
+				{ "value": "vertical", "label": "Vertical" },
+				{ "value": "horizontal", "label": "Horizontal" }
 			],
-			"default": "3"
+			"default": "vertical"
 		},
 		{
 			"type": "select",
-			"id": "grid_columns_mobile",
-			"label": "Columns (mobile)",
+			"id": "image_ratio",
+			"label": "Image ratio",
 			"options": [
-				{ "value": "1", "label": "1" },
-				{ "value": "2", "label": "2" }
+				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" },
+				{ "value": "adapt", "label": "Adapt (original)" }
 			],
-			"default": "2"
+			"default": "portrait",
+			"info": "Use a fixed ratio for consistent heights in grids"
 		},
 		{
-			"type": "range",
-			"id": "grid_gap",
-			"label": "Grid gap",
-			"min": 0,
-			"max": 2,
-			"step": 0.2,
-			"default": 0.2,
-			"unit": "em"
+			"type": "checkbox",
+			"id": "show_secondary_image",
+			"label": "Show secondary image on hover",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "show_rating",
+			"label": "Show rating",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "show_vendor",
+			"label": "Show vendor",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "show_badges",
+			"label": "Show badges",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "quick_add",
+			"label": "Show quick add button",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Filters"
 		},
 		{
 			"type": "range",
@@ -631,7 +658,6 @@ if (!customElements.get('product-filter')) {
 			"step": 4,
 			"default": 24
 		},
-		{ "type": "header", "content": "Filtering" },
 		{
 			"type": "checkbox",
 			"id": "show_filter",
@@ -696,71 +722,91 @@ if (!customElements.get('product-filter')) {
 			"info": "Navigate to filtered page immediately (instead of AJAX)",
 			"default": false
 		},
-		{ "type": "header", "content": "Product card" },
 		{
-			"type": "select",
-			"id": "card_layout",
-			"label": "Card layout",
-			"options": [
-				{ "value": "vertical", "label": "Vertical" },
-				{ "value": "horizontal", "label": "Horizontal" }
-			],
-			"default": "vertical"
+			"type": "header",
+			"content": "Layout"
 		},
 		{
 			"type": "select",
-			"id": "image_ratio",
-			"label": "Image ratio",
+			"id": "width",
+			"label": "Width",
 			"options": [
-				{ "value": "adapt", "label": "Adapt" },
-				{ "value": "square", "label": "Square (1:1)" },
-				{ "value": "portrait", "label": "Portrait (2:3)" },
-				{ "value": "landscape", "label": "Landscape (3:2)" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "adapt"
+			"default": "is-align-wide"
 		},
 		{
-			"type": "checkbox",
-			"id": "show_secondary_image",
-			"label": "Show secondary image on hover",
-			"default": true
+			"type": "range",
+			"id": "grid_columns",
+			"label": "Columns (desktop)",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 4
 		},
 		{
-			"type": "checkbox",
-			"id": "show_rating",
-			"label": "Show rating",
-			"default": false
+			"type": "range",
+			"id": "grid_columns_tablet",
+			"label": "Columns (tablet)",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 3
 		},
 		{
-			"type": "checkbox",
-			"id": "show_vendor",
-			"label": "Show vendor",
-			"default": false
+			"type": "range",
+			"id": "grid_columns_mobile",
+			"label": "Columns (mobile)",
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 2
 		},
 		{
-			"type": "checkbox",
-			"id": "show_badges",
-			"label": "Show badges",
-			"default": true
+			"type": "range",
+			"id": "grid_gap",
+			"label": "Grid gap",
+			"min": 0,
+			"max": 2,
+			"step": 0.2,
+			"default": 0.2,
+			"unit": "em"
 		},
 		{
-			"type": "checkbox",
-			"id": "quick_add",
-			"label": "Show quick add button",
-			"default": false
+			"type": "header",
+			"content": "Colors"
 		},
-		{ "type": "header", "content": "Colors" },
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#f8f8f8"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Main product grid for collection and search pages. Includes filtering, sorting, and pagination."
 		}
 	],
 	"presets": [

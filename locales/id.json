@@ -105,6 +105,9 @@
     "filtering": {
       "title": "Filter dan urutkan",
       "button": "Filter",
+      "filters": "Filter",
+      "active_filters": "Filter aktif",
+      "remove_filter": "Hapus filter",
       "apply": "Terapkan",
       "clear": "Hapus",
       "clear_all": "Hapus semua",

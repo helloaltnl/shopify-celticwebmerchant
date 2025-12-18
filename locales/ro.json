@@ -105,6 +105,9 @@
     "filtering": {
       "title": "Filtrați și sortați",
       "button": "Filtrați",
+      "filters": "Filtre",
+      "active_filters": "Filtre active",
+      "remove_filter": "Eliminați filtrul",
       "apply": "Aplicați",
       "clear": "Goliți",
       "clear_all": "Goliți tot",

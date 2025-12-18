@@ -34,7 +34,7 @@
 -%}
 
 {%- if blogpost_references or knowledge_references -%}
-<div class="block-product-blogs__content {{ section.settings.width }}">
+<div class="block-product-blogs__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %} style="padding-block: {{ section.settings.padding_block }}em;">
   <header class="block-product-blogs__header">
     <h2 class="block-product-blogs__title">{{ heading_text }}</h2>
   </header>
@@ -45,7 +45,7 @@
         {%- for article_reference in blogpost_references.value -%}
           {%- if forloop.first -%}
             <article class="block-product-blogs__card block-product-blogs__card--featured">
-              <a href="{{ article_reference.link.value.url }}" class="block-product-blogs__card-link" target="_blank" rel="noopener"></a>
+              <a href="{{article_reference.article.value.url }}" aria-label="{{ article_reference.title | escape }}" class="block-product-blogs__card-link" target="_blank" rel="noopener"></a>
               {%- if article_reference.thumb -%}
                 <figure class="block-product-blogs__card-image">
                   <img
@@ -62,7 +62,7 @@
                 {%- if article_reference.excerpt -%}
                   <p class="block-product-blogs__card-excerpt">{{ article_reference.excerpt }}</p>
                 {%- endif -%}
-                {%- if article_reference.link -%}
+                {%- if article_reference.article.value -%}
                   <span class="block-product-blogs__card-cta">
                     <span>{{ read_more_text }}</span>
                     {%- render 'html-theme-icons', icon: 'arrow', size: 14 -%}
@@ -77,7 +77,7 @@
           {%- for article_reference in blogpost_references.value offset: 1 -%}
             <li class="block-product-blogs__item">
               <article class="block-product-blogs__card block-product-blogs__card--article">
-                <a href="{{ article_reference.link.value.url }}" class="block-product-blogs__card-link" target="_blank" rel="noopener"></a>
+                <a href="{{article_reference.article.value.url }}" aria-label="{{ article_reference.title | escape }}" class="block-product-blogs__card-link" target="_blank" rel="noopener"></a>
                 {%- if article_reference.thumb -%}
                   <figure class="block-product-blogs__card-image">
                     <img
@@ -94,7 +94,7 @@
                   {%- if article_reference.excerpt -%}
                     <p class="block-product-blogs__card-excerpt">{{ article_reference.excerpt }}</p>
                   {%- endif -%}
-                  {%- if article_reference.link -%}
+                  {%- if article_reference.article.value -%}
                     <span class="block-product-blogs__card-cta">
                       <span>{{ read_more_text }}</span>
                       {%- render 'html-theme-icons', icon: 'arrow', size: 14 -%}
@@ -113,13 +113,13 @@
         {%- for article_reference in knowledge_references.value -%}
           <li class="block-product-blogs__item">
             <article class="block-product-blogs__card block-product-blogs__card--knowledge">
-              <a href="{{ article_reference.link.value.url }}" class="block-product-blogs__card-link" target="_blank" rel="noopener"></a>
+              <a href="{{article_reference.article.value.url }}" aria-label="{{ article_reference.title | escape }}" class="block-product-blogs__card-link" target="_blank" rel="noopener"></a>
               <div class="block-product-blogs__card-content">
                 <h4 class="block-product-blogs__card-title">{{ article_reference.title }}</h4>
                 {%- if article_reference.excerpt -%}
                   <p class="block-product-blogs__card-excerpt">{{ article_reference.excerpt }}</p>
                 {%- endif -%}
-                {%- if article_reference.link -%}
+                {%- if article_reference.article.value -%}
                   <span class="block-product-blogs__card-cta">
                     <span>{{ read_more_text }}</span>
                     {%- render 'html-theme-icons', icon: 'arrow', size: 14 -%}
@@ -137,12 +137,12 @@
 
 <style>
   .block-product-blogs {
-    background-color: {{ section.settings.background_color }};
-    color: {{ section.settings.text_color }};
+    background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
+    color: {{ section.settings.text_color | default: '#111111' }};
     
   }
   .block-product-blogs__content {
-    padding-block: 3em;
+    /* padding controlled by inline style */
   }
   .block-product-blogs__header {
     margin-bottom: 2em;
@@ -274,8 +274,8 @@
 
   /* Knowledge card */
   .block-product-blogs__card--knowledge {
-    background-color: {{ section.settings.knowledge_background_color }};
-    color: {{ section.settings.knowledge_text_color }};
+    background-color: {{ section.settings.knowledge_background_color | default: '#0f1f38' }};
+    color: {{ section.settings.knowledge_text_color | default: '#ffffff' }};
   }
 
   /* Card content */
@@ -322,7 +322,7 @@
   }
 
   /* Responsive */
-  @media (max-width: 768px) {
+  @media (max-width: 40em) {
     .block-product-blogs__articles-wrapper {
       flex-direction: column;
     }
@@ -382,12 +382,23 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "align"
+			"default": "is-align"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
 		},
 		{
 			"type": "header",
@@ -396,38 +407,46 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#f8f8f8"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "color",
 			"id": "knowledge_background_color",
-			"label": "Knowledge card background",
-			"default": "#0f1f38"
+			"label": "Knowledge card background"
 		},
 		{
 			"type": "color",
 			"id": "knowledge_text_color",
-			"label": "Knowledge card text",
-			"default": "#ffffff"
+			"label": "Knowledge card text"
 		},
 		{
 			"type": "header",
-			"content": "How to use"
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
+		},
+		{
+			"type": "text",
+			"id": "custom_class",
+			"label": "Custom class",
+			"info": "Add custom CSS class"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
 		},
 		{
 			"type": "paragraph",
-			"content": "This section displays blog posts and knowledge base articles linked to the product. Content is pulled from product metafields."
-		},
-		{
-			"type": "paragraph",
-			"content": "Metafields: custom.product-blogpost-references and custom.product-knowledgebase-references"
+			"content": "Displays blog posts and knowledge base articles from product metafields (custom.product-blogpost-references, custom.product-knowledgebase-references)."
 		}
 	],
 	"presets": [

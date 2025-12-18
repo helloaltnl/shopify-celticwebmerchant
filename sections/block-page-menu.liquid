@@ -30,6 +30,7 @@
 	role="dialog"
 	aria-modal="true"
 	aria-label="{{ 'accessibility.menu' | t }}"
+	hidden
 >
 	<div class="block-page-menu__overlay" data-drawer-overlay></div>
 	<div class="block-page-menu__content">
@@ -425,7 +426,7 @@
 	}
 
 	/* Hide on desktop */
-	@media (min-width: 1025px) {
+	@media (min-width: 60em) {
 		.block-page-menu {
 			display: none !important;
 		}
@@ -506,31 +507,35 @@
 			"info": "Main product categories"
 		},
 		{
-			"type": "checkbox",
-			"id": "show_product_thumbs",
-			"label": "Show thumbnails",
-			"info": "Display collection images next to menu items",
-			"default": false
-		},
-		{
 			"type": "link_list",
 			"id": "secondary_menu",
 			"label": "Secondary menu",
-			"info": "Additional links (e.g. Tribe, Service, Contact)"
+			"info": "Additional links"
 		},
 		{
 			"type": "link_list",
 			"id": "tertiary_menu",
 			"label": "Tertiary menu",
-			"info": "Extra links below secondary menu"
+			"info": "Extra links"
 		},
 		{
 			"type": "header",
-			"content": "How to use"
+			"content": "Misc"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_product_thumbs",
+			"label": "Show product menu thumbnails",
+			"info": "Display collection images next to product menu items",
+			"default": false
+		},
+		{
+			"type": "header",
+			"content": "Howto"
 		},
 		{
 			"type": "paragraph",
-			"content": "This section provides the mobile navigation menu. Place it in the footer group to avoid z-index conflicts with sticky headers."
+			"content": "Mobile navigation drawer. Place in footer group to avoid z-index conflicts with sticky headers."
 		}
 	],
 	"presets": [

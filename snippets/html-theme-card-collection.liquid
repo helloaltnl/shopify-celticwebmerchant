@@ -1,0 +1,124 @@
+{%- comment -%}
+============================================================================
+HTML-THEME-CARD-COLLECTION
+============================================================================
+Collection card renderer. Called by html-theme-card.
+
+PARAMS (from hub):
+- collection           : Collection object (required)
+- layout               : 'vertical' | 'horizontal'
+- image_ratio          : 'adapt' | 'portrait' | 'square' | 'landscape'
+
+GRID CONTEXT (passed to html-theme-media):
+- columns_desktop      : Columns on desktop
+- columns_tablet       : Columns on tablet
+- columns_mobile       : Columns on mobile
+- columns_width        : Container width class
+- columns_gap          : Gap in em
+
+LOADING:
+- image_loading       : 'lazy' | 'eager'
+- image_priority      : 'high' | 'low' | 'auto'
+
+DISPLAY OPTIONS:
+- show_count           : Show product count
+- heading_level        : 'h2' | 'h3' | 'h4' (default 'h3')
+
+DEPENDENCIES:
+- html-theme-media snippet
+- html-theme-icons snippet
+============================================================================
+{%- endcomment -%}
+
+{%- if collection and collection != empty -%}
+{%- liquid
+	comment
+		Boolean default - explicit false check
+	endcomment
+	assign should_show_count = true
+	if show_count == false
+		assign should_show_count = false
+	endif
+
+	comment
+		Heading level default
+	endcomment
+	assign heading_tag = heading_level | default: 'h3'
+
+	comment
+		Determine image source
+	endcomment
+	if collection.image
+		assign card_image = collection.image
+	elsif collection.products.first.featured_image
+		assign card_image = collection.products.first.featured_image
+	else
+		assign card_image = blank
+	endif
+
+	comment
+		Aspect ratio CSS and class
+		Vertical: ratio determines card height
+		Horizontal: ratio determines image shape within stretched figure
+	endcomment
+	case image_ratio
+		when 'square'
+			assign aspect_ratio_css = '1 / 1'
+			assign ratio_class = 'card--ratio-square'
+		when 'portrait'
+			assign aspect_ratio_css = '2 / 3'
+			assign ratio_class = 'card--ratio-portrait'
+		when 'landscape'
+			assign aspect_ratio_css = '3 / 2'
+			assign ratio_class = 'card--ratio-landscape'
+		else
+			assign aspect_ratio_css = 'auto'
+			assign ratio_class = 'card--ratio-adapt'
+	endcase
+-%}
+
+<article class="card card--collection card--{{ layout }} {{ ratio_class }}" style="--card-ratio: {{ aspect_ratio_css }};">
+	<a href="{{ collection.url }}" class="card__link" aria-label="{{ collection.title | escape }}"></a>
+	
+	<div class="card__media">
+		<figure class="card__figure">
+			{%- if card_image -%}
+				{%- render 'html-theme-media',
+					media: card_image,
+					alt: card_image.alt | default: collection.title,
+					image_ratio: image_ratio,
+					columns_desktop: columns_desktop,
+					columns_tablet: columns_tablet,
+					columns_mobile: columns_mobile,
+					columns_width: columns_width,
+					layout: layout,
+					columns_gap: columns_gap,
+					image_loading: image_loading,
+					image_priority: image_priority,
+					class: 'card__image',
+					background: false,
+					wrapper: false
+				-%}
+			{%- else -%}
+				<div class="card__placeholder" aria-hidden="true">
+					{%- render 'html-theme-icons', icon: 'image', size: 48 -%}
+				</div>
+			{%- endif -%}
+		</figure>
+	</div>
+
+	<div class="card__content">
+		{%- case heading_tag -%}
+			{%- when 'h2' -%}
+				<h2 class="card__title"><a href="{{ collection.url }}">{{ collection.title | escape }}</a></h2>
+			{%- when 'h4' -%}
+				<h4 class="card__title"><a href="{{ collection.url }}">{{ collection.title | escape }}</a></h4>
+			{%- else -%}
+				<h3 class="card__title"><a href="{{ collection.url }}">{{ collection.title | escape }}</a></h3>
+		{%- endcase -%}
+		{%- if should_show_count -%}
+			<span class="card__meta">{{ 'collection.products_count' | t: count: collection.all_products_count }}</span>
+		{%- endif -%}
+	</div>
+</article>
+{%- endif -%}

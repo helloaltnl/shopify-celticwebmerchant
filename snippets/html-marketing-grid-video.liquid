@@ -1,260 +1,324 @@
-{% comment %}
-  HTML Marketing Grid Component: Video Item
-  Video player (hosted) with cover image for grid layouts
-  
-  Parameters:
-  - video: {Object} Shopify video object from Files library (required)
-  - cover_image: {Object} Cover/poster image (optional)
-  - description: {String} Video description for accessibility (optional)
-  - design: {String} blue | red | green - default: blue
-  - block_id: {String} Unique block ID for styling
-  
-  Usage:
-  {% render 'html-marketing-grid-video',
-    video: block.settings.video,
-    cover_image: block.settings.cover_image,
-    description: block.settings.description,
-    design: block.settings.design,
-    block_id: block.id
-  %}
-{% endcomment %}
+{%- comment -%}
+============================================================================
+HTML-MARKETING-GRID-VIDEO
+============================================================================
+Video card with cover image, content overlay and inline video player.
+Uses global .is-marketing-card design utilities from theme-ux.scss.
+
+PARAMETERS:
+- video           : Shopify video object from Files library (required)
+- cover_image     : Cover/poster image (optional)
+- focus_x         : Horizontal focus point 0-100 (default 50)
+- focus_y         : Vertical focus point 0-100 (default 50)
+- label           : Small label/badge text (optional)
+- heading         : Video heading (optional)
+- text            : Video description (optional, richtext)
+- design          : 'blue' | 'red' | 'green' (default 'blue')
+- block_id        : Unique block ID for styling
+- columns_desktop : Number of columns on desktop (default 3)
+- columns_tablet  : Number of columns on tablet (default 2)
+- columns_mobile  : Number of columns on mobile (default 1)
+- columns_width   : Container width class (default 'is-align-wide')
+- columns_gap     : Gap between grid items in em (default 1)
+
+NOTES:
+- Uses direct html-theme-media-image for focus point support
+- Sizes = actual display size, srcset = 1x-3x for retina
+- Quality default 70% via html-theme-media-image
+
+DEPENDENCIES:
+- html-theme-media-image snippet
+- Global .is-marketing-card design utilities from theme-ux.scss
+============================================================================
+{%- endcomment -%}
 
 {%- liquid
-  assign description = description | default: 'Video'
-  assign design = design | default: 'blue'
-  assign unique_id = 'video-' | append: block_id
-  
-  assign has_video = false
-  if video != blank and video.sources.size > 0
-    assign has_video = true
-  endif
+	assign design = design | default: 'blue'
+	assign focus_x = focus_x | default: 50
+	assign focus_y = focus_y | default: 50
+	assign unique_id = 'video-' | append: block_id
+	assign columns_desktop = columns_desktop | default: 3
+	assign columns_tablet = columns_tablet | default: 2
+	assign columns_mobile = columns_mobile | default: 1
+	assign columns_width = columns_width | default: 'is-align-wide'
+	assign columns_gap = columns_gap | default: 1
+
+	assign has_video = false
+	if video != blank and video.sources.size > 0
+		assign has_video = true
+	endif
+
+	assign has_content = false
+	if label != blank or heading != blank or text != blank
+		assign has_content = true
+	endif
+	
+	comment
+		Container width in pixels (match theme-ui.scss)
+	endcomment
+	case columns_width
+		when 'is-align-narrow'
+			assign container_px = 480
+		when 'is-align-small'
+			assign container_px = 640
+		when 'is-align'
+			assign container_px = 960
+		when 'is-align-wide'
+			assign container_px = 1280
+		when 'is-align-full'
+			assign container_px = 1600
+		else
+			assign container_px = 1280
+	endcase
+	
+	comment
+		Gap in pixels
+	endcomment
+	assign gap_px = columns_gap | times: 16
+	
+	comment
+		Calculate actual display sizes per breakpoint
+	endcomment
+	assign desktop_gaps = columns_desktop | minus: 1 | times: gap_px
+	assign desktop_available = container_px | minus: desktop_gaps
+	assign desktop_image = desktop_available | divided_by: columns_desktop | round
+	
+	assign tablet_gaps = columns_tablet | minus: 1 | times: gap_px
+	assign tablet_available = 960 | minus: tablet_gaps
+	assign tablet_image = tablet_available | divided_by: columns_tablet | round
+	
+	assign mobile_gaps = columns_mobile | minus: 1 | times: gap_px
+	assign mobile_available = 480 | minus: mobile_gaps
+	assign mobile_image = mobile_available | divided_by: columns_mobile | round
+	
+	comment
+		Build sizes attribute (actual display sizes, not ×3)
+	endcomment
+	assign img_sizes = '(min-width: 60em) ' | append: desktop_image | append: 'px, (min-width: 40em) ' | append: tablet_image | append: 'px, ' | append: mobile_image | append: 'px'
+	
+	comment
+		Srcset widths based on desktop (largest display)
+		Provides 1x, 1.5x, 2x, 2.5x, 3x for retina
+	endcomment
+	assign base = desktop_image
+	if base < 200
+		assign base = 200
+	endif
+	
+	assign w1 = base | round
+	assign w2 = base | times: 1.5 | round
+	assign w3 = base | times: 2 | round
+	assign w4 = base | times: 2.5 | round
+	assign w5 = base | times: 3 | round
+	if w5 > 2048
+		assign w5 = 2048
+	endif
+	if w4 > 2048
+		assign w4 = 2048
+	endif
 -%}
 
-<div class="marketing-grid-video is-design-{{ design }}">
-  {%- if has_video -%}
-    {%- if cover_image != blank -%}
-      <div class="marketing-grid-video__cover" id="cover-{{ unique_id }}" data-video-cover>
-        {%- capture sizes -%}
-          (min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw
-        {%- endcapture -%}
-        {{
-          cover_image
-          | image_url: width: 1200
-          | image_tag: 
-            sizes: sizes, 
-            widths: '360, 550, 720, 990, 1100, 1200',
-            loading: 'lazy',
-            class: 'marketing-grid-video__cover-image'
-        }}
-        <button 
-          class="marketing-grid-video__play-button" 
-          aria-label="Play video"
-          data-video-play="{{ unique_id }}"
-        >
-          <span class="marketing-grid-video__play-icon">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 8L24 16L12 24V8Z" fill="currentColor"/>
-            </svg>
-          </span>
-        </button>
-      </div>
-    {%- endif -%}
-    
-    <div class="marketing-grid-video__player">
-      <video
-        id="player-{{ unique_id }}"
-        class="marketing-grid-video__video"
-        {%- if cover_image %} poster="{{ cover_image | image_url: width: 1200 }}"{% endif %}
-        controls
-        playsinline
-        preload="metadata"
-        title="{{ description | escape }}"
-      >
-        {%- for source in video.sources -%}
-          <source src="{{ source.url }}" type="{{ source.mime_type }}">
-        {%- endfor -%}
-      </video>
-    </div>
-    
-    <script>
-      (function() {
-        const playBtn = document.querySelector('[data-video-play="{{ unique_id }}"]');
-        const cover = document.getElementById('cover-{{ unique_id }}');
-        const video = document.getElementById('player-{{ unique_id }}');
-        
-        if (playBtn && cover && video) {
-          playBtn.addEventListener('click', function() {
-            cover.style.display = 'none';
-            video.play();
-          });
-        }
-      })();
-    </script>
-  {%- else -%}
-    <div class="marketing-grid-video__placeholder">
-      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="40" cy="40" r="40" fill="#e0e0e0"/>
-        <path d="M32 26L54 40L32 54V26Z" fill="#999"/>
-      </svg>
-      <p>Select a video</p>
-    </div>
-  {%- endif -%}
+<div class="is-marketing-card is-design-{{ design }} marketing-grid-video{% if has_content %} has-content{% endif %}">
+	{%- if has_video -%}
+		{%- comment -%} Cover image with play button {%- endcomment -%}
+		<div class="marketing-grid-video__cover" id="cover-{{ unique_id }}" data-video-cover>
+			{%- if cover_image != blank -%}
+				<div class="is-marketing-card__image">
+					{%- render 'html-theme-media-image',
+						image: cover_image,
+						alt: heading | default: 'Video',
+						w1: w1,
+						w2: w2,
+						w3: w3,
+						w4: w4,
+						w5: w5,
+						sizes: img_sizes,
+						image_loading: 'lazy',
+						focus_x: focus_x,
+						focus_y: focus_y
+					-%}
+				</div>
+			{%- endif -%}
+
+			<button
+				class="marketing-grid-video__play-button"
+				aria-label="{{ 'accessibility.play_video' | t | default: 'Play video' }}"
+				data-video-play="{{ unique_id }}"
+			>
+				<span class="marketing-grid-video__play-icon">
+					{%- render 'html-theme-icons', icon: 'play', size: 32 -%}
+				</span>
+			</button>
+
+			{%- comment -%} Content overlay on cover {%- endcomment -%}
+			{%- if has_content -%}
+				<div class="is-marketing-card__content">
+					{%- if label != blank -%}
+						<span class="is-marketing-card__label">{{ label }}</span>
+					{%- endif -%}
+					{%- if heading != blank -%}
+						<h3 class="is-marketing-card__title">{{ heading }}</h3>
+					{%- endif -%}
+					{%- if text != blank -%}
+						<div class="is-marketing-card__text">{{ text }}</div>
+					{%- endif -%}
+				</div>
+			{%- endif -%}
+		</div>
+
+		{%- comment -%} Video player {%- endcomment -%}
+		<div class="marketing-grid-video__player" id="player-wrapper-{{ unique_id }}" hidden>
+			<video
+				id="player-{{ unique_id }}"
+				class="marketing-grid-video__video"
+				{%- if cover_image %} poster="{{ cover_image | image_url: width: 1200 }}"{% endif %}
+				controls
+				playsinline
+				preload="metadata"
+				title="{{ heading | default: 'Video' | escape }}"
+			>
+				{%- for source in video.sources -%}
+					<source src="{{ source.url }}" type="{{ source.mime_type }}">
+				{%- endfor -%}
+			</video>
+		</div>
+
+		<script>
+			(function() {
+				const playBtn = document.querySelector('[data-video-play="{{ unique_id }}"]');
+				const cover = document.getElementById('cover-{{ unique_id }}');
+				const playerWrapper = document.getElementById('player-wrapper-{{ unique_id }}');
+				const video = document.getElementById('player-{{ unique_id }}');
+
+				if (playBtn && cover && playerWrapper && video) {
+					playBtn.addEventListener('click', function() {
+						cover.hidden = true;
+						playerWrapper.hidden = false;
+						video.play();
+					});
+
+					video.addEventListener('ended', function() {
+						cover.hidden = false;
+						playerWrapper.hidden = true;
+					});
+				}
+			})();
+		</script>
+	{%- else -%}
+		<div class="marketing-grid-video__placeholder">
+			{%- render 'html-theme-icons', icon: 'play', size: 64 -%}
+			<p>{{ 'general.select_video' | t | default: 'Select a video' }}</p>
+		</div>
+	{%- endif -%}
 </div>
 
 <style>
-  .marketing-grid-video {
-    position: relative;
-    overflow: hidden;
-    background-color: #000;
-  }
-  
-  .marketing-grid-video__player {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-  
-  .marketing-grid-video__video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  /* Cover image */
-  .marketing-grid-video__cover {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .marketing-grid-video__cover-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  /* Play button */
-  .marketing-grid-video__play-button {
-    position: relative;
-    z-index: 1;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease;
-  }
-  
-  .marketing-grid-video__play-button:hover {
-    transform: scale(1.1);
-  }
-  
-  .marketing-grid-video__play-icon {
-    display: block;
-    width: 80px;
-    height: 80px;
-    background-color: rgba(255, 255, 255, 0.95);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    color: #000;
-  }
-  
-  .marketing-grid-video__play-icon svg {
-    width: 32px;
-    height: 32px;
-    margin-left: 4px;
-  }
-  
-  /* Placeholder */
-  .marketing-grid-video__placeholder {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: #f5f5f5;
-    color: #666;
-    text-align: center;
-    padding: 2rem;
-  }
-  
-  .marketing-grid-video__placeholder p {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-  }
-  
-  /* Design variants - add subtle overlay on hover */
-  .marketing-grid-video.is-design-blue .marketing-grid-video__cover::after,
-  .marketing-grid-video.is-design-red .marketing-grid-video__cover::after,
-  .marketing-grid-video.is-design-green .marketing-grid-video__cover::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
-  
-  .marketing-grid-video.is-design-blue .marketing-grid-video__cover::after {
-    background: linear-gradient(135deg, rgba(30, 64, 175, 0.2) 0%, transparent 100%);
-  }
-  
-  .marketing-grid-video.is-design-red .marketing-grid-video__cover::after {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.2) 0%, transparent 100%);
-  }
-  
-  .marketing-grid-video.is-design-green .marketing-grid-video__cover::after {
-    background: linear-gradient(135deg, rgba(22, 163, 74, 0.2) 0%, transparent 100%);
-  }
-  
-  .marketing-grid-video__cover:hover::after {
-    opacity: 1;
-  }
-  
-  /* Responsive */
-  @media (max-width: 749px) {
-    .marketing-grid-video__play-button {
-      width: 60px;
-      height: 60px;
-    }
-    
-    .marketing-grid-video__play-icon {
-      width: 60px;
-      height: 60px;
-    }
-    
-    .marketing-grid-video__play-icon svg {
-      width: 24px;
-      height: 24px;
-    }
-  }
+.marketing-grid-video {
+	background-color: #000;
+}
+
+.marketing-grid-video__cover {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.marketing-grid-video__cover .is-marketing-card__image {
+	z-index: 0;
+}
+
+.marketing-grid-video__play-button {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 3;
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	width: 80px;
+	height: 80px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: transform 200ms ease;
+}
+
+.marketing-grid-video.has-content .marketing-grid-video__play-button {
+	top: calc(50% - 3em);
+}
+
+.marketing-grid-video__play-button:hover {
+	transform: translate(-50%, -50%) scale(1.1);
+}
+
+.marketing-grid-video.has-content .marketing-grid-video__play-button:hover {
+	transform: translate(-50%, -50%) scale(1.1);
+}
+
+.marketing-grid-video__play-icon {
+	display: flex;
+	width: 80px;
+	height: 80px;
+	background-color: rgba(255, 255, 255, 0.95);
+	border-radius: 50%;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+	color: #000;
+}
+
+.marketing-grid-video__player {
+	position: absolute;
+	inset: 0;
+}
+
+.marketing-grid-video__video {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.marketing-grid-video__placeholder {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--theme-color-grey, #f5f5f5);
+	color: var(--theme-color-foreground-subtle, #999);
+	text-align: center;
+	padding: 2rem;
+}
+
+.marketing-grid-video__placeholder p {
+	margin-top: 1rem;
+	font-size: 0.875rem;
+}
+
+@media (max-width: 40em) {
+	.marketing-grid-video__play-button {
+		width: 60px;
+		height: 60px;
+	}
+
+	.marketing-grid-video__play-icon {
+		width: 60px;
+		height: 60px;
+	}
+
+	.marketing-grid-video__play-icon svg {
+		width: 24px;
+		height: 24px;
+	}
+}
 </style>

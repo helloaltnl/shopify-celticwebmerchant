@@ -1,138 +1,232 @@
+{%- comment -%}
+============================================================================
+BLOCK-MARKETING-GRID
+============================================================================
+Versatile marketing grid section with multiple display modes.
+
+FEATURES:
+- Display modes: Grid (regular), Slider, Creative (asymmetric layouts)
+- Multiple block types: Banner, Video, Product, Collection
+- Smart slider: auto-centers when all slides fit
+- Creative mode: automatic asymmetric layouts based on item count (1-5)
+- Slider options: navigation, pagination, loop, autoplay
+
+DEPENDENCIES:
+- html-marketing-grid-banner snippet
+- html-marketing-grid-video snippet
+- html-marketing-grid-product snippet
+- html-marketing-grid-collection snippet
+- html-theme-icons snippet (for slider navigation)
+- Swiper.js (loaded in theme head)
+- Global .swiper utilities from theme-ux.scss
+============================================================================
+{%- endcomment -%}
+
 {%- liquid
 	assign has_heading = false
 	if section.settings.heading != blank or section.settings.subtext != blank
 		assign has_heading = true
 	endif
+	
+	assign display_mode = section.settings.display_mode | default: 'creative'
 -%}
 
-<div class="block-marketing-grid__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+<div class="block-marketing-grid__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	{%- if has_heading -%}
 		<header class="block-marketing-grid__header">
 			{%- if section.settings.heading != blank -%}
 				<h2 class="block-marketing-grid__title">{{ section.settings.heading }}</h2>
 			{%- endif -%}
 			{%- if section.settings.subtext != blank -%}
-				<p class="block-marketing-grid__subtitle">{{ section.settings.subtext }}</p>
+				<div class="block-marketing-grid__subtitle">{{ section.settings.subtext }}</div>
 			{%- endif -%}
 		</header>
 	{%- endif -%}
 	
-	{%- if section.settings.view == 'slider' -%}
-		<marketing-grid-slider class="block-marketing-grid__slider">
-			<div class="block-marketing-grid__slider-container swiper" data-marketing-grid-swiper>
-				<ul class="block-marketing-grid__grid swiper-wrapper is-slider{% unless section.settings.enable_gaps %} has-no-gaps{% endunless %}{% if has_heading %} has-heading{% endif %}" role="list">
+	{%- capture blocks_html -%}
+		{%- for block in section.blocks -%}
+			<li class="block-marketing-grid__item" {{ block.shopify_attributes }}>
+				{%- case block.type -%}
+					{%- when 'banner' -%}
+						{%- render 'html-marketing-grid-banner',
+							image: block.settings.image,
+							focus_x: block.settings.focus_x,
+							focus_y: block.settings.focus_y,
+							overlay: block.settings.overlay,
+							label: block.settings.label,
+							heading: block.settings.heading,
+							text: block.settings.text,
+							link_url: block.settings.link_url,
+							design: block.settings.design,
+							block_id: block.id,
+							columns_desktop: section.settings.columns_desktop,
+							columns_tablet: section.settings.columns_tablet,
+							columns_mobile: section.settings.columns_mobile,
+							columns_width: section.settings.width,
+							columns_gap: section.settings.grid_gap
+						-%}
+					{%- when 'video' -%}
+						{%- render 'html-marketing-grid-video',
+							video: block.settings.video,
+							cover_image: block.settings.cover_image,
+							focus_x: block.settings.focus_x,
+							focus_y: block.settings.focus_y,
+							label: block.settings.label,
+							heading: block.settings.heading,
+							text: block.settings.text,
+							design: block.settings.design,
+							block_id: block.id,
+							columns_desktop: section.settings.columns_desktop,
+							columns_tablet: section.settings.columns_tablet,
+							columns_mobile: section.settings.columns_mobile,
+							columns_width: section.settings.width,
+							columns_gap: section.settings.grid_gap
+						-%}
+					{%- when 'product' -%}
+						{%- render 'html-marketing-grid-product',
+							product: block.settings.product,
+							show_secondary_image: block.settings.second_image,
+							design: block.settings.design,
+							block_id: block.id,
+							columns_desktop: section.settings.columns_desktop,
+							columns_tablet: section.settings.columns_tablet,
+							columns_mobile: section.settings.columns_mobile,
+							columns_width: section.settings.width,
+							columns_gap: section.settings.grid_gap
+						-%}
+					{%- when 'collection' -%}
+						{%- render 'html-marketing-grid-collection',
+							collection: block.settings.collection,
+							show_description: block.settings.show_description,
+							design: block.settings.design,
+							block_id: block.id,
+							columns_desktop: section.settings.columns_desktop,
+							columns_tablet: section.settings.columns_tablet,
+							columns_mobile: section.settings.columns_mobile,
+							columns_width: section.settings.width,
+							columns_gap: section.settings.grid_gap
+						-%}
+				{%- endcase -%}
+			</li>
+		{%- endfor -%}
+	{%- endcapture -%}
+
+	{%- case display_mode -%}
+		{%- when 'slider' -%}
+			{%- comment -%} Slider mode: use divs (Swiper manipulates DOM) {%- endcomment -%}
+			<div class="block-marketing-grid__slider swiper" id="swiper-{{ section.id }}" style="--grid-gap: {{ section.settings.grid_gap | default: 0.5 }}em;">
+				<div class="swiper-wrapper{% if has_heading %} has-heading{% endif %}">
 					{%- for block in section.blocks -%}
-						<li class="block-marketing-grid__item swiper-slide" {{ block.shopify_attributes }}>
+						<div class="block-marketing-grid__item swiper-slide" {{ block.shopify_attributes }}>
 							{%- case block.type -%}
 								{%- when 'banner' -%}
 									{%- render 'html-marketing-grid-banner',
-										image: block.settings.image,
-										label: block.settings.label,
-										heading: block.settings.heading,
-										text: block.settings.text,
-										link_url: block.settings.link_url,
-										design: block.settings.design,
-										block_id: block.id
+									image: block.settings.image,
+									focus_x: block.settings.focus_x,
+									focus_y: block.settings.focus_y,
+									overlay: block.settings.overlay,
+									label: block.settings.label,
+									heading: block.settings.heading,
+									text: block.settings.text,
+									link_url: block.settings.link_url,
+									design: block.settings.design,
+									block_id: block.id,
+									columns_desktop: section.settings.columns_desktop,
+									columns_tablet: section.settings.columns_tablet,
+									columns_mobile: section.settings.columns_mobile,
+									columns_width: section.settings.width,
+									columns_gap: section.settings.grid_gap
 									-%}
-								{%- when 'video' -%}
+									{%- when 'video' -%}
 									{%- render 'html-marketing-grid-video',
-										video: block.settings.video,
-										cover_image: block.settings.cover_image,
-										description: block.settings.description,
-										design: block.settings.design,
-										block_id: block.id
+									video: block.settings.video,
+									cover_image: block.settings.cover_image,
+									focus_x: block.settings.focus_x,
+									focus_y: block.settings.focus_y,
+									label: block.settings.label,
+									heading: block.settings.heading,
+									text: block.settings.text,
+									design: block.settings.design,
+									block_id: block.id,
+									columns_desktop: section.settings.columns_desktop,
+									columns_tablet: section.settings.columns_tablet,
+									columns_mobile: section.settings.columns_mobile,
+									columns_width: section.settings.width,
+									columns_gap: section.settings.grid_gap
 									-%}
-								{%- when 'product' -%}
+									{%- when 'product' -%}
 									{%- render 'html-marketing-grid-product',
-										product: block.settings.product,
-										show_secondary_image: block.settings.second_image,
-										design: block.settings.design,
-										block_id: block.id
+									product: block.settings.product,
+									show_secondary_image: block.settings.second_image,
+									design: block.settings.design,
+									block_id: block.id,
+									columns_desktop: section.settings.columns_desktop,
+									columns_tablet: section.settings.columns_tablet,
+									columns_mobile: section.settings.columns_mobile,
+									columns_width: section.settings.width,
+									columns_gap: section.settings.grid_gap
 									-%}
-								{%- when 'collection' -%}
+									{%- when 'collection' -%}
 									{%- render 'html-marketing-grid-collection',
-										collection: block.settings.collection,
-										show_description: block.settings.show_description,
-										design: block.settings.design,
-										block_id: block.id
+									collection: block.settings.collection,
+									show_description: block.settings.show_description,
+									design: block.settings.design,
+									block_id: block.id,
+									columns_desktop: section.settings.columns_desktop,
+									columns_tablet: section.settings.columns_tablet,
+									columns_mobile: section.settings.columns_mobile,
+									columns_width: section.settings.width,
+									columns_gap: section.settings.grid_gap
 									-%}
 							{%- endcase -%}
-						</li>
+						</div>
 					{%- endfor -%}
-				</ul>
-				
-				<div class="block-marketing-grid__pagination swiper-pagination"></div>
-				
-				<div class="block-marketing-grid__nav">
-					<button type="button" class="block-marketing-grid__nav-btn block-marketing-grid__nav-btn--prev swiper-button-prev" aria-label="{{ 'accessibility.slider.previous' | t }}">
-						{%- render 'html-theme-icons', icon: 'caret', size: 16 -%}
-					</button>
-					<button type="button" class="block-marketing-grid__nav-btn block-marketing-grid__nav-btn--next swiper-button-next" aria-label="{{ 'accessibility.slider.next' | t }}">
-						{%- render 'html-theme-icons', icon: 'caret', size: 16 -%}
-					</button>
 				</div>
+				{%- if section.settings.slider_navigation -%}
+					<button class="swiper-nav swiper-nav--prev swiper-nav--chevron" aria-label="{{ 'accessibility.previous' | t }}">
+						{%- render 'html-theme-icons', icon: 'chevron-left' -%}
+					</button>
+					<button class="swiper-nav swiper-nav--next swiper-nav--chevron" aria-label="{{ 'accessibility.next' | t }}">
+						{%- render 'html-theme-icons', icon: 'chevron-right' -%}
+					</button>
+				{%- endif -%}
+				{%- if section.settings.slider_pagination -%}
+					<div class="swiper-pagination"></div>
+				{%- endif -%}
 			</div>
-		</marketing-grid-slider>
-	{%- else -%}
-		<ul class="block-marketing-grid__grid is-grid has-items-{{ section.blocks.size }}{% unless section.settings.enable_gaps %} has-no-gaps{% endunless %}{% if has_heading %} has-heading{% endif %}" role="list">
-			{%- for block in section.blocks -%}
-				<li class="block-marketing-grid__item" {{ block.shopify_attributes }}>
-					{%- case block.type -%}
-						{%- when 'banner' -%}
-							{%- render 'html-marketing-grid-banner',
-								image: block.settings.image,
-								label: block.settings.label,
-								heading: block.settings.heading,
-								text: block.settings.text,
-								link_url: block.settings.link_url,
-								design: block.settings.design,
-								block_id: block.id
-							-%}
-						{%- when 'video' -%}
-							{%- render 'html-marketing-grid-video',
-								video: block.settings.video,
-								cover_image: block.settings.cover_image,
-								description: block.settings.description,
-								design: block.settings.design,
-								block_id: block.id
-							-%}
-						{%- when 'product' -%}
-							{%- render 'html-marketing-grid-product',
-								product: block.settings.product,
-								show_secondary_image: block.settings.second_image,
-								design: block.settings.design,
-								block_id: block.id
-							-%}
-						{%- when 'collection' -%}
-							{%- render 'html-marketing-grid-collection',
-								collection: block.settings.collection,
-								show_description: block.settings.show_description,
-								design: block.settings.design,
-								block_id: block.id
-							-%}
-					{%- endcase -%}
-				</li>
-			{%- endfor -%}
-		</ul>
-	{%- endif -%}
+		
+		{%- when 'grid' -%}
+			{%- comment -%} Grid mode: use semantic list {%- endcomment -%}
+			<ul class="block-marketing-grid__list is-grid{% if has_heading %} has-heading{% endif %}" role="list" style="--grid-columns: {{ section.settings.columns_desktop | default: 3 }}; --grid-columns-tablet: {{ section.settings.columns_tablet | default: 2 }}; --grid-columns-mobile: {{ section.settings.columns_mobile | default: 1 }}; --grid-gap: {{ section.settings.grid_gap | default: 0.5 }}em;">
+				{{ blocks_html }}
+			</ul>
+		
+		{%- when 'creative' -%}
+			{%- comment -%} Creative mode: use semantic list {%- endcomment -%}
+			<ul class="block-marketing-grid__list is-creative has-items-{{ section.blocks.size }}{% if has_heading %} has-heading{% endif %}" role="list" style="--grid-gap: {{ section.settings.grid_gap | default: 0.5 }}em;">
+				{{ blocks_html }}
+			</ul>
+	{%- endcase -%}
 </div>
 
 {% style %}
 	#shopify-section-{{ section.id }}.block-marketing-grid {
 		background-color: {{ section.settings.background_color }};
 		color: {{ section.settings.text_color }};
-		padding-block: 3em;
+		padding-block: {{ section.settings.padding_block }}em;
 	}
 
 	#shopify-section-{{ section.id }} .block-marketing-grid__header {
-		text-align: center;
+		text-align: {{ section.settings.header_align | default: 'center' }};
 		max-width: 800px;
+		{%- if section.settings.header_align == 'center' -%}
 		margin-inline: auto;
+		{%- endif -%}
 	}
 
 	#shopify-section-{{ section.id }} .block-marketing-grid__title {
 		font-family: var(--theme-font-family-serif);
-		font-size: 2em;
+		font-size: clamp(1.6em, 4vw, 2em);
 		font-weight: 400;
 		margin: 0 0 0.5em;
 		line-height: 1.2;
@@ -140,36 +234,30 @@
 
 	#shopify-section-{{ section.id }} .block-marketing-grid__subtitle {
 		font-size: 1em;
-		opacity: 0.7;
+		opacity: 0.8;
 		margin: 0;
 		line-height: 1.5;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid {
+	#shopify-section-{{ section.id }} .block-marketing-grid__subtitle p {
+		margin: 0;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__list {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.has-heading {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.has-heading {
 		margin-block-start: 2em;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid {
-		display: grid;
-		gap: 0.5em;
-		min-height: 500px;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-no-gaps {
-		gap: 0;
 	}
 
 	#shopify-section-{{ section.id }} .block-marketing-grid__item {
 		position: relative;
 		width: 100%;
 		height: 100%;
-		min-height: 400px;
+		min-width: 0;
 		margin: 0;
 	}
 
@@ -178,350 +266,462 @@
 		height: 100%;
 	}
 
-	/* 1 item */
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-1 {
+	/* ==========================================
+	   GRID MODE - Regular responsive grid
+	   ========================================== */
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-grid {
+		display: grid;
+		grid-template-columns: repeat(var(--grid-columns, 3), 1fr);
+		gap: var(--grid-gap, 0.5em);
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-grid .block-marketing-grid__item {
+		aspect-ratio: 2/3;
+		min-height: 0;
+	}
+
+	@media (max-width: 60em) {
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-grid {
+			grid-template-columns: repeat(var(--grid-columns-tablet, 2), 1fr);
+		}
+	}
+
+	@media (max-width: 40em) {
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-grid {
+			grid-template-columns: repeat(var(--grid-columns-mobile, 1), 1fr);
+		}
+	}
+
+	/* ==========================================
+	   CREATIVE MODE - Asymmetric layouts
+	   ========================================== */
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative {
+		display: grid;
+		gap: var(--grid-gap, 0.5em);
+		min-height: 500px;
+	}
+
+	/* 1 item - Full width */
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-1 {
 		grid-template-columns: 1fr;
 		min-height: 600px;
 	}
 
-	/* 2 items */
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-2 {
+	/* 2 items - Side by side */
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-2 {
 		grid-template-columns: repeat(2, 1fr);
 		grid-template-rows: 1fr;
 	}
 
-	/* 3 items - Asymmetric left-heavy */
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-3 {
+	/* 3 items - Large left, stacked right */
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-3 {
 		grid-template-columns: repeat(2, 1fr);
 		grid-template-rows: repeat(2, 1fr);
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-3 > .block-marketing-grid__item:nth-child(1) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-3 > .block-marketing-grid__item:nth-child(1) {
 		grid-area: 1 / 1 / 3 / 2;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-3 > .block-marketing-grid__item:nth-child(2) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-3 > .block-marketing-grid__item:nth-child(2) {
 		grid-area: 1 / 2 / 2 / 3;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-3 > .block-marketing-grid__item:nth-child(3) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-3 > .block-marketing-grid__item:nth-child(3) {
 		grid-area: 2 / 2 / 3 / 3;
 	}
 
-	/* 4 items - Asymmetric with large left */
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 {
+	/* 4 items - Large left, 3 on right */
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-4 {
 		grid-template-columns: repeat(3, 1fr);
 		grid-template-rows: repeat(2, 1fr);
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 > .block-marketing-grid__item:nth-child(1) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-4 > .block-marketing-grid__item:nth-child(1) {
 		grid-area: 1 / 1 / 3 / 2;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 > .block-marketing-grid__item:nth-child(2) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-4 > .block-marketing-grid__item:nth-child(2) {
 		grid-area: 1 / 2 / 2 / 3;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 > .block-marketing-grid__item:nth-child(3) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-4 > .block-marketing-grid__item:nth-child(3) {
 		grid-area: 1 / 3 / 2 / 4;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 > .block-marketing-grid__item:nth-child(4) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-4 > .block-marketing-grid__item:nth-child(4) {
 		grid-area: 2 / 2 / 3 / 4;
 	}
 
-	/* 5 items - Asymmetric with large left */
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 {
+	/* 5 items - Large left, 4 on right */
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-5 {
 		grid-template-columns: repeat(3, 1fr);
 		grid-template-rows: repeat(2, 1fr);
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item:nth-child(1) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-5 > .block-marketing-grid__item:nth-child(1) {
 		grid-area: 1 / 1 / 3 / 2;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item:nth-child(2) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-5 > .block-marketing-grid__item:nth-child(2) {
 		grid-area: 1 / 2 / 2 / 3;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item:nth-child(3) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-5 > .block-marketing-grid__item:nth-child(3) {
 		grid-area: 1 / 3 / 2 / 4;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item:nth-child(4) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-5 > .block-marketing-grid__item:nth-child(4) {
 		grid-area: 2 / 2 / 3 / 3;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item:nth-child(5) {
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-5 > .block-marketing-grid__item:nth-child(5) {
 		grid-area: 2 / 3 / 3 / 4;
 	}
 
-	/* 6+ items - Regular grid */
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-6,
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-7,
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-8,
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-9,
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-10 {
+	/* 6+ items - Regular 3-column grid */
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-6,
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-7,
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-8,
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-9,
+	#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-10 {
 		grid-template-columns: repeat(3, 1fr);
 		grid-auto-rows: 1fr;
 	}
 
-	/* Slider mode */
-	#shopify-section-{{ section.id }} .block-marketing-grid__slider {
-		display: block;
-		position: relative;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__slider-container {
-		position: relative;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__slider-container.has-pagination {
-		padding-bottom: 3em;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-slider {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		height: 30em;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-slider .block-marketing-grid__item {
-		width: 400px;
-		max-width: 90vw;
-		height: 100%;
-	}
-
-	/* Pagination */
-	#shopify-section-{{ section.id }} .block-marketing-grid__pagination {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		display: flex;
-		justify-content: center;
-		gap: 0.5em;
-		padding: 0.5em;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet {
-		width: 0.5em;
-		height: 0.25em;
-		border-radius: 0;
-		background-color: currentColor;
-		opacity: 0.3;
-		border: none;
-		outline: none;
-		box-shadow: none;
-		cursor: pointer;
-		/* transition: opacity 150ms ease; */
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet:focus,
-	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet:focus-visible {
-		outline: none;
-		box-shadow: none;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet::before,
-	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet::after {
-		display: none;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__pagination .swiper-pagination-bullet-active {
-		width: 1.5em;
-		opacity: 1;
-	}
-
-	/* Navigation buttons */
-	#shopify-section-{{ section.id }} .block-marketing-grid__nav {
-		display: none;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn {
-		position: absolute;
-		top: calc(50% - 1.5em);
-		z-index: 10;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 2.5em;
-		height: 2.5em;
-		padding: 0;
-		border: none;
-		background-color: var(--theme-color-white, #ffffff);
-		color: var(--theme-color-blue, #0f1f38);
-		cursor: pointer;
-		transition: background-color 150ms ease, color 150ms ease;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn:hover {
-		background-color: var(--theme-color-blue, #0f1f38);
-		color: var(--theme-color-white, #ffffff);
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn--prev {
-		left: 0;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn--prev svg {
-		transform: rotate(90deg);
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn--next {
-		right: 0;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn--next svg {
-		transform: rotate(-90deg);
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn.swiper-button-disabled {
-		opacity: 0.3;
-		cursor: not-allowed;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-grid__nav-btn::after {
-		display: none;
-	}
-
-	@media (min-width: 750px) {
-		#shopify-section-{{ section.id }} .block-marketing-grid__slider-container:hover .block-marketing-grid__nav {
-			display: block;
-		}
-	}
-
-	@media (max-width: 989px) {
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4,
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5,
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-6,
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-7,
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-8,
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-9,
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-10 {
+	/* Creative mode tablet */
+	@media (max-width: 60em) {
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-4,
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-5,
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-6,
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-7,
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-8,
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-9,
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-10 {
 			grid-template-columns: repeat(2, 1fr);
 			grid-auto-rows: 1fr;
 		}
 
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-4 > .block-marketing-grid__item,
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid.has-items-5 > .block-marketing-grid__item {
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-4 > .block-marketing-grid__item,
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative.has-items-5 > .block-marketing-grid__item {
 			grid-area: auto;
 		}
 	}
 
-	@media (max-width: 749px) {
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid {
-			grid-template-columns: 1fr;
-			grid-auto-rows: 1fr;
+	/* Creative mode mobile - always 2 columns with first item spanning 2 rows */
+	@media (max-width: 40em) {
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative {
+			grid-template-columns: repeat(2, 1fr);
+			grid-template-rows: repeat(2, auto);
+			grid-auto-rows: auto;
 			min-height: auto;
 		}
 
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-grid .block-marketing-grid__item {
-			grid-area: auto;
-			min-height: 300px;
+		/* First item spans 2 rows */
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative > .block-marketing-grid__item:nth-child(1) {
+			grid-area: 1 / 1 / 3 / 2;
 		}
 
-		#shopify-section-{{ section.id }} .block-marketing-grid__grid.is-slider .block-marketing-grid__item {
-			width: 300px;
+		/* Second item: row 1, column 2 */
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative > .block-marketing-grid__item:nth-child(2) {
+			grid-area: 1 / 2 / 2 / 3;
+		}
+
+		/* Third item: row 2, column 2 */
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative > .block-marketing-grid__item:nth-child(3) {
+			grid-area: 2 / 2 / 3 / 3;
+		}
+
+		/* Remaining items: auto-flow in 2 columns */
+		#shopify-section-{{ section.id }} .block-marketing-grid__list.is-creative > .block-marketing-grid__item:nth-child(n+4) {
+			grid-area: auto;
+		}
+	}
+
+	/* ==========================================
+	   SLIDER MODE - Uses global .swiper utilities
+	   ========================================== */
+	#shopify-section-{{ section.id }} .block-marketing-grid__slider .swiper-slide {
+		aspect-ratio: 2/3;
+	}
+
+	/* ==========================================
+	   MARKETING CARD - Overlay variant
+	   Full-bleed image with content overlay
+	   ========================================== */
+	.is-marketing-card {
+		position: relative;
+		isolation: isolate;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		background-color: #f5f5f5;
+	}
+
+	.is-marketing-card__link {
+		position: absolute;
+		inset: 0;
+		z-index: 5;
+		display: block;
+	}
+
+	.is-marketing-card__image {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		background-color: #000;
+	}
+
+	.is-marketing-card__image .theme-media,
+	.is-marketing-card__image .theme-media__picture {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+	}
+
+	.is-marketing-card__image img,
+	.is-marketing-card__image .theme-media__img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 175ms ease;
+	}
+
+	.is-marketing-card:hover .is-marketing-card__image img,
+	.is-marketing-card:hover .is-marketing-card__image .theme-media__img {
+		transform: scale(1.02);
+	}
+
+	.is-marketing-card__overlay {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background-color: #000;
+		pointer-events: none;
+	}
+
+	.is-marketing-card.is-overlay-none .is-marketing-card__overlay { opacity: 0; }
+	.is-marketing-card.is-overlay-light .is-marketing-card__overlay { opacity: 0.2; }
+	.is-marketing-card.is-overlay-medium .is-marketing-card__overlay { opacity: 0.4; }
+	.is-marketing-card.is-overlay-dark .is-marketing-card__overlay { opacity: 0.6; }
+
+	.is-marketing-card__content {
+		position: relative;
+		z-index: 2;
+		width: 100%;
+		padding: 1.5em;
+		color: #fff;
+		text-align: center;
+		pointer-events: none;
+	}
+
+	.is-marketing-card__label {
+		display: inline-block;
+		font-size: 0.75em;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin-bottom: 0.5rem;
+		opacity: 0.9;
+	}
+
+	.is-marketing-card__title {
+		color: inherit;
+		font-size: 1.5em;
+		font-weight: 500;
+		line-height: 1.2;
+		margin: 0 0 0.5rem;
+	}
+
+	.is-marketing-card__text {
+		color: inherit;
+		font-size: 1em;
+		line-height: 1.5;
+		opacity: 0.95;
+	}
+
+	.is-marketing-card__text p {
+		margin: 0;
+	}
+
+	/* Design variants - Celtic decorative borders */
+	.is-marketing-card[class*="is-design-"] .is-marketing-card__content {
+		position: relative;
+		isolation: isolate;
+		padding-bottom: 2.5em;
+		background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) calc(100% - 1em));
+	}
+
+	.is-marketing-card[class*="is-design-"] .is-marketing-card__content::before {
+		content: '';
+		position: absolute;
+		z-index: -1;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 1em;
+	}
+
+	/* Blue design - diagonal lines */
+	.is-marketing-card.is-design-blue .is-marketing-card__content::before {
+		background: var(--theme-color-blue, #1e40af);
+	}
+
+	.is-marketing-card.is-design-blue .is-marketing-card__content::after {
+		content: '';
+		position: absolute;
+		z-index: -2;
+		left: 0;
+		top: 1em;
+		right: 0;
+		bottom: 0;
+		background: var(--theme-color-blue, #1e40af);
+		transform: scaleX(-1);
+		mask-image: url('data:image/svg+xml;utf8,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 4" stroke-width="0.5"><line stroke="black" x1="0" y1="0" x2="4" y2="4"/><line stroke="black" x1="-0.4" y1="3.6" x2="0.4" y2="4.4"/><line stroke="black" x1="3.6" y1="-0.4" x2="4.4" y2="0.4"/></svg>');
+		mask-repeat: repeat;
+		mask-size: 16px;
+	}
+
+	/* Red design - triangles */
+	.is-marketing-card.is-design-red .is-marketing-card__content::before {
+		background: var(--theme-color-red, #dc2626);
+	}
+
+	.is-marketing-card.is-design-red .is-marketing-card__content::after {
+		content: '';
+		position: absolute;
+		z-index: -2;
+		left: 0;
+		right: 0;
+		bottom: 1em;
+		height: 1em;
+		background: var(--theme-color-red, #dc2626);
+		mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 8"><polygon points="8.5 0 0 8 17 8 8.5 0"/></svg>');
+		mask-repeat: repeat-x;
+		mask-size: 41px;
+		mask-position: calc(50% - 30px) bottom;
+	}
+
+	/* Green design - slashes */
+	.is-marketing-card.is-design-green .is-marketing-card__content::before {
+		background: var(--theme-color-green, #16a34a);
+	}
+
+	.is-marketing-card.is-design-green .is-marketing-card__content::after {
+		content: '';
+		position: absolute;
+		z-index: 0;
+		left: 0;
+		right: 0;
+		bottom: 1em;
+		height: 8px;
+		background: var(--theme-color-green, #16a34a);
+		mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 11 8"><line stroke="black" stroke-width="4" x1="-.98" y1="11.78" x2="9.17" y2="2.22"/></svg>');
+		mask-repeat: repeat-x;
+		mask-size: 11px;
+	}
+
+	@media (max-width: 40em) {
+		.is-marketing-card__title {
+			font-size: 1.25em;
+		}
+		
+		.is-marketing-card__text {
+			font-size: 0.875em;
 		}
 	}
 {% endstyle %}
 
+{%- if section.settings.display_mode == 'slider' -%}
 <script>
-	class MarketingGridSlider extends HTMLElement {
-		constructor() {
-			super();
-			this.swiper = null;
-		}
-
-		connectedCallback() {
-			const swiperEl = this.querySelector('[data-marketing-grid-swiper]');
+	(function() {
+		function initMarketingGridSwiper() {
+			const swiperEl = document.getElementById('swiper-{{ section.id }}');
 			if (!swiperEl || typeof Swiper === 'undefined') return;
+			
+			if (swiperEl.swiper) swiperEl.swiper.destroy();
 
-			const self = this;
-			const hasNoGaps = swiperEl.querySelector('.has-no-gaps') !== null;
-			const gapSize = hasNoGaps ? 0 : 8;
+			// Convert em to px using computed font-size
+			const fontSize = parseFloat(getComputedStyle(swiperEl).fontSize);
+			const gapEm = parseFloat('{{ section.settings.grid_gap | default: 0.5 }}');
+			const gapPx = gapEm * fontSize;
 
-			this.swiper = new Swiper(swiperEl, {
-				direction: 'horizontal',
-				loop: false,
-				centeredSlides: false,
-				slidesPerView: 'auto',
-				slidesPerGroup: 1,
-				spaceBetween: gapSize,
-				grabCursor: true,
-				mousewheel: {
-					forceToAxis: true,
-					releaseOnEdges: true
+			const config = {
+				slidesPerView: {{ section.settings.columns_mobile | default: 1 }},
+				spaceBetween: gapPx,
+				{%- if section.settings.slider_navigation -%}
+				navigation: {
+					prevEl: swiperEl.querySelector('.swiper-nav--prev'),
+					nextEl: swiperEl.querySelector('.swiper-nav--next')
 				},
+				{%- endif -%}
+				{%- if section.settings.slider_pagination -%}
 				pagination: {
 					el: swiperEl.querySelector('.swiper-pagination'),
 					clickable: true
 				},
-				navigation: {
-					nextEl: swiperEl.querySelector('.swiper-button-next'),
-					prevEl: swiperEl.querySelector('.swiper-button-prev')
+				{%- endif -%}
+				{%- if section.settings.slider_autoplay -%}
+				autoplay: {
+					delay: {{ section.settings.slider_autoplay_speed | default: 5 | times: 1000 }},
+					disableOnInteraction: false,
+					pauseOnMouseEnter: true
+				},
+				rewind: true,
+				{%- endif -%}
+				breakpoints: {
+					640: {
+						slidesPerView: {{ section.settings.columns_tablet | default: 2 }}
+					},
+					960: {
+						slidesPerView: {{ section.settings.columns_desktop | default: 3 }}
+					}
 				},
 				on: {
-					init: function(swiper) {
-						self.handleOverflow(swiper);
-					},
-					resize: function(swiper) {
-						self.handleOverflow(swiper);
+					init: updateSliderState,
+					resize: updateSliderState
+				}
+			};
+
+			function updateSliderState(swiper) {
+				const slidesCount = swiper.slides.length;
+				const slidesPerView = swiper.params.slidesPerView;
+				const allFit = slidesCount <= slidesPerView;
+				
+				swiperEl.classList.toggle('swiper--all-visible', allFit);
+				
+				if (allFit) {
+					if (swiper.autoplay && swiper.autoplay.running) {
+						swiper.autoplay.stop();
 					}
+				} else {
+					swiper.params.slidesPerGroup = Math.floor(slidesPerView);
+					{%- if section.settings.slider_autoplay -%}
+					if (swiper.autoplay && !swiper.autoplay.running) {
+						swiper.autoplay.start();
+					}
+					{%- endif -%}
+					swiper.update();
 				}
-			});
-		}
-
-		areAllSlidesInView(swiper) {
-			const wrapperWidth = swiper.wrapperEl.offsetWidth;
-			let totalSlidesWidth = 0;
-			const spaceBetween = swiper.params.spaceBetween || 0;
-
-			swiper.slides.forEach((slide, index) => {
-				totalSlidesWidth += slide.offsetWidth;
-				if (index < swiper.slides.length - 1) {
-					totalSlidesWidth += spaceBetween;
-				}
-			});
-
-			return totalSlidesWidth <= wrapperWidth;
-		}
-
-		handleOverflow(swiper) {
-			const container = swiper.el;
-			const wrapper = swiper.el.querySelector('.swiper-wrapper');
-			const pagination = swiper.el.querySelector('.swiper-pagination');
-			const nav = this.querySelector('.block-marketing-grid__nav');
-
-			if (this.areAllSlidesInView(swiper)) {
-				container.classList.remove('has-pagination');
-				wrapper.style.justifyContent = 'center';
-				if (pagination) pagination.style.display = 'none';
-				if (nav) nav.style.display = 'none';
-				swiper.allowTouchMove = false;
-			} else {
-				container.classList.add('has-pagination');
-				wrapper.style.justifyContent = '';
-				if (pagination) pagination.style.display = '';
-				if (nav) nav.style.display = '';
-				swiper.allowTouchMove = true;
 			}
+
+			new Swiper(swiperEl, config);
 		}
 
-		disconnectedCallback() {
-			if (this.swiper) {
-				this.swiper.destroy(true, true);
-				this.swiper = null;
-			}
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initMarketingGridSwiper);
+		} else {
+			initMarketingGridSwiper();
 		}
-	}
-
-	if (!customElements.get('marketing-grid-slider')) {
-		customElements.define('marketing-grid-slider', MarketingGridSlider);
-	}
+	})();
 </script>
+{%- endif -%}
 
 {% schema %}
 {
@@ -542,9 +742,19 @@
 			"label": "Heading"
 		},
 		{
-			"type": "textarea",
+			"type": "richtext",
 			"id": "subtext",
 			"label": "Subtext"
+		},
+		{
+			"type": "select",
+			"id": "header_align",
+			"label": "Header alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" }
+			],
+			"default": "center"
 		},
 		{
 			"type": "header",
@@ -555,28 +765,111 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
+		},
+		{
+			"type": "range",
+			"id": "columns_desktop",
+			"label": "Columns (desktop)",
+			"info": "Grid and Slider mode only",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "columns_tablet",
+			"label": "Columns (tablet)",
+			"info": "Grid and Slider mode only",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "columns_mobile",
+			"label": "Columns (mobile)",
+			"info": "Grid and Slider mode only",
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 1
+		},
+		{
+			"type": "range",
+			"id": "grid_gap",
+			"label": "Grid gap",
+			"min": 0,
+			"max": 2,
+			"step": 0.1,
+			"default": 0.5,
+			"unit": "em"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Display"
 		},
 		{
 			"type": "select",
-			"id": "view",
-			"label": "Display",
+			"id": "display_mode",
+			"label": "Display mode",
 			"options": [
 				{ "value": "grid", "label": "Grid" },
-				{ "value": "slider", "label": "Slider" }
+				{ "value": "slider", "label": "Slider" },
+				{ "value": "creative", "label": "Creative" }
 			],
-			"default": "grid"
+			"default": "creative",
+			"info": "Grid: regular columns. Slider: horizontal scroll. Creative: asymmetric layouts."
 		},
 		{
 			"type": "checkbox",
-			"id": "enable_gaps",
-			"label": "Show gaps",
+			"id": "slider_navigation",
+			"label": "Show navigation",
+			"info": "Slider only",
 			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_pagination",
+			"label": "Show pagination",
+			"info": "Slider only",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_autoplay",
+			"label": "Autoplay",
+			"info": "Slider only. Includes rewind.",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "slider_autoplay_speed",
+			"label": "Autoplay speed",
+			"info": "Slider only",
+			"min": 2,
+			"max": 10,
+			"step": 1,
+			"default": 5,
+			"unit": "s"
 		},
 		{
 			"type": "header",
@@ -585,18 +878,22 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",
@@ -611,9 +908,8 @@
 			"name": "Banner",
 			"settings": [
 				{
-					"type": "image_picker",
-					"id": "image",
-					"label": "Image"
+					"type": "header",
+					"content": "Content"
 				},
 				{
 					"type": "text",
@@ -626,7 +922,7 @@
 					"label": "Heading"
 				},
 				{
-					"type": "textarea",
+					"type": "richtext",
 					"id": "text",
 					"label": "Text"
 				},
@@ -634,6 +930,51 @@
 					"type": "url",
 					"id": "link_url",
 					"label": "Link"
+				},
+				{
+					"type": "header",
+					"content": "Media"
+				},
+				{
+					"type": "image_picker",
+					"id": "image",
+					"label": "Image"
+				},
+				{
+					"type": "range",
+					"id": "focus_x",
+					"label": "Horizontal focus",
+					"min": 0,
+					"max": 100,
+					"step": 5,
+					"default": 50,
+					"unit": "%"
+				},
+				{
+					"type": "range",
+					"id": "focus_y",
+					"label": "Vertical focus",
+					"min": 0,
+					"max": 100,
+					"step": 5,
+					"default": 50,
+					"unit": "%"
+				},
+				{
+					"type": "select",
+					"id": "overlay",
+					"label": "Overlay",
+					"options": [
+						{ "value": "none", "label": "None" },
+						{ "value": "light", "label": "Light" },
+						{ "value": "medium", "label": "Medium" },
+						{ "value": "dark", "label": "Dark" }
+					],
+					"default": "medium"
+				},
+				{
+					"type": "header",
+					"content": "Style"
 				},
 				{
 					"type": "select",
@@ -653,19 +994,65 @@
 			"name": "Video",
 			"settings": [
 				{
+					"type": "header",
+					"content": "Content"
+				},
+				{
+					"type": "text",
+					"id": "label",
+					"label": "Label"
+				},
+				{
+					"type": "text",
+					"id": "heading",
+					"label": "Heading"
+				},
+				{
+					"type": "richtext",
+					"id": "text",
+					"label": "Text"
+				},
+				{
+					"type": "header",
+					"content": "Media"
+				},
+				{
 					"type": "video",
 					"id": "video",
-					"label": "Video"
+					"label": "Video",
+					"info": "Inline video with controls and sound"
 				},
 				{
 					"type": "image_picker",
 					"id": "cover_image",
-					"label": "Cover image"
+					"label": "Cover image",
+					"info": "Shown before video plays"
 				},
 				{
-					"type": "text",
-					"id": "description",
-					"label": "Description"
+					"type": "range",
+					"id": "focus_x",
+					"label": "Horizontal focus",
+					"info": "Cover image only",
+					"min": 0,
+					"max": 100,
+					"step": 5,
+					"default": 50,
+					"unit": "%"
+				},
+				{
+					"type": "range",
+					"id": "focus_y",
+					"label": "Vertical focus",
+					"info": "Cover image only",
+					"min": 0,
+					"max": 100,
+					"step": 5,
+					"default": 50,
+					"unit": "%"
+				},
+				{
+					"type": "header",
+					"content": "Style"
 				},
 				{
 					"type": "select",

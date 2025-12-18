@@ -329,22 +329,20 @@
   "name": "Share modal",
   "tag": "div",
   "class": "block-modal-share-wrapper",
-  "enabled_on": {
+  "limit": 1,
+	"enabled_on": {
     "groups": ["footer"]
   },
   "settings": [
     {
-      "type": "text",
-      "id": "modal_id",
-      "label": "Modal ID",
-      "default": "share-modal",
-      "info": "Use data-modal-trigger=\"share-modal\" to open"
+      "type": "header",
+      "content": "Content"
     },
     {
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "placeholder": "Share"
+      "info": "Leave empty to use locale default"
     },
     {
       "type": "header",
@@ -388,16 +386,26 @@
     },
     {
       "type": "header",
-      "content": "How to use"
+      "content": "Advanced"
+    },
+    {
+      "type": "text",
+      "id": "modal_id",
+      "label": "Modal ID",
+      "default": "share-modal"
+    },
+    {
+      "type": "header",
+      "content": "Howto"
     },
     {
       "type": "paragraph",
-      "content": "Add to footer group. Trigger with: data-modal-trigger=\"share-modal\" data-share-url=\"URL\" data-share-title=\"Title\" data-share-image=\"Image URL\""
+      "content": "Add to footer group. Trigger with data-modal-trigger, data-share-url, data-share-title, data-share-image."
     }
   ],
   "presets": [
     {
-      "name": "Share",
+      "name": "Share modal",
       "category": "Modal"
     }
   ]

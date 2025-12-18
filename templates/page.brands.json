@@ -22,14 +22,16 @@
         "image_ratio": "square",
         "image_fit": "contain",
         "card_background": "#ffffff",
-        "width": "alignwide",
+        "width": "is-align-wide",
         "columns_desktop": 6,
         "columns_tablet": 4,
         "columns_mobile": 3,
+        "padding_block": 3,
         "background_color": "#ffffff",
         "text_color": "#111111",
         "button_color": "",
         "button_text_color": "",
+        "anchor": "",
         "custom_class": ""
       }
     },

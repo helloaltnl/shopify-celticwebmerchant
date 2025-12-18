@@ -11,30 +11,46 @@
   "sections": {
     "main": {
       "type": "main-404",
-      "settings": {}
+      "settings": {
+        "heading": "",
+        "subtext": "",
+        "button_text": "",
+        "button_link": "",
+        "width": "is-align",
+        "padding_block": 4,
+        "background_color": "",
+        "text_color": "",
+        "anchor": "",
+        "custom_class": ""
+      }
     },
     "block_marketing_products_F9HJfX": {
       "type": "block-marketing-products",
       "name": "Products",
       "settings": {
-        "collection": "midnight-sale",
-        "heading": "Populaire producten!",
-        "max_products": 12,
-        "only_available": true,
+        "collection": "altijd-nodig",
+        "heading": "Altijd nodig!",
+        "card_layout": "vertical",
         "image_ratio": "portrait",
         "show_secondary_image": true,
         "show_vendor": false,
         "show_rating": true,
         "quick_add": false,
-        "width": "alignwide",
+        "max_products": 12,
+        "only_available": true,
+        "width": "is-align-wide",
         "columns_desktop": 4,
-        "columns_tablet": "3",
-        "columns_mobile": "2",
+        "columns_tablet": 3,
+        "columns_mobile": 2,
+        "grid_gap": 0.2,
         "visible_rows": 1,
         "show_more_text": "",
         "show_less_text": "",
+        "padding_block": 3,
         "background_color": "#f5f5f5",
-        "text_color": "#111111"
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
       }
     }
   },

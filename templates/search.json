@@ -12,13 +12,43 @@
     "search-form": {
       "type": "block-search-form",
       "settings": {
-        "padding_top": 36,
-        "padding_bottom": 0
+        "width": "is-align-small",
+        "padding_block": 1.5,
+        "background_color": "",
+        "text_color": "",
+        "anchor": "",
+        "custom_class": ""
       }
     },
     "search-products": {
       "type": "block-collection-products",
-      "settings": {}
+      "settings": {
+        "card_layout": "vertical",
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_rating": false,
+        "show_vendor": false,
+        "show_badges": false,
+        "quick_add": false,
+        "products_per_page": 24,
+        "show_filter": true,
+        "show_sort": true,
+        "show_result_count": true,
+        "show_filter_counts": true,
+        "hide_empty_values": false,
+        "max_preview_filters": 8,
+        "auto_fill_preview": true,
+        "collapse_bar_mobile": true,
+        "auto_submit": false,
+        "width": "is-align-wide",
+        "grid_columns": 4,
+        "grid_columns_tablet": 3,
+        "grid_columns_mobile": 2,
+        "grid_gap": 0.2,
+        "background_color": "#f8f8f8",
+        "text_color": "",
+        "anchor": ""
+      }
     }
   },
   "order": [

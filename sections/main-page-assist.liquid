@@ -2,587 +2,418 @@
 ============================================================================
 MAIN-PAGE-ASSIST
 ============================================================================
-Assist/help wizard using metaobjects for navigation.
+Assist wizard using metaobjects for hierarchical navigation.
 
 FEATURES:
-- Hierarchical navigation via metaobjects
-- Storefront API for dynamic content loading
-- Drill-down interface with back navigation
+- Drill-down navigation via metaobjects
+- Section Rendering API via /search endpoint (search.terms trick)
+- Deep linking via ?assist=handle parameter (optional)
+- Browser history support
+- Multilingual article URLs via article metafield
+
+TEMPLATE SETTINGS:
+- enable_url_params: Enable URL parameter updates for deep linking
 
 DEPENDENCIES:
-- Metaobject: assist-reference
-- Page metafield: custom.page-assist-reference
+- Metaobject: assist-reference, reference-blogpost
+- Snippet: html-assist-grid
+- Page metafield: custom.page-assist-reference (or section setting)
 ============================================================================
 {%- endcomment -%}
 
-<div class="main-page-assist__content alignwide">
-	{% assign ref_entry = page.metafields.custom['page-assist-reference'] %}
-	{% if ref_entry and ref_entry.value %}
-		{% assign ref = ref_entry.value %}
-		<section id="assist" class="main-page-assist__wizard" data-locale="{{ request.locale.iso_code }}">
-			<section class="main-page-assist__start main-page-assist__path">
-				<h1 class="main-page-assist__title">{{ ref.title }}</h1>
-				
-				{% assign ref_subs = ref.subs.value %}
-				{% assign pst_subs = ref.posts.value %}
-				
-				{% if ref_subs or pst_subs %}
-					<ul id="assist-subs" class="main-page-assist__grid" data-metaobject-type="assist-reference">
-						{% for sub_entry in ref.subs.value %}
-							<li class="main-page-assist__item">
-								<article class="main-page-assist__card">
-									{%- assign sub_full = shop.metaobjects['assist-reference'][sub_entry.system.handle] -%}
-									{% if sub_full.subs and sub_full.subs.value %}
-										<a href="#" class="main-page-assist__card-link" data-handle="{{ sub_entry.system.handle | escape }}"></a>
-									{% elsif sub_full.posts and sub_full.posts.value %}
-										<a href="#" class="main-page-assist__card-link" data-handle="{{ sub_entry.system.handle | escape }}"></a>
-									{% elsif sub_entry.link %}
-										<a href="{{ sub_entry.link }}" class="main-page-assist__card-link"></a>
-									{% endif %}
-									
-									{% if sub_entry.image %}
-										<figure class="main-page-assist__card-image">
-											<img
-												src="{{ sub_entry.image | image_url: width: 496 }}"
-												alt="{{ sub_entry.title | default: ref.title | escape }}"
-												loading="lazy"
-											>
-										</figure>
-									{% endif %}
-									<div class="main-page-assist__card-content">
-										<h3 class="main-page-assist__card-title">{{ sub_entry.title }}</h3>
-										{% if sub_entry.link %}
-											<span class="main-page-assist__card-cta">
-												<span>{{ 'general.read_more' | t | default: 'Lees meer' }}</span>
-												{%- render 'html-theme-icons', icon: 'arrow', size: 14 -%}
-											</span>
-										{% endif %}
-									</div>
-								</article>
-							</li>
-						{% endfor %}
-						{% for sub_entry in ref.posts.value %}
-							<li class="main-page-assist__item">
-								<article class="main-page-assist__card">
-									{% if sub_entry.link.value %}
-										<a href="{{ sub_entry.link.value.url }}" class="main-page-assist__card-link"></a>
-									{% endif %}
-									
-									{% if sub_entry.thumb %}
-										<figure class="main-page-assist__card-image">
-											<img
-												src="{{ sub_entry.thumb | image_url: width: 496 }}"
-												alt="{{ sub_entry.title | default: ref.title | escape }}"
-												loading="lazy"
-											>
-										</figure>
-									{% endif %}
-									<div class="main-page-assist__card-content">
-										<h3 class="main-page-assist__card-title">{{ sub_entry.title }}</h3>
-										{% if sub_entry.link.value %}
-											<span class="main-page-assist__card-cta">
-												<span>{{ 'general.read_more' | t | default: 'Lees meer' }}</span>
-												{%- render 'html-theme-icons', icon: 'arrow', size: 14 -%}
-											</span>
-										{% endif %}
-									</div>
-								</article>
-							</li>
-						{% endfor %}
-					</ul>
-				{% endif %}
-			</section>
+{%- liquid
+  comment
+    Template settings (not editable in theme editor)
+  endcomment
+  assign enable_url_params = false
+-%}
 
-			<template id="assist-item-template">
-				<li class="main-page-assist__item">
-					<article class="main-page-assist__card">
-						<a href="#" class="main-page-assist__card-link" data-role="overlay"></a>
-						<figure class="main-page-assist__card-image" data-fig>
-							<img data-img src="" alt="" loading="lazy">
-						</figure>
-						<div class="main-page-assist__card-content">
-							<h3 class="main-page-assist__card-title" data-title></h3>
-							<a href="" class="main-page-assist__card-cta" data-role="cta" target="_blank" rel="noopener">
-								<span>{{ 'general.read_more' | t | default: 'Lees meer' }}</span>
-								{%- render 'html-theme-icons', icon: 'arrow', size: 14 -%}
-							</a>
-						</div>
-					</article>
-				</li>
-			</template>
-		</section>
+{%- liquid
+  assign handle = blank
+  assign is_section_render = false
+  assign ref = nil
+  
+  if search.terms != blank
+    assign handle = search.terms
+    assign is_section_render = true
+    assign ref = shop.metaobjects['assist-reference'][handle]
+  elsif section.settings.handle != blank
+    assign handle = section.settings.handle
+    assign ref = shop.metaobjects['assist-reference'][handle]
+  elsif page.metafields.custom['page-assist-reference']
+    assign ref = page.metafields.custom['page-assist-reference'].value
+    assign handle = ref.system.handle
+  endif
+-%}
 
-		<script>
-		(function(){
-			const STOREFRONT_DOMAIN = '{{ shop.permanent_domain }}';
-			const STOREFRONT_API_VERSION = '2025-01';
-			const STOREFRONT_API_TOKEN = '{{ settings.storefront_api_token | default: "fbd7061115103f4ff6d9daf922ea75db" }}';
-			const endpoint = `https://${STOREFRONT_DOMAIN}/api/${STOREFRONT_API_VERSION}/graphql.json`;
+{% if ref %}
+  {%- if is_section_render -%}
+    {%- render 'html-assist-grid', ref: ref, title: ref.title -%}
+  {%- else -%}
+    <div class="main-page-assist__content alignwide">
+      <section id="assist" class="main-page-assist__wizard">
+        <section class="main-page-assist__start main-page-assist__path">
+          <h1 class="main-page-assist__title">{{ ref.title }}</h1>
+          {%- render 'html-assist-grid', ref: ref -%}
+        </section>
+      </section>
+    </div>
 
-			const QUERY = `
-				query GetMetaobject($type: String!, $handle: String!) {
-					metaobject(handle: { type: $type, handle: $handle }) {
-						id handle type
-						fields {
-							key type value
-							reference {
-								__typename
-								... on MediaImage { image { url altText } }
-								... on GenericFile { url }
-							}
-							references(first: 100) {
-								nodes {
-									__typename
-									... on Metaobject {
-										id handle type
-										fields {
-											key type value
-											reference {
-												__typename
-												... on MediaImage { image { url altText } }
-												... on GenericFile { url }
-											}
-											references(first: 100) {
-												nodes {
-													__typename
-													... on Metaobject { id handle type }
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			`;
+    <script>
+    (function(){
+      const wizard = document.getElementById('assist');
+      if (!wizard) return;
 
-			const FILE_BY_ID = `
-				query FileById($id: ID!) {
-					node(id: $id) {
-						__typename
-						... on MediaImage { image { url altText } }
-						... on GenericFile { url }
-					}
-				}
-			`;
+      const enableUrlParams = {{ enable_url_params | json }};
 
-			async function gql(query, variables) {
-				const root = document.getElementById('assist');
-				const locale = root?.getAttribute('data-locale') || 'en';
-				const res = await fetch(endpoint, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-Shopify-Storefront-Access-Token': STOREFRONT_API_TOKEN,
-						'Accept-Language': locale
-					},
-					body: JSON.stringify({ query, variables })
-				});
-				const json = await res.json();
-				if (json.errors) throw new Error(json.errors.map(e => e.message).join('; '));
-				return json.data;
-			}
+      async function fetchChildren(handle) {
+        const res = await fetch(`/search?q=${encodeURIComponent(handle)}&type=&sections=main-page-assist`);
+        const json = await res.json();
+        return json['main-page-assist'] || null;
+      }
 
-			async function fetchMetaobjectByHandle(type, handle) {
-				const data = await gql(QUERY, { type, handle });
-				return data?.metaobject ?? null;
-			}
+      async function drillDown(handle, updateUrl = true) {
+        wizard.querySelectorAll('.main-page-assist__path').forEach(el => el.classList.add('is-hidden'));
+        
+        const html = await fetchChildren(handle);
+        if (!html) return;
+        
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        const title = temp.querySelector('[data-title]')?.dataset.title || handle;
+        
+        if (enableUrlParams && updateUrl) {
+          const url = new URL(window.location);
+          url.searchParams.set('assist', handle);
+          window.history.pushState({ handle }, '', url);
+        }
+        
+        const section = document.createElement('section');
+        section.className = 'main-page-assist__children main-page-assist__path';
+        section.innerHTML = `
+          <a href="#" class="main-page-assist__back" data-back>
+            {%- render 'html-theme-icons', icon: 'arrow', size: 16 -%}
+            <span>{{ 'general.back' | t | default: 'Terug' }}</span>
+          </a>
+          <h2 class="main-page-assist__title">${title}</h2>
+          ${html}
+        `;
+        
+        wizard.appendChild(section);
+        window.scrollTo({ top: section.getBoundingClientRect().top + window.scrollY - 256, behavior: 'smooth' });
+      }
 
-			const getField = (node, key) => node?.fields?.find(f => f.key === key);
-			const getValue = (node, key) => getField(node, key)?.value;
-			const getListRefsMany = (node, keys = ['subs', 'posts']) => {
-				const out = [];
-				keys.forEach(k => {
-					const f = getField(node, k);
-					const nodes = f?.references?.nodes || [];
-					nodes.forEach(n => { if (n.__typename === 'Metaobject') out.push(n); });
-				});
-				return out;
-			};
+      function goBack() {
+        const current = wizard.querySelector('.main-page-assist__children:not(.is-hidden)');
+        if (!current) return;
+        
+        let prev = current.previousElementSibling;
+        while (prev && !prev.classList.contains('main-page-assist__path')) {
+          prev = prev.previousElementSibling;
+        }
+        if (prev) prev.classList.remove('is-hidden');
+        current.remove();
+        
+        if (enableUrlParams) {
+          const url = new URL(window.location);
+          const remaining = wizard.querySelector('.main-page-assist__children:not(.is-hidden)');
+          remaining 
+            ? url.searchParams.set('assist', remaining.dataset.handle)
+            : url.searchParams.delete('assist');
+          window.history.pushState({}, '', url);
+        }
+      }
 
-			const looksLikeImageURL = u => typeof u === 'string' && /\.(png|jpe?g|webp|gif|avif)(\?|$)/i.test(u);
-			const withWidthParam = (url, w = 496) => url ? `${url}${url.includes('?') ? '&' : '?'}width=${w}` : url;
+      wizard.addEventListener('click', async (e) => {
+        const link = e.target.closest('a[data-handle], a[data-back]');
+        if (!link) return;
+        
+        e.preventDefault();
+        if (link.dataset.handle) {
+          await drillDown(link.dataset.handle);
+        } else if (link.hasAttribute('data-back')) {
+          goBack();
+        }
+      });
 
-			const fileCache = new Map();
-			async function resolveFileGID(gid) {
-				if (!gid) return null;
-				if (fileCache.has(gid)) return fileCache.get(gid);
-				const data = await gql(FILE_BY_ID, { id: gid });
-				const node = data?.node;
-				let out = null;
-				if (node?.__typename === 'MediaImage' && node.image?.url) {
-					out = { url: node.image.url, alt: node.image.altText || '' };
-				} else if (node?.__typename === 'GenericFile' && node.url && looksLikeImageURL(node.url)) {
-					out = { url: node.url, alt: '' };
-				}
-				fileCache.set(gid, out);
-				return out;
-			}
+      if (enableUrlParams) {
+        window.addEventListener('popstate', async () => {
+          const handle = new URL(window.location).searchParams.get('assist');
+          if (handle) {
+            await drillDown(handle, false);
+          } else {
+            wizard.querySelectorAll('.main-page-assist__children').forEach(el => el.remove());
+            wizard.querySelector('.main-page-assist__start')?.classList.remove('is-hidden');
+          }
+        });
 
-			function extractImageHint(node) {
-				if (!node?.fields) return null;
-				const pick = (key) => {
-					const f = getField(node, key);
-					if (!f) return null;
-					if (f.reference) {
-						const r = f.reference;
-						if (r.__typename === 'MediaImage' && r.image?.url) return { url: r.image.url, alt: r.image.altText || '' };
-						if (r.__typename === 'GenericFile' && looksLikeImageURL(r.url)) return { url: r.url, alt: '' };
-					}
-					if ((f.type === 'file_reference' || f.type === 'file') && typeof f.value === 'string' && f.value.startsWith('gid://')) {
-						return { gid: f.value };
-					}
-					if (f.value && looksLikeImageURL(f.value)) return { url: f.value, alt: '' };
-					return null;
-				};
-				return pick('image') || pick('thumb');
-			}
-
-			function getExternalLink(node) {
-				const raw = getValue(node, 'link');
-				if (!raw) return null;
-				if (typeof raw === 'string') {
-					const trimmed = raw.trim();
-					if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-						try {
-							const obj = JSON.parse(trimmed);
-							if (obj && typeof obj.url === 'string' && obj.url.trim()) {
-								return { url: obj.url.trim(), text: typeof obj.text === 'string' ? obj.text.trim() : null };
-							}
-						} catch (e) { }
-					}
-					if (/^(https?:)?\/\//i.test(trimmed) || trimmed.startsWith('/')) {
-						return { url: trimmed, text: null };
-					}
-					return null;
-				}
-				if (raw && typeof raw === 'object' && typeof raw.url === 'string') {
-					return { url: raw.url.trim(), text: typeof raw.text === 'string' ? raw.text.trim() : null };
-				}
-				return null;
-			}
-
-			function cloneItemTemplate() {
-				const tpl = document.getElementById('assist-item-template');
-				return tpl ? tpl.content.firstElementChild.cloneNode(true) : null;
-			}
-
-			async function hydrateImageForItem(itemEl, hint, title) {
-				const fig = itemEl.querySelector('[data-fig]');
-				const imgEl = itemEl.querySelector('[data-img]');
-				if (!imgEl || !fig) return;
-				if (hint?.url) {
-					imgEl.src = withWidthParam(hint.url, 496);
-					imgEl.alt = title || '';
-					return;
-				}
-				if (hint?.gid) {
-					const file = await resolveFileGID(hint.gid);
-					if (file?.url) {
-						imgEl.src = withWidthParam(file.url, 496);
-						imgEl.alt = title || '';
-						return;
-					}
-				}
-				fig.remove();
-			}
-
-			function renderChildren(containerRoot, metaobject) {
-				const wizard = document.getElementById('assist');
-				
-				// Hide all existing paths within the wizard
-				wizard.querySelectorAll('.main-page-assist__path').forEach(el => el.classList.add('is-hidden'));
-				
-				const section = document.createElement('section');
-				section.className = 'main-page-assist__children main-page-assist__path';
-				const title = getValue(metaobject, 'title') || metaobject.handle;
-				const children = getListRefsMany(metaobject, ['subs', 'posts']);
-
-				const headerHTML = `
-					<a href="#" class="main-page-assist__back" data-back>
-						{%- render 'html-theme-icons', icon: 'arrow', size: 16 -%}
-						<span>{{ 'general.back' | t | default: 'Terug' }}</span>
-					</a>
-					<h2 class="main-page-assist__title">${title}</h2>
-				`;
-
-				if (!children.length) {
-					section.innerHTML = `${headerHTML}<p><em>{{ 'general.no_items' | t | default: 'Geen items' }}</em></p>`;
-					wizard.appendChild(section);
-					section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-					return;
-				}
-
-				const ul = document.createElement('ul');
-				ul.className = 'main-page-assist__grid';
-
-				const pending = [];
-				children.forEach(n => {
-					const item = cloneItemTemplate();
-					if (!item) return;
-
-					const t = getValue(n, 'title') || n.handle;
-					const hint = extractImageHint(n);
-					const hasKids = getListRefsMany(n, ['subs', 'posts']).length > 0;
-					const linkObj = getExternalLink(n);
-
-					const h3 = item.querySelector('[data-title]');
-					if (h3) h3.textContent = t;
-
-					const overlay = item.querySelector('[data-role="overlay"]');
-					if (hasKids) {
-						overlay.setAttribute('href', '#');
-						overlay.setAttribute('data-handle', n.handle);
-						overlay.removeAttribute('target');
-						overlay.removeAttribute('rel');
-					} else if (linkObj?.url) {
-						overlay.setAttribute('href', linkObj.url);
-						overlay.removeAttribute('data-handle');
-						overlay.setAttribute('target', '_blank');
-						overlay.setAttribute('rel', 'noopener');
-					} else {
-						overlay.remove();
-					}
-
-					const cta = item.querySelector('[data-role="cta"]');
-					if (linkObj?.url) {
-						cta.setAttribute('href', linkObj.url);
-						cta.setAttribute('target', '_blank');
-						cta.setAttribute('rel', 'noopener');
-						const span = cta.querySelector('span');
-						if (span) span.textContent = linkObj.text || '{{ 'general.read_more' | t | default: 'Lees meer' }}';
-					} else {
-						cta.remove();
-					}
-
-					pending.push(hydrateImageForItem(item, hint, t));
-					ul.appendChild(item);
-				});
-
-				section.innerHTML = headerHTML;
-				section.appendChild(ul);
-				wizard.appendChild(section);
-
-				const y = section.getBoundingClientRect().top + window.scrollY - 256;
-				window.scrollTo({ top: y, behavior: 'smooth' });
-
-				Promise.allSettled(pending).catch(() => { });
-			}
-
-			const assistRoot = document.getElementById('assist');
-			const listEl = document.getElementById('assist-subs');
-			if (!assistRoot || !listEl) return;
-			const type = listEl.getAttribute('data-metaobject-type') || 'assist-reference';
-
-			assistRoot.addEventListener('click', async (e) => {
-				const el = e.target.closest('.main-page-assist__card-link, .main-page-assist__card-cta, [data-handle], [data-back]');
-				if (!el) return;
-
-				const hasHandle = el.hasAttribute('data-handle');
-				const isBack = el.hasAttribute('data-back');
-
-				if (hasHandle) {
-					e.preventDefault();
-					const handle = el.getAttribute('data-handle');
-					try {
-						const meta = await fetchMetaobjectByHandle(type, handle);
-						if (!meta) return;
-						renderChildren(assistRoot, meta);
-					} catch (err) { console.error(err); }
-					return;
-				}
-
-				if (isBack) {
-					e.preventDefault();
-					const sec = el.closest('section.main-page-assist__path');
-					if (sec && sec.classList.contains('main-page-assist__children')) {
-						// Get previous sibling path
-						let prevPath = sec.previousElementSibling;
-						while (prevPath && !prevPath.classList.contains('main-page-assist__path')) {
-							prevPath = prevPath.previousElementSibling;
-						}
-						
-						// Show previous path
-						if (prevPath) {
-							prevPath.classList.remove('is-hidden');
-						}
-						
-						sec.remove();
-					}
-					return;
-				}
-			});
-		})();
-		</script>
-	{% else %}
-		<p class="main-page-assist__empty">{{ 'general.no_content' | t | default: 'No content available.' }}</p>
-	{% endif %}
-</div>
+        const initial = new URL(window.location).searchParams.get('assist');
+        if (initial) drillDown(initial, false);
+      }
+    })();
+    </script>
+  {%- endif -%}
+{% else %}
+  <div class="main-page-assist__content alignwide">
+    <p class="main-page-assist__empty">{{ 'general.no_content' | t | default: 'No content available.' }}</p>
+  </div>
+{% endif %}
 
 <style>
-	.main-page-assist {
-		padding-block: 3em;
-	}
+#shopify-section-{{ section.id }}.main-page-assist {
+  padding-block: 0;
+}
 
-	.main-page-assist__content {
-		padding-bottom: 6em;
-		padding-top: 1em;
-	}
+#shopify-section-{{ section.id }} .main-page-assist__wizard {
+  --grid-columns: {{ section.settings.columns_desktop | default: 4 }};
+  --grid-columns-tablet: {{ section.settings.columns_tablet | default: 3 }};
+  --grid-columns-mobile: {{ section.settings.columns_mobile | default: 2 }};
+  --grid-gap: {{ section.settings.grid_gap | default: 0.5 }}em;
+}
 
-	.main-page-assist__title {
-		font-family: var(--theme-font-family-serif);
-		font-size: clamp(1.6em, 4vw, 2em);
-		font-weight: 500;
-		margin: 0 0 1em;
-	}
+{% unless section.settings.show_count %}
+#shopify-section-{{ section.id }} .main-page-assist__card-count {
+  display: none;
+}
+{% endunless %}
 
-	.main-page-assist__back {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4em;
-		background-color: var(--theme-color-blue);
-		border: none;
-		padding: 0.4em 0.8em;
-		margin-bottom: 1em;
-		text-decoration: none;
-		color: #fff;
-		cursor: pointer;
-	}
+{% unless section.settings.show_cta %}
+#shopify-section-{{ section.id }} .main-page-assist__card-cta {
+  display: none;
+}
+{% endunless %}
 
-	.main-page-assist__back svg {
-		transform: rotate(180deg);
-	}
+.main-page-assist__content {
+  padding-block: 1em 6em;
+}
 
-	.main-page-assist__back:hover {
-		opacity: 0.9;
-	}
+.main-page-assist__title {
+  font-family: var(--theme-font-family-serif);
+  font-size: clamp(1.6em, 4vw, 2em);
+  font-weight: 500;
+  margin: 0 0 1em;
+}
 
-	.main-page-assist__grid {
-		--min: 220px;
-		--gap: 0.5em;
+.main-page-assist__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  background-color: var(--theme-color-blue);
+  padding: 0.4em 0.8em;
+  margin-bottom: 1em;
+  text-decoration: none;
+  color: #fff;
+}
 
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(var(--min), 1fr));
-		gap: var(--gap);
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		animation: main-page-assist-fadeIn 0.4s ease forwards;
-	}
+.main-page-assist__back svg {
+  transform: rotate(180deg);
+}
 
-	.main-page-assist__item {
-		position: relative;
-		overflow: hidden;
-		background: #fff;
-		border: 1px solid #e6e6e6;
-		min-height: 12em;
-	}
+.main-page-assist__back:hover {
+  opacity: 0.9;
+}
 
-	.main-page-assist__card {
-		position: relative;
-		overflow: hidden;
-		width: 100%;
-		isolation: isolate;
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
-		background-color: var(--theme-color-blue);
-		text-align: center;
-		aspect-ratio: 2/3;
-	}
+.main-page-assist__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+  gap: var(--grid-gap, 0.5em);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  animation: assist-fadeIn 0.4s ease forwards;
+}
 
-	.main-page-assist__card-link {
-		position: absolute;
-		inset: 0;
-		z-index: 1;
-	}
+.main-page-assist__item {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  min-height: 12em;
+}
 
-	.main-page-assist__card-image {
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		margin: 0;
-		padding: 0;
-		overflow: hidden;
-	}
+.main-page-assist__card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background-color: var(--theme-color-blue);
+  text-align: center;
+  aspect-ratio: 2/3;
+}
 
-	.main-page-assist__card-image img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		opacity: 0.8;
-		transition: opacity 125ms linear, transform 125ms ease-in-out;
-	}
+.main-page-assist__card-link {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+}
 
-	.main-page-assist__card:hover .main-page-assist__card-image img {
-		transform: scale(1.1);
-	}
+.main-page-assist__card-image {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
 
-	.main-page-assist__card-content {
-		position: relative;
-		z-index: 1;
-		padding: 1em;
-		background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.6) calc(100% - 1em));
-	}
+.main-page-assist__card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.8;
+  transition: opacity 125ms linear, transform 125ms ease-in-out;
+}
 
-	.main-page-assist__card-title {
-		font-family: var(--theme-font-family-serif);
-		font-size: 1.4em;
-		font-weight: 700;
-		color: #fff;
-		margin: 0 0 0.5em;
-	}
+.main-page-assist__card:hover .main-page-assist__card-image img {
+  transform: scale(1.1);
+}
 
-	.main-page-assist__card-cta {
-		position: relative;
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4em;
-		background-color: var(--theme-color-blue);
-		padding: 0.4em 0.8em;
-		text-decoration: none;
-		color: #fff;
-	}
+.main-page-assist__card-content {
+  position: relative;
+  z-index: 11;
+  padding: 1em;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) calc(100% - 1em));
+  pointer-events: none;
+}
 
-	.main-page-assist__card-cta:hover {
-		background-color: #fff;
-		color: var(--theme-color-blue);
-	}
+.main-page-assist__card-title {
+  font-family: var(--theme-font-family-serif);
+  font-size: 1.4em;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.25em;
+}
 
-	.main-page-assist__path.is-hidden {
-		display: none;
-	}
+.main-page-assist__card-count {
+  font-size: 0.85em;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 0.5em;
+}
 
-	.main-page-assist__empty {
-		text-align: center;
-		opacity: 0.6;
-		padding: 3em 1em;
-	}
+.main-page-assist__card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  background-color: var(--theme-color-blue);
+  padding: 0.4em 0.8em;
+  text-decoration: none;
+  color: #fff;
+  transition: background-color 150ms ease, color 150ms ease;
+}
 
-	@media (min-width: 640px) {
-		.main-page-assist__grid {
-			--min: 14em;
-		}
-	}
+.main-page-assist__card-cta svg {
+  transition: transform 150ms ease;
+}
 
-	@keyframes main-page-assist-fadeIn {
-		from {
-			opacity: 0;
-			transform: translateY(1em);
-		}
-		to {
-			opacity: 1;
-			transform: none;
-		}
-	}
+.main-page-assist__card:hover .main-page-assist__card-cta {
+  background-color: #fff;
+  color: var(--theme-color-blue);
+}
+
+.main-page-assist__card:hover .main-page-assist__card-cta svg {
+  transform: translateX(4px);
+}
+
+.main-page-assist__path.is-hidden {
+  display: none;
+}
+
+.main-page-assist__empty {
+  text-align: center;
+  opacity: 0.6;
+  padding: 3em 1em;
+}
+
+@media (max-width: 60em) {
+  .main-page-assist__grid {
+    grid-template-columns: repeat(var(--grid-columns-tablet, 3), 1fr);
+  }
+}
+
+@media (max-width: 40em) {
+  .main-page-assist__grid {
+    grid-template-columns: repeat(var(--grid-columns-mobile, 2), 1fr);
+  }
+}
+
+@keyframes assist-fadeIn {
+  from { opacity: 0; transform: translateY(1em); }
+  to { opacity: 1; transform: none; }
+}
 </style>
 
 {% schema %}
 {
-	"name": "Assist wizard",
-	"tag": "section",
-	"class": "main-page-assist",
-	"settings": []
+  "name": "Assist wizard",
+  "tag": "section",
+  "class": "main-page-assist",
+  "settings": [
+    {
+      "type": "text",
+      "id": "handle",
+      "label": "Metaobject Handle",
+      "info": "Leave empty to use page metafield"
+    },
+    {
+      "type": "header",
+      "content": "Assist card"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_count",
+      "label": "Show item count",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cta",
+      "label": "Show read more button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns (desktop)",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "label": "Columns (tablet)",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "label": "Columns (mobile)",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "label": "Grid gap",
+      "min": 0,
+      "max": 2,
+      "step": 0.1,
+      "default": 0.5,
+      "unit": "em"
+    }
+  ]
 }
 {% endschema %}

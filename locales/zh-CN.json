@@ -105,6 +105,9 @@
     "filtering": {
       "title": "筛选和排序",
       "button": "筛选",
+      "filters": "筛选条件",
+      "active_filters": "已启用的筛选",
+      "remove_filter": "移除筛选",
       "apply": "应用",
       "clear": "清除",
       "clear_all": "清除全部",

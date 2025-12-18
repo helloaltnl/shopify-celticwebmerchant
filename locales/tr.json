@@ -105,6 +105,9 @@
     "filtering": {
       "title": "Filtrele ve sırala",
       "button": "Filtrele",
+      "filters": "Filtreler",
+      "active_filters": "Aktif filtreler",
+      "remove_filter": "Filtreyi kaldır",
       "apply": "Uygula",
       "clear": "Temizle",
       "clear_all": "Tümünü temizle",

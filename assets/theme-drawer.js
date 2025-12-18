@@ -49,8 +49,8 @@
   const CLASSES = {
     open: 'is-open',
     bodyLock: 'has-drawer-open',
-    left: 'theme-drawer--left',
-    right: 'theme-drawer--right'
+    left: 'is-position-left',
+    right: 'is-position-right'
   };
 
   let activeDrawer = null;

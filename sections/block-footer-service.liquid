@@ -32,17 +32,13 @@
 					if heading == blank
 						assign heading = 'footer.service_heading' | t
 					endif
-					assign text = block.settings.text
-					if text == blank
-						assign text = 'footer.service_text' | t
-					endif
 					assign link_text = block.settings.link_text
 					if link_text == blank
 						assign link_text = 'footer.service_link_text' | t
 					endif
 				-%}
 				<div class="block-footer-service__column" {{ block.shopify_attributes }}>
-					<h4 class="block-footer-service__heading">{{ heading }}</h4>
+					<h3 class="block-footer-service__heading">{{ heading }}</h3>
 					<div class="block-footer-service__body">
 						{%- if block.settings.image -%}
 							<figure class="block-footer-service__image">
@@ -56,7 +52,11 @@
 							</figure>
 						{%- endif -%}
 						<div class="block-footer-service__text">
-							<p>{{ text }}</p>
+							{%- if block.settings.text != blank -%}
+								{{ block.settings.text }}
+							{%- else -%}
+								<p>{{ 'footer.service_text' | t }}</p>
+							{%- endif -%}
 							{%- if block.settings.link != blank -%}
 								<a href="{{ block.settings.link }}" class="block-footer-service__link">
 									<span>{{ link_text }}</span>
@@ -72,20 +72,20 @@
 					if heading == blank
 						assign heading = 'footer.showroom_heading' | t
 					endif
-					assign text = block.settings.text
-					if text == blank
-						assign text = 'footer.showroom_text' | t
-					endif
 					assign link_text = block.settings.link_text
 					if link_text == blank
 						assign link_text = 'footer.showroom_link_text' | t
 					endif
 				-%}
 				<div class="block-footer-service__column" {{ block.shopify_attributes }}>
-					<h4 class="block-footer-service__heading">{{ heading }}</h4>
+					<h3 class="block-footer-service__heading">{{ heading }}</h3>
 					<div class="block-footer-service__body">
 						<div class="block-footer-service__text">
-							<p>{{ text }}</p>
+							{%- if block.settings.text != blank -%}
+								{{ block.settings.text }}
+							{%- else -%}
+								<p>{{ 'footer.showroom_text' | t }}</p>
+							{%- endif -%}
 							{%- if block.settings.link != blank -%}
 								<a href="{{ block.settings.link }}" class="block-footer-service__link">
 									<span>{{ link_text }}</span>
@@ -107,66 +107,73 @@
 					endif
 				-%}
 				<div class="block-footer-service__column" {{ block.shopify_attributes }}>
-					<h4 class="block-footer-service__heading">{{ heading }}</h4>
+					<h3 class="block-footer-service__heading">{{ heading }}</h3>
+					{%- if block.settings.text != blank -%}
+						<div class="block-footer-service__intro">{{ block.settings.text }}</div>
+					{%- endif -%}
 					<div class="block-footer-service__body">
-						{%- form 'customer', id: 'ContactFooter', class: 'block-footer-service__form' -%}
-							<input type="hidden" name="contact[tags]" value="newsletter">
-							
-							<div class="block-footer-service__field">
-								<input
-									id="NewsletterForm--{{ section.id }}"
-									type="email"
-									name="contact[email]"
-									class="block-footer-service__input"
-									value="{{ form.email }}"
-									aria-required="true"
-									autocorrect="off"
-									autocapitalize="off"
-									autocomplete="email"
-									{% if form.errors %}
-										autofocus
-										aria-invalid="true"
-										aria-describedby="ContactFooter-error"
-									{% elsif form.posted_successfully? %}
-										aria-describedby="ContactFooter-success"
-									{% endif %}
-									placeholder="{{ placeholder }}"
-									required
-								>
-								<label class="block-footer-service__label visually-hidden" for="NewsletterForm--{{ section.id }}">
-									{{ 'newsletter.label' | t }}
-								</label>
-								<button type="submit" class="block-footer-service__submit" aria-label="{{ 'newsletter.button' | t }}">
-									{% render 'html-theme-icons', icon: 'arrow', size: 20 %}
-								</button>
-							</div>
-
-							{%- if form.errors -%}
-								<div class="block-footer-service__message block-footer-service__message--error" id="ContactFooter-error">
-									{% render 'html-theme-icons', icon: 'error', size: 16 %}
-									<span>{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</span>
+						{%- if block.settings.use_external_form and block.settings.external_form_code != blank -%}
+							{{ block.settings.external_form_code }}
+						{%- else -%}
+							{%- form 'customer', id: 'ContactFooter', class: 'block-footer-service__form' -%}
+								<input type="hidden" name="contact[tags]" value="newsletter">
+								
+								<div class="block-footer-service__field">
+									<input
+										id="NewsletterForm--{{ section.id }}"
+										type="email"
+										name="contact[email]"
+										class="block-footer-service__input"
+										value="{{ form.email }}"
+										aria-required="true"
+										autocorrect="off"
+										autocapitalize="off"
+										autocomplete="email"
+										{% if form.errors %}
+											autofocus
+											aria-invalid="true"
+											aria-describedby="ContactFooter-error"
+										{% elsif form.posted_successfully? %}
+											aria-describedby="ContactFooter-success"
+										{% endif %}
+										placeholder="{{ placeholder }}"
+										required
+									>
+									<label class="block-footer-service__label visually-hidden" for="NewsletterForm--{{ section.id }}">
+										{{ 'newsletter.label' | t }}
+									</label>
+									<button type="submit" class="block-footer-service__submit" aria-label="{{ 'newsletter.button' | t }}">
+										{% render 'html-theme-icons', icon: 'arrow', size: 20 %}
+									</button>
 								</div>
-							{%- endif -%}
 
-							{%- if form.posted_successfully? -%}
-								<div class="block-footer-service__message block-footer-service__message--success" id="ContactFooter-success" tabindex="-1" autofocus>
-									{% render 'html-theme-icons', icon: 'success', size: 16 %}
-									<span>{{ 'newsletter.success' | t }}</span>
-								</div>
-							{%- endif -%}
-						{%- endform -%}
+								{%- if form.errors -%}
+									<div class="block-footer-service__message block-footer-service__message--error" id="ContactFooter-error">
+										{% render 'html-theme-icons', icon: 'error', size: 16 %}
+										<span>{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</span>
+									</div>
+								{%- endif -%}
+
+								{%- if form.posted_successfully? -%}
+									<div class="block-footer-service__message block-footer-service__message--success" id="ContactFooter-success" tabindex="-1" autofocus>
+										{% render 'html-theme-icons', icon: 'success', size: 16 %}
+										<span>{{ 'newsletter.success' | t }}</span>
+									</div>
+								{%- endif -%}
+							{%- endform -%}
+						{%- endif -%}
 					</div>
 				</div>
 
 			{%- when 'text' -%}
 				<div class="block-footer-service__column" {{ block.shopify_attributes }}>
 					{%- if block.settings.heading != blank -%}
-						<h4 class="block-footer-service__heading">{{ block.settings.heading }}</h4>
+						<h3 class="block-footer-service__heading">{{ block.settings.heading }}</h3>
 					{%- endif -%}
 					<div class="block-footer-service__body">
 						<div class="block-footer-service__text">
 							{%- if block.settings.text != blank -%}
-								<p>{{ block.settings.text }}</p>
+								{{ block.settings.text }}
 							{%- endif -%}
 							{%- if block.settings.link != blank and block.settings.link_text != blank -%}
 								<a href="{{ block.settings.link }}" class="block-footer-service__link">
@@ -183,8 +190,8 @@
 
 {% style %}
 	.block-footer-service {
-		background-color: {{ section.settings.background_color }};
-		color: {{ section.settings.text_color }};
+		background-color: {{ section.settings.background_color | default: '#0f1f38' }};
+		color: {{ section.settings.text_color | default: '#ffffff' }};
 		padding: 2em 0;
 	}
 
@@ -208,6 +215,15 @@
 		font-weight: 400;
 		color: inherit;
 		margin: 0 0 0.5em 0;
+	}
+
+	.block-footer-service__intro {
+		margin: 0 0 1em 0;
+		line-height: 1.5;
+	}
+
+	.block-footer-service__intro p {
+		margin: 0;
 	}
 
 	.block-footer-service__body {
@@ -244,6 +260,10 @@
 		line-height: 1.5;
 	}
 
+	.block-footer-service__text p:last-child {
+		margin-bottom: 0;
+	}
+
 	.block-footer-service__link {
 		display: inline-flex;
 		align-items: center;
@@ -258,7 +278,7 @@
 
 	.block-footer-service__link:hover {
 		background-color: var(--theme-color-white);
-		color: {{ section.settings.background_color }};
+		color: {{ section.settings.background_color | default: '#0f1f38' }};
 	}
 
 	/* Newsletter form */
@@ -308,7 +328,7 @@
 
 	.block-footer-service__submit:hover {
 		background-color: var(--theme-color-white);
-		color: {{ section.settings.background_color }};
+		color: {{ section.settings.background_color | default: '#0f1f38' }};
 	}
 
 	.block-footer-service__message {
@@ -328,9 +348,20 @@
 	}
 
 	/* Responsive */
-	@media (max-width: 768px) {
+	@media (max-width: 40em) {
 		.block-footer-service__column {
 			flex: 1 1 100%;
+			text-align: center;
+		}
+		
+		.block-footer-service__body {
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+		
+		.block-footer-service__text {
+			text-align: center;
 		}
 	}
 {% endstyle %}
@@ -354,12 +385,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "align"
+			"default": "is-align"
 		},
 		{
 			"type": "header",
@@ -368,14 +400,20 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#0f1f38"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#ffffff"
+			"label": "Text"
+		},
+		{
+			"type": "header",
+			"content": "Howto"
+		},
+		{
+			"type": "paragraph",
+			"content": "Add columns using blocks: customer service, showroom info, newsletter signup, or custom text."
 		}
 	],
 	"blocks": [
@@ -396,7 +434,7 @@
 					"label": "Image"
 				},
 				{
-					"type": "textarea",
+					"type": "richtext",
 					"id": "text",
 					"label": "Text",
 					"info": "Leave empty to use locale default"
@@ -426,7 +464,7 @@
 					"info": "Leave empty to use locale default"
 				},
 				{
-					"type": "textarea",
+					"type": "richtext",
 					"id": "text",
 					"label": "Text",
 					"info": "Leave empty to use locale default"
@@ -456,10 +494,36 @@
 					"info": "Leave empty to use locale default"
 				},
 				{
+					"type": "richtext",
+					"id": "text",
+					"label": "Text"
+				},
+				{
+					"type": "header",
+					"content": "Native form"
+				},
+				{
 					"type": "text",
 					"id": "placeholder",
 					"label": "Input placeholder",
 					"info": "Leave empty to use locale default"
+				},
+				{
+					"type": "header",
+					"content": "External form"
+				},
+				{
+					"type": "checkbox",
+					"id": "use_external_form",
+					"label": "Use external form",
+					"info": "Replace default form with external code (e.g. Klaviyo)",
+					"default": false
+				},
+				{
+					"type": "html",
+					"id": "external_form_code",
+					"label": "External form code",
+					"info": "Paste embed code from Klaviyo, Mailchimp, etc."
 				}
 			]
 		},
@@ -473,7 +537,7 @@
 					"label": "Heading"
 				},
 				{
-					"type": "textarea",
+					"type": "richtext",
 					"id": "text",
 					"label": "Text"
 				},

@@ -1,0 +1,50 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "layout": "loyalty",
+  "sections": {
+    "faq": {
+      "type": "block-marketing-faq",
+      "blocks": {
+        "question_rNggAC": {
+          "type": "question",
+          "settings": {
+            "question": "Hoe werkt het loyaliteitsprogramma?",
+            "answer": "<p>Bij elke aankoop spaar je automatisch punten. Deze punten kun je inwisselen voor kortingen op toekomstige bestellingen.</p>"
+          }
+        },
+        "question_WD3kKt": {
+          "type": "question",
+          "settings": {
+            "question": "Hoe werkt het loyaliteitsprogramma?",
+            "answer": "<p>Bij elke aankoop spaar je automatisch punten. Deze punten kun je inwisselen voor kortingen op toekomstige bestellingen.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "question_rNggAC",
+        "question_WD3kKt"
+      ],
+      "settings": {
+        "heading": "Veelgestelde vragen",
+        "text": "<p>Heb je vragen over ons loyaliteitsprogramma? Hieronder vind je de antwoorden op de meest gestelde vragen.</p>",
+        "width": "is-align-small",
+        "padding_block": 3,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    }
+  },
+  "order": [
+    "faq"
+  ]
+}

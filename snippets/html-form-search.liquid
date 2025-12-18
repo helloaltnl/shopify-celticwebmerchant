@@ -26,6 +26,10 @@
 
 <form action="{{ routes.search_url }}" method="get" role="search" class="search-form">
   <div class="search-form__field">
+    <label class="search-form__label visually-hidden" for="{{ input_id }}">
+      {{ placeholder }}
+    </label>
+    
     <input
       class="search-form__input"
       id="{{ input_id }}"
@@ -49,10 +53,6 @@
         spellcheck="false"
       {%- endif -%}
     >
-    
-    <label class="search-form__label visually-hidden" for="{{ input_id }}">
-      {{ placeholder }}
-    </label>
     
     <input type="hidden" name="options[prefix]" value="last">
     <input type="hidden" name="type" value="{{ search_type }}">

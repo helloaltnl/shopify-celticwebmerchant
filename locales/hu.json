@@ -105,6 +105,9 @@
     "filtering": {
       "title": "Szűrés és rendezés",
       "button": "Szűrés",
+      "filters": "Szűrők",
+      "active_filters": "Aktív szűrők",
+      "remove_filter": "Szűrő eltávolítása",
       "apply": "Alkalmaz",
       "clear": "Törlés",
       "clear_all": "Összes törlése",

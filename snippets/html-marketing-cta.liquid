@@ -27,23 +27,17 @@
 -%}
 
 {%- capture inline_style -%}
-  {%- if style == 'outline' -%}
-    {%- if button_color != blank -%}
+  {%- if button_color != blank -%}
+    {%- if style == 'outline' -%}
       --cta-border-color: {{ button_color }};
       --cta-text-color: {{ button_color }};
-      --cta-hover-bg: {{ button_color }};
-    {%- endif -%}
-    {%- if button_text_color != blank -%}
-      --cta-hover-text: {{ button_text_color }};
-    {%- endif -%}
-  {%- else -%}
-    {%- if button_color != blank -%}
+    {%- else -%}
       --cta-bg-color: {{ button_color }};
       --cta-border-color: {{ button_color }};
     {%- endif -%}
-    {%- if button_text_color != blank -%}
-      --cta-text-color: {{ button_text_color }};
-    {%- endif -%}
+  {%- endif -%}
+  {%- if button_text_color != blank and style != 'outline' -%}
+    --cta-text-color: {{ button_text_color }};
   {%- endif -%}
 {%- endcapture -%}
 
@@ -140,8 +134,8 @@
   }
   
   .marketing-cta__button--outline:hover {
-    background-color: var(--cta-hover-bg, #000);
-    color: var(--cta-hover-text, #fff);
+    /* box-shadow: inset 0 0 0 2px currentColor; */
+    opacity: 0.8;
   }
   
   /* Focus state for accessibility */

@@ -2,37 +2,76 @@
   ============================================================================
   HTML-CART-SUBTOTAL
   ============================================================================
-  Renders cart subtotal with discounts and tax information.
+  Renders cart subtotal with discounts, discount code field, and tax information.
 
   PARAMETERS:
   - cart: {Object} Cart object (required)
   - show_cart_note: {Boolean} Show cart note textarea (default: false)
+  - show_discount_code: {Boolean} Show discount code input field (default: false)
   - context: {String} 'page' | 'drawer' | 'preview' (default: 'page')
 
   DEPENDENCIES:
   - theme-cart.js (cart-note custom element)
 
   USAGE:
-  {% render 'html-cart-subtotal', cart: cart, show_cart_note: true %}
+  {% render 'html-cart-subtotal', cart: cart, show_cart_note: true, show_discount_code: true %}
   ============================================================================
 {%- endcomment -%}
 
 {%- liquid
   assign show_cart_note = show_cart_note | default: false
+  assign show_discount_code = show_discount_code | default: false
   assign context = context | default: 'page'
 -%}
 
 <div class="cart-subtotal" data-cart-subtotal>
-  {%- comment -%} Cart-level discounts {%- endcomment -%}
+  {%- comment -%} Discount code input {%- endcomment -%}
+  {%- if show_discount_code -%}
+    <div class="cart-subtotal__discount-form">
+      <label for="DiscountCode-{{ context }}" class="cart-subtotal__discount-label">
+        {{ 'cart.discount_code' | t | default: 'Kortingscode' }}
+      </label>
+      <div class="cart-subtotal__discount-input-wrapper">
+        <input
+          type="text"
+          id="DiscountCode-{{ context }}"
+          class="cart-subtotal__discount-input"
+          name="discount"
+          placeholder="{{ 'cart.discount_code_placeholder' | t | default: 'Voer code in' }}"
+          autocomplete="off"
+        >
+        <button 
+          type="button" 
+          class="cart-subtotal__discount-button"
+          data-discount-apply
+        >
+          {{ 'cart.apply' | t }}
+        </button>
+      </div>
+      <p class="cart-subtotal__discount-error" data-discount-error hidden></p>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} Applied cart-level discounts {%- endcomment -%}
   {%- if cart.cart_level_discount_applications.size > 0 -%}
     <ul class="cart-subtotal__discounts">
       {%- for discount in cart.cart_level_discount_applications -%}
         <li class="cart-subtotal__discount">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.4,12.7l-9.1,9.1c-0.4,0.4-1,0.4-1.4,0l-9.1-9.1c-0.2-0.2-0.3-0.4-0.3-0.7V3c0-0.6,0.4-1,1-1h9c0.3,0,0.5,0.1,0.7,0.3l9.1,9.1C21.8,11.8,21.8,12.4,21.4,12.7z M6,7c0.6,0,1-0.4,1-1S6.6,5,6,5S5,5.4,5,6S5.4,7,6,7z"/></svg>
-          <span>
-            {{ discount.title | escape }}
-            <strong>(-{{ discount.total_allocated_amount | money }})</strong>
+          <span class="cart-subtotal__discount-info">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M21.4,12.7l-9.1,9.1c-0.4,0.4-1,0.4-1.4,0l-9.1-9.1c-0.2-0.2-0.3-0.4-0.3-0.7V3c0-0.6,0.4-1,1-1h9c0.3,0,0.5,0.1,0.7,0.3l9.1,9.1C21.8,11.8,21.8,12.4,21.4,12.7z M6,7c0.6,0,1-0.4,1-1S6.6,5,6,5S5,5.4,5,6S5.4,7,6,7z"/></svg>
+            <span>
+              {{ discount.title | escape }}
+              <strong>(-{{ discount.total_allocated_amount | money }})</strong>
+            </span>
           </span>
+          <button 
+            type="button" 
+            class="cart-subtotal__discount-remove"
+            data-discount-remove
+            aria-label="{{ 'cart.remove_discount' | t | default: 'Verwijder korting' }}"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
         </li>
       {%- endfor -%}
     </ul>
@@ -75,6 +114,75 @@
     border-radius: 4px;
   }
 
+  /* Discount code form */
+  .cart-subtotal__discount-form {
+    margin-bottom: 1.5em;
+    padding-bottom: 1.5em;
+    border-bottom: 1px solid var(--theme-border-color);
+  }
+
+  .cart-subtotal__discount-label {
+    display: block;
+    margin-bottom: 0.5em;
+    font-size: 0.9em;
+    font-weight: 500;
+  }
+
+  .cart-subtotal__discount-input-wrapper {
+    display: flex;
+    gap: 0.5em;
+  }
+
+  .cart-subtotal__discount-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6em 0.75em;
+    font-family: inherit;
+    font-size: 0.9em;
+    border: 1px solid var(--theme-border-color);
+    border-radius: 4px;
+    background-color: var(--theme-color-white);
+  }
+
+  .cart-subtotal__discount-input:focus {
+    outline: none;
+    border-color: var(--theme-color-blue);
+  }
+
+  .cart-subtotal__discount-button {
+    padding: 0.6em 1em;
+    font-family: inherit;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--theme-color-white);
+    background-color: var(--theme-color-foreground);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 200ms ease;
+    white-space: nowrap;
+  }
+
+  .cart-subtotal__discount-button:hover {
+    opacity: 0.85;
+  }
+
+  .cart-subtotal__discount-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .cart-subtotal__discount-error {
+    margin: 0.5em 0 0;
+    font-size: 0.85em;
+    color: var(--theme-color-error, #c00);
+  }
+
+  .cart-subtotal__discount-error[hidden] {
+    display: none;
+  }
+
+  /* Applied discounts list */
   .cart-subtotal__discounts {
     margin: 0 0 1em;
     padding: 0;
@@ -84,10 +192,38 @@
   .cart-subtotal__discount {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.5em;
     padding: 0.5em 0;
     font-size: 0.9em;
     color: var(--theme-color-success);
+  }
+
+  .cart-subtotal__discount-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+
+  .cart-subtotal__discount-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: var(--theme-color-foreground);
+    background: none;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 200ms ease, background-color 200ms ease;
+  }
+
+  .cart-subtotal__discount-remove:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.05);
   }
 
   .cart-subtotal__row {
@@ -162,6 +298,11 @@
     padding: 1em;
   }
 
+  .cart-subtotal__discount-form {
+    margin-bottom: 1em;
+    padding-bottom: 1em;
+  }
+
   .cart-subtotal__row--total .cart-subtotal__label {
     font-size: 1em;
   }
@@ -171,3 +312,74 @@
   }
   {% endif %}
 </style>
+
+<script>
+  (function() {
+    const subtotal = document.querySelector('[data-cart-subtotal]');
+    if (!subtotal) return;
+
+    const applyBtn = subtotal.querySelector('[data-discount-apply]');
+    const removeBtn = subtotal.querySelectorAll('[data-discount-remove]');
+    const input = subtotal.querySelector('.cart-subtotal__discount-input');
+    const errorEl = subtotal.querySelector('[data-discount-error]');
+
+    function showError(message) {
+      if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.hidden = false;
+      }
+    }
+
+    function hideError() {
+      if (errorEl) {
+        errorEl.hidden = true;
+      }
+    }
+
+    function applyDiscount(code) {
+      if (!code || !code.trim()) {
+        showError('{{ "cart.discount_code_empty" | t | default: "Voer een kortingscode in" }}');
+        return;
+      }
+
+      hideError();
+      
+      // Disable button during request
+      if (applyBtn) applyBtn.disabled = true;
+
+      // Navigate to /discount/CODE which stores the code in session
+      // Then redirect back to current page
+      const returnUrl = window.location.pathname + window.location.search;
+      window.location.href = '/discount/' + encodeURIComponent(code.trim()) + '?redirect=' + encodeURIComponent(returnUrl);
+    }
+
+    function removeDiscount() {
+      // Clear discount by visiting /discount/ with empty code
+      const returnUrl = window.location.pathname + window.location.search;
+      window.location.href = '/discount?redirect=' + encodeURIComponent(returnUrl);
+    }
+
+    // Apply button click
+    if (applyBtn && input) {
+      applyBtn.addEventListener('click', function() {
+        applyDiscount(input.value);
+      });
+
+      // Enter key in input
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyDiscount(input.value);
+        }
+      });
+
+      // Clear error on input
+      input.addEventListener('input', hideError);
+    }
+
+    // Remove buttons
+    removeBtn.forEach(function(btn) {
+      btn.addEventListener('click', removeDiscount);
+    });
+  })();
+</script>

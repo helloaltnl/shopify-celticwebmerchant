@@ -1,3 +1,29 @@
+{%- comment -%}
+============================================================================
+BLOCK-MARKETING-BRANDS
+============================================================================
+Brand logo grid/slider section sourced from a menu.
+
+FEATURES:
+- Source brands from menu links to collections
+- Display mode: Grid or Slider (Swiper)
+- Configurable columns per breakpoint
+- Optional brand titles
+- Correct responsive image sizing
+- Slider options: navigation, pagination, loop, autoplay
+
+ACCESSIBILITY:
+- Grid mode: <ul role="list"> with <li> for proper list semantics
+- Slider mode: <div> elements (Swiper manipulates DOM)
+
+DEPENDENCIES:
+- html-theme-media-image snippet
+- html-marketing-cta snippet
+- html-theme-icons snippet (for slider navigation)
+- Swiper.js (loaded conditionally for slider mode)
+============================================================================
+{%- endcomment -%}
+
 {%- liquid
 	assign menu = linklists[section.settings.menu]
 	assign has_heading = false
@@ -10,6 +36,12 @@
 		assign has_button = true
 	endif
 	
+	assign display_mode = section.settings.display_mode | default: 'grid'
+	assign is_slider = false
+	if display_mode == 'slider'
+		assign is_slider = true
+	endif
+	
 	case section.settings.image_ratio
 		when 'square'
 			assign ratio = '1 / 1'
@@ -20,9 +52,78 @@
 		else
 			assign ratio = '1 / 1'
 	endcase
+	
+	comment
+		Container width in pixels (match theme-ui.scss)
+	endcomment
+	case section.settings.width
+		when 'is-align-narrow'
+			assign container_px = 480
+		when 'is-align-small'
+			assign container_px = 640
+		when 'is-align'
+			assign container_px = 960
+		when 'is-align-wide'
+			assign container_px = 1280
+		when 'is-align-full'
+			assign container_px = 1600
+		else
+			assign container_px = 1280
+	endcase
+	
+	assign columns_desktop = section.settings.columns_desktop | default: 6
+	assign columns_tablet = section.settings.columns_tablet | default: 4
+	assign columns_mobile = section.settings.columns_mobile | default: 2
+	assign layout_gap_em = section.settings.grid_gap | default: 0.5
+	
+	comment
+		Gap in pixels
+	endcomment
+	assign gap_px = layout_gap_em | times: 16
+	
+	comment
+		Calculate actual display sizes per breakpoint
+	endcomment
+	assign desktop_gaps = columns_desktop | minus: 1 | times: gap_px
+	assign desktop_available = container_px | minus: desktop_gaps
+	assign desktop_image = desktop_available | divided_by: columns_desktop | round
+	
+	assign tablet_gaps = columns_tablet | minus: 1 | times: gap_px
+	assign tablet_available = 960 | minus: tablet_gaps
+	assign tablet_image = tablet_available | divided_by: columns_tablet | round
+	
+	assign mobile_gaps = columns_mobile | minus: 1 | times: gap_px
+	assign mobile_available = 480 | minus: mobile_gaps
+	assign mobile_image = mobile_available | divided_by: columns_mobile | round
+	
+	comment
+		Build sizes attribute (actual display sizes)
+	endcomment
+	assign img_sizes = '(min-width: 60em) ' | append: desktop_image | append: 'px, (min-width: 40em) ' | append: tablet_image | append: 'px, ' | append: mobile_image | append: 'px'
+	
+	comment
+		Srcset widths based on desktop (largest display)
+		Provides 1x, 1.5x, 2x, 2.5x, 3x for retina
+	endcomment
+	assign base = desktop_image
+	if base < 100
+		assign base = 100
+	endif
+	
+	assign w1 = base | round
+	assign w2 = base | times: 1.5 | round
+	assign w3 = base | times: 2 | round
+	assign w4 = base | times: 2.5 | round
+	assign w5 = base | times: 3 | round
+	if w5 > 2048
+		assign w5 = 2048
+	endif
+	if w4 > 2048
+		assign w4 = 2048
+	endif
 -%}
 
-<div class="block-marketing-brands__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
+<div class="block-marketing-brands__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
 	{%- if has_heading -%}
 		<header class="block-marketing-brands__header">
 			<h2 class="block-marketing-brands__title">{{ section.settings.heading }}</h2>
@@ -30,34 +131,96 @@
 	{%- endif -%}
 
 	{%- if menu.links.size > 0 -%}
-		<ul class="block-marketing-brands__grid{% if has_heading %} block-marketing-brands__grid--has-heading{% endif %}" role="list">
-			{%- for link in menu.links -%}
-				{%- liquid
-					assign collection = collections[link.object.handle]
-					if collection == blank
-						assign collection = link.object
-					endif
-				-%}
-				
-				{%- if collection -%}
-					<li class="block-marketing-brands__item">
-						<a href="{{ collection.url }}" class="block-marketing-brands__link">
-							{%- liquid
-								assign brand_image = collection.image | default: collection.featured_image
-							-%}
-							{%- if brand_image -%}
-								<figure class="block-marketing-brands__image">
-									{{ brand_image | image_url: width: 400 | image_tag: loading: 'lazy', alt: collection.title }}
-								</figure>
-							{%- endif -%}
-							{%- if section.settings.show_titles -%}
-								<span class="block-marketing-brands__name">{{ collection.title }}</span>
-							{%- endif -%}
-						</a>
-					</li>
+		{%- if is_slider -%}
+			{%- comment -%} Slider mode {%- endcomment -%}
+			<div class="block-marketing-brands__slider swiper{% if has_heading %} block-marketing-brands__slider--has-heading{% endif %}" id="swiper-{{ section.id }}" style="--grid-gap: {{ layout_gap_em }}em;">
+				<div class="swiper-wrapper">
+					{%- for link in menu.links -%}
+						{%- liquid
+							assign collection = collections[link.object.handle]
+							if collection == blank
+								assign collection = link.object
+							endif
+						-%}
+						
+						{%- if collection -%}
+							<div class="block-marketing-brands__item swiper-slide">
+								<a href="{{ collection.url }}" class="block-marketing-brands__link">
+									{%- assign brand_image = collection.image | default: collection.featured_image -%}
+									{%- if brand_image -%}
+										<figure class="block-marketing-brands__image">
+											{%- render 'html-theme-media-image',
+											image: brand_image,
+											alt: collection.title,
+											w1: w1,
+											w2: w2,
+											w3: w3,
+											w4: w4,
+											w5: w5,
+											sizes: img_sizes,
+											image_loading: 'lazy'
+											-%}
+										</figure>
+									{%- endif -%}
+									{%- if section.settings.show_titles -%}
+										<span class="block-marketing-brands__name">{{ collection.title }}</span>
+									{%- endif -%}
+								</a>
+							</div>
+						{%- endif -%}
+					{%- endfor -%}
+				</div>
+				{%- if section.settings.slider_navigation -%}
+					<button class="swiper-nav swiper-nav--prev swiper-nav--chevron" aria-label="{{ 'accessibility.previous' | t }}">
+						{%- render 'html-theme-icons', icon: 'chevron-left' -%}
+					</button>
+					<button class="swiper-nav swiper-nav--next swiper-nav--chevron" aria-label="{{ 'accessibility.next' | t }}">
+						{%- render 'html-theme-icons', icon: 'chevron-right' -%}
+					</button>
 				{%- endif -%}
-			{%- endfor -%}
-		</ul>
+				{%- if section.settings.slider_pagination -%}
+					<div class="swiper-pagination"></div>
+				{%- endif -%}
+			</div>
+		{%- else -%}
+			{%- comment -%} Grid mode {%- endcomment -%}
+			<ul class="block-marketing-brands__grid{% if has_heading %} block-marketing-brands__grid--has-heading{% endif %}" role="list" style="--grid-columns: {{ columns_desktop }}; --grid-columns-tablet: {{ columns_tablet }}; --grid-columns-mobile: {{ columns_mobile }}; --grid-gap: {{ layout_gap_em }}em;">
+				{%- for link in menu.links -%}
+					{%- liquid
+						assign collection = collections[link.object.handle]
+						if collection == blank
+							assign collection = link.object
+						endif
+					-%}
+					
+					{%- if collection -%}
+						<li class="block-marketing-brands__item">
+							<a href="{{ collection.url }}" class="block-marketing-brands__link">
+								{%- assign brand_image = collection.image | default: collection.featured_image -%}
+								{%- if brand_image -%}
+									<figure class="block-marketing-brands__image">
+										{%- render 'html-theme-media-image',
+										image: brand_image,
+										alt: collection.title,
+										w1: w1,
+										w2: w2,
+										w3: w3,
+										w4: w4,
+										w5: w5,
+										sizes: img_sizes,
+										image_loading: 'lazy'
+										-%}
+									</figure>
+								{%- endif -%}
+								{%- if section.settings.show_titles -%}
+									<span class="block-marketing-brands__name">{{ collection.title }}</span>
+								{%- endif -%}
+							</a>
+						</li>
+					{%- endif -%}
+				{%- endfor -%}
+			</ul>
+		{%- endif -%}
 	{%- endif -%}
 
 	{%- if has_button -%}
@@ -75,9 +238,9 @@
 
 {% style %}
 	#shopify-section-{{ section.id }}.block-marketing-brands {
-		background-color: {{ section.settings.background_color | default: '#ffffff' }};
-		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: 3em;
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {{ section.settings.padding_block }}em;
 	}
 
 	.block-marketing-brands__header {
@@ -93,26 +256,27 @@
 
 	#shopify-section-{{ section.id }} .block-marketing-brands__grid {
 		display: grid;
-		grid-template-columns: repeat({{ section.settings.columns_mobile | default: 2 }}, 1fr);
-		gap: 0.5em;
+		grid-template-columns: repeat(var(--grid-columns-mobile, 2), 1fr);
+		gap: var(--grid-gap, 0.5em);
 		list-style: none;
 		margin: 0;
 		padding: 0;
 	}
 
-	#shopify-section-{{ section.id }} .block-marketing-brands__grid--has-heading {
+	#shopify-section-{{ section.id }} .block-marketing-brands__grid--has-heading,
+	#shopify-section-{{ section.id }} .block-marketing-brands__slider--has-heading {
 		margin-block-start: 2em;
 	}
 
-	@media (min-width: 750px) {
+	@media (min-width: 40em) {
 		#shopify-section-{{ section.id }} .block-marketing-brands__grid {
-			grid-template-columns: repeat({{ section.settings.columns_tablet | default: 4 }}, 1fr);
+			grid-template-columns: repeat(var(--grid-columns-tablet, 4), 1fr);
 		}
 	}
 
-	@media (min-width: 990px) {
+	@media (min-width: 60em) {
 		#shopify-section-{{ section.id }} .block-marketing-brands__grid {
-			grid-template-columns: repeat({{ section.settings.columns_desktop | default: 6 }}, 1fr);
+			grid-template-columns: repeat(var(--grid-columns, 6), 1fr);
 		}
 	}
 
@@ -141,12 +305,15 @@
 		overflow: hidden;
 		background-color: {{ section.settings.card_background | default: '#ffffff' }};
 		margin: 0;
-		padding: 0.25em;
+		padding: 0.2em;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
-	.block-marketing-brands__image img {
+	.block-marketing-brands__image .theme-media__img {
 		width: 100%;
-		height: calc(100% - 0.5em);
+		height: 100%;
 		object-fit: {{ section.settings.image_fit }};
 	}
 
@@ -166,7 +333,115 @@
 	.block-marketing-brands__actions .marketing-cta {
 		padding: 0;
 	}
+
+	/* Slider styles */
+	.block-marketing-brands__slider {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.block-marketing-brands__slider .swiper-wrapper {
+		align-items: stretch;
+	}
+
+	.block-marketing-brands__slider .swiper-slide {
+		height: auto;
+	}
+
+	/* When all slides fit: center and hide controls */
+	.block-marketing-brands__slider.swiper--all-visible .swiper-wrapper {
+		justify-content: center;
+	}
+
+	.block-marketing-brands__slider.swiper--all-visible .swiper-nav,
+	.block-marketing-brands__slider.swiper--all-visible .swiper-pagination {
+		display: none;
+	}
 {% endstyle %}
+
+{%- if is_slider -%}
+<script>
+	(function() {
+		function initBrandsSwiper() {
+			const swiperEl = document.getElementById('swiper-{{ section.id }}');
+			if (!swiperEl || typeof Swiper === 'undefined') return;
+			
+			if (swiperEl.swiper) swiperEl.swiper.destroy();
+
+			const fontSize = parseFloat(getComputedStyle(swiperEl).fontSize);
+			const gapEm = parseFloat('{{ layout_gap_em }}');
+			const gapPx = gapEm * fontSize;
+
+			const config = {
+				slidesPerView: {{ columns_mobile }},
+				spaceBetween: gapPx,
+				{%- if section.settings.slider_navigation -%}
+				navigation: {
+					prevEl: swiperEl.querySelector('.swiper-nav--prev'),
+					nextEl: swiperEl.querySelector('.swiper-nav--next')
+				},
+				{%- endif -%}
+				{%- if section.settings.slider_pagination -%}
+				pagination: {
+					el: swiperEl.querySelector('.swiper-pagination'),
+					clickable: true
+				},
+				{%- endif -%}
+				{%- if section.settings.slider_autoplay -%}
+				autoplay: {
+					delay: {{ section.settings.slider_autoplay_speed | default: 5 | times: 1000 }},
+					disableOnInteraction: false,
+					pauseOnMouseEnter: true
+				},
+				rewind: true,
+				{%- endif -%}
+				breakpoints: {
+					640: {
+						slidesPerView: {{ columns_tablet }}
+					},
+					960: {
+						slidesPerView: {{ columns_desktop }}
+					}
+				},
+				on: {
+					init: updateSliderState,
+					resize: updateSliderState
+				}
+			};
+
+			function updateSliderState(swiper) {
+				const slidesCount = swiper.slides.length;
+				const slidesPerView = swiper.params.slidesPerView;
+				const allFit = slidesCount <= slidesPerView;
+				
+				swiperEl.classList.toggle('swiper--all-visible', allFit);
+				
+				if (allFit) {
+					if (swiper.autoplay && swiper.autoplay.running) {
+						swiper.autoplay.stop();
+					}
+				} else {
+					swiper.params.slidesPerGroup = Math.floor(slidesPerView);
+					{%- if section.settings.slider_autoplay -%}
+					if (swiper.autoplay && !swiper.autoplay.running) {
+						swiper.autoplay.start();
+					}
+					{%- endif -%}
+					swiper.update();
+				}
+			}
+
+			new Swiper(swiperEl, config);
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initBrandsSwiper);
+		} else {
+			initBrandsSwiper();
+		}
+	})();
+</script>
+{%- endif -%}
 
 {% schema %}
 {
@@ -229,8 +504,8 @@
 			"id": "image_ratio",
 			"label": "Image ratio",
 			"options": [
-				{ "value": "square", "label": "Square (1:1)" },
 				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "square", "label": "Square (1:1)" },
 				{ "value": "landscape", "label": "Landscape (3:2)" }
 			],
 			"default": "square"
@@ -260,12 +535,13 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "alignwide"
+			"default": "is-align-wide"
 		},
 		{
 			"type": "range",
@@ -295,20 +571,84 @@
 			"default": 2
 		},
 		{
+			"type": "range",
+			"id": "grid_gap",
+			"label": "Grid gap",
+			"min": 0,
+			"max": 2,
+			"step": 0.1,
+			"default": 0.5,
+			"unit": "em"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Display"
+		},
+		{
+			"type": "select",
+			"id": "display_mode",
+			"label": "Display mode",
+			"options": [
+				{ "value": "grid", "label": "Grid" },
+				{ "value": "slider", "label": "Slider" }
+			],
+			"default": "grid"
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_navigation",
+			"label": "Show navigation",
+			"info": "Slider only",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_pagination",
+			"label": "Show pagination",
+			"info": "Slider only",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_autoplay",
+			"label": "Autoplay",
+			"info": "Slider only. Includes rewind.",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "slider_autoplay_speed",
+			"label": "Autoplay speed",
+			"info": "Slider only",
+			"min": 2,
+			"max": 10,
+			"step": 1,
+			"default": 5,
+			"unit": "s"
+		},
+		{
 			"type": "header",
 			"content": "Colors"
 		},
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "color",
@@ -323,6 +663,12 @@
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",

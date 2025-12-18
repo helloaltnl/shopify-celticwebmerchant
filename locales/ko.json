@@ -49,6 +49,9 @@
     "filtering": {
       "title": "필터 및 정렬",
       "button": "필터",
+      "filters": "필터",
+      "active_filters": "활성 필터",
+      "remove_filter": "필터 제거",
       "apply": "적용",
       "clear": "지우기",
       "clear_all": "모두 제거",

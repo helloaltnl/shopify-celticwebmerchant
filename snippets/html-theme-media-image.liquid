@@ -1,0 +1,158 @@
+{%- comment -%}
+============================================================================
+HTML-THEME-MEDIA-IMAGE
+============================================================================
+Renders responsive image with webp source and fallback.
+
+PARAMS:
+- image         : Image object (Shopify image, media, or preview_image)
+- alt           : Alt text
+- w1-w8         : Fixed srcset widths (200, 400, 600, 800, 1000, 1200, 1600, 2000)
+- aspect_ratio  : Aspect ratio for height calculation when cropping
+- crop          : Crop position or blank for no crop
+- quality       : Image compression 1-100 (default 75)
+- sizes         : Sizes attribute
+- image_loading : 'lazy' | 'eager'
+- image_priority: 'high' | 'low' | 'auto'
+- zoom          : Add swiper-zoom-container class
+- focus_x       : Object position X (0-100, default 50)
+- focus_y       : Object position Y (0-100, default 50)
+- class         : Additional CSS classes for picture element
+
+DEPENDENCIES:
+- Called by html-theme-media.liquid
+============================================================================
+{%- endcomment -%}
+
+{%- liquid
+	assign image_loading = image_loading | default: 'lazy'
+	assign image_priority = image_priority | default: 'auto'
+	assign sizes = sizes | default: '100vw'
+	assign quality = quality | default: 100
+
+	comment
+		Fixed srcset ladder defaults
+	endcomment
+	assign w1 = w1 | default: 200
+	assign w2 = w2 | default: 400
+	assign w3 = w3 | default: 600
+	assign w4 = w4 | default: 800
+	assign w5 = w5 | default: 1000
+	assign w6 = w6 | default: 1200
+	assign w7 = w7 | default: 1600
+	assign w8 = w8 | default: 2000
+
+	comment
+		Quality param - only add if not 100 (CDN default)
+	endcomment
+	assign quality_param = ''
+	if quality != 100
+		assign quality_param = '&quality=' | append: quality
+	endif
+
+	comment
+		Convert focus values to numbers for comparison
+	endcomment
+	assign focus_x = focus_x | default: 50 | plus: 0
+	assign focus_y = focus_y | default: 50 | plus: 0
+
+	comment
+		Get the actual image object
+	endcomment
+	if image.preview_image
+		assign img = image.preview_image
+	elsif image.src or image.url
+		assign img = image
+	else
+		assign img = image
+	endif
+
+	comment
+		Calculate heights for cropping
+	endcomment
+	if crop != blank and aspect_ratio
+		assign h1 = w1 | divided_by: aspect_ratio | round
+		assign h2 = w2 | divided_by: aspect_ratio | round
+		assign h3 = w3 | divided_by: aspect_ratio | round
+		assign h4 = w4 | divided_by: aspect_ratio | round
+		assign h5 = w5 | divided_by: aspect_ratio | round
+		assign h6 = w6 | divided_by: aspect_ratio | round
+		assign h7 = w7 | divided_by: aspect_ratio | round
+		assign h8 = w8 | divided_by: aspect_ratio | round
+	endif
+-%}
+
+{%- capture object_position_style -%}
+	{%- if focus_x != 50 or focus_y != 50 -%}
+		object-position: {{ focus_x }}% {{ focus_y }}%;
+	{%- endif -%}
+{%- endcapture -%}
+{%- assign object_position_style = object_position_style | strip -%}
+
+{%- if img -%}
+	<picture class="theme-media__picture{% if zoom %} swiper-zoom-container{% endif %}{% if class %} {{ class }}{% endif %}">
+		{%- comment -%} WebP source {%- endcomment -%}
+		<source
+			type="image/webp"
+			srcset="
+				{%- if crop != blank -%}
+					{{ img | image_url: width: w1, height: h1, format: 'webp', crop: crop }}{{ quality_param }} {{ w1 }}w,
+					{{ img | image_url: width: w2, height: h2, format: 'webp', crop: crop }}{{ quality_param }} {{ w2 }}w,
+					{{ img | image_url: width: w3, height: h3, format: 'webp', crop: crop }}{{ quality_param }} {{ w3 }}w,
+					{{ img | image_url: width: w4, height: h4, format: 'webp', crop: crop }}{{ quality_param }} {{ w4 }}w,
+					{{ img | image_url: width: w5, height: h5, format: 'webp', crop: crop }}{{ quality_param }} {{ w5 }}w,
+					{{ img | image_url: width: w6, height: h6, format: 'webp', crop: crop }}{{ quality_param }} {{ w6 }}w,
+					{{ img | image_url: width: w7, height: h7, format: 'webp', crop: crop }}{{ quality_param }} {{ w7 }}w,
+					{{ img | image_url: width: w8, height: h8, format: 'webp', crop: crop }}{{ quality_param }} {{ w8 }}w
+				{%- else -%}
+					{{ img | image_url: width: w1, format: 'webp' }}{{ quality_param }} {{ w1 }}w,
+					{{ img | image_url: width: w2, format: 'webp' }}{{ quality_param }} {{ w2 }}w,
+					{{ img | image_url: width: w3, format: 'webp' }}{{ quality_param }} {{ w3 }}w,
+					{{ img | image_url: width: w4, format: 'webp' }}{{ quality_param }} {{ w4 }}w,
+					{{ img | image_url: width: w5, format: 'webp' }}{{ quality_param }} {{ w5 }}w,
+					{{ img | image_url: width: w6, format: 'webp' }}{{ quality_param }} {{ w6 }}w,
+					{{ img | image_url: width: w7, format: 'webp' }}{{ quality_param }} {{ w7 }}w,
+					{{ img | image_url: width: w8, format: 'webp' }}{{ quality_param }} {{ w8 }}w
+				{%- endif -%}"
+			sizes="{{ sizes }}"
+		>
+
+		{%- comment -%} Fallback img {%- endcomment -%}
+		<img
+			class="theme-media__img"
+			src="{%- if crop != blank -%}{{ img | image_url: width: w4, height: h4, crop: crop }}{{ quality_param }}{%- else -%}{{ img | image_url: width: w4 }}{{ quality_param }}{%- endif -%}"
+			srcset="
+				{%- if crop != blank -%}
+					{{ img | image_url: width: w1, height: h1, crop: crop }}{{ quality_param }} {{ w1 }}w,
+					{{ img | image_url: width: w2, height: h2, crop: crop }}{{ quality_param }} {{ w2 }}w,
+					{{ img | image_url: width: w3, height: h3, crop: crop }}{{ quality_param }} {{ w3 }}w,
+					{{ img | image_url: width: w4, height: h4, crop: crop }}{{ quality_param }} {{ w4 }}w,
+					{{ img | image_url: width: w5, height: h5, crop: crop }}{{ quality_param }} {{ w5 }}w,
+					{{ img | image_url: width: w6, height: h6, crop: crop }}{{ quality_param }} {{ w6 }}w,
+					{{ img | image_url: width: w7, height: h7, crop: crop }}{{ quality_param }} {{ w7 }}w,
+					{{ img | image_url: width: w8, height: h8, crop: crop }}{{ quality_param }} {{ w8 }}w
+				{%- else -%}
+					{{ img | image_url: width: w1 }}{{ quality_param }} {{ w1 }}w,
+					{{ img | image_url: width: w2 }}{{ quality_param }} {{ w2 }}w,
+					{{ img | image_url: width: w3 }}{{ quality_param }} {{ w3 }}w,
+					{{ img | image_url: width: w4 }}{{ quality_param }} {{ w4 }}w,
+					{{ img | image_url: width: w5 }}{{ quality_param }} {{ w5 }}w,
+					{{ img | image_url: width: w6 }}{{ quality_param }} {{ w6 }}w,
+					{{ img | image_url: width: w7 }}{{ quality_param }} {{ w7 }}w,
+					{{ img | image_url: width: w8 }}{{ quality_param }} {{ w8 }}w
+				{%- endif -%}"
+			sizes="{{ sizes }}"
+			alt="{{ alt | escape }}"
+			loading="{{ image_loading }}"
+			decoding="async"
+			{% if image_priority != 'auto' %}fetchpriority="{{ image_priority }}"{% endif %}
+			width="{{ img.width | default: w4 }}"
+			height="{{ img.height | default: h4 }}"
+			{% if object_position_style != blank %}style="{{ object_position_style }}"{% endif %}
+		>
+	</picture>
+{%- else -%}
+	<div class="theme-media__fallback">
+		{%- render 'html-theme-icons', icon: 'image', size: 48 -%}
+	</div>
+{%- endif -%}

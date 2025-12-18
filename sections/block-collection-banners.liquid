@@ -1,294 +1,236 @@
-{% comment %}
-  ============================================================================
-  BLOCK-COLLECTION-BANNERS
-  ============================================================================
-  Displays sub-collection banners based on current collection's position in menu.
-  Shows child collections as a horizontal slider.
+{%- comment -%}
+============================================================================
+BLOCK-COLLECTION-BANNERS
+============================================================================
+Displays sub-collection banners based on current collection's position in menu.
 
-  FEATURES:
-  - Automatic detection of sub-collections from menu
-  - SwiperJS horizontal slider
-  - Collection images with titles
-  - Width alignment options
-  - Color customization
+FEATURES:
+- Automatic detection of sub-collections from menu hierarchy
+- Display mode: Grid or Slider
+- Collection card with vertical/horizontal layout
+- SwiperJS slider with smart visibility detection
+- Configurable columns and spacing
 
-  DEPENDENCIES:
-  - vendor-swiperjs.min.js
-  - vendor-swiperjs.min.css
-  - html-theme-icons snippet
-  ============================================================================
-{% endcomment %}
+ACCESSIBILITY:
+- Grid mode: <ul role="list"> with <li> for proper list semantics
+- Slider mode: <div> elements (Swiper manipulates DOM, breaking list semantics)
 
-{%- assign menu_handle = section.settings.menu | default: 'product-menu' -%}
-{%- assign breadcrumb_menu = linklists[menu_handle].links -%}
-{%- assign current_url = request.path -%}
-{%- assign clean_url = current_url | split: '?' | first -%}
-{%- assign slider_items = nil -%}
+DEPENDENCIES:
+- html-theme-card snippet
+- html-theme-icons snippet
+- vendor-swiperjs.min.js
+- vendor-swiperjs.min.css
+- theme-ux.scss (swiper utilities, card system)
+============================================================================
+{%- endcomment -%}
 
-{%- comment -%} Find sub-items to display based on current URL {%- endcomment -%}
-{%- for link in breadcrumb_menu -%}
-	{%- if clean_url == link.url and link.links.size > 0 -%}
-		{%- assign slider_items = link.links -%}
-		{%- break -%}
-	{%- endif -%}
-	
-	{%- if link.links.size > 0 -%}
-		{%- for child in link.links -%}
-			{%- if clean_url == child.url and child.links.size > 0 -%}
-				{%- assign slider_items = child.links -%}
-				{%- break -%}
+{%- liquid
+	assign menu_handle = section.settings.menu | default: 'product-menu'
+	assign breadcrumb_menu = linklists[menu_handle].links
+	assign current_url = request.path
+	assign clean_url = current_url | split: '?' | first
+	assign slider_items = nil
+	assign display_mode = section.settings.display_mode | default: 'slider'
+	assign is_slider = false
+	if display_mode == 'slider'
+		assign is_slider = true
+	endif
+
+	# Find sub-items to display based on current URL
+	for link in breadcrumb_menu
+		if clean_url == link.url and link.links.size > 0
+			assign slider_items = link.links
+			break
+		endif
+		
+		if link.links.size > 0
+			for child in link.links
+				if clean_url == child.url and child.links.size > 0
+					assign slider_items = child.links
+					break
+				endif
+			endfor
+		endif
+	endfor
+-%}
+
+{%- comment -%} Build collection handles array {%- endcomment -%}
+{%- capture collection_handles_raw -%}
+	{%- if slider_items != nil and slider_items.size > 0 -%}
+		{%- for item in slider_items -%}
+			{%- assign url_parts = item.url | split: '/' -%}
+			{%- assign handle = url_parts.last -%}
+			{%- assign link_collection = collections[handle] -%}
+			{%- if link_collection -%}
+				{{ handle }}|||
 			{%- endif -%}
 		{%- endfor -%}
 	{%- endif -%}
-{%- endfor -%}
+{%- endcapture -%}
 
-{%- if slider_items != nil and slider_items.size > 0 -%}
-<collection-banners class="block-collection-banners__wrapper" data-section-id="{{ section.id }}">
+{%- assign collection_handles = collection_handles_raw | strip | split: '|||' -%}
+{%- assign has_collections = collection_handles.size -%}
+
+{%- if has_collections > 0 -%}
+<collection-banners 
+	class="block-collection-banners__wrapper" 
+	data-section-id="{{ section.id }}"
+	{% if section.settings.anchor != blank %}id="{{ section.settings.anchor }}"{% endif %}
+>
 	<div class="block-collection-banners__content {{ section.settings.width }}">
-		<nav class="block-collection-banners__slider swiper" data-collection-banners-slider>
-			<ul class="block-collection-banners__list swiper-wrapper">
-				{%- for item in slider_items -%}
-					{%- assign url_parts = item.url | split: '/' -%}
-					{%- assign handle = url_parts.last -%}
+		{%- if is_slider -%}
+			{%- comment -%} Slider mode: use divs (Swiper manipulates DOM) {%- endcomment -%}
+			<nav 
+				class="block-collection-banners__slider swiper" 
+				id="swiper-{{ section.id }}"
+				data-collection-banners-slider
+				aria-label="{{ 'accessibility.slider' | t }}"
+				style="--grid-gap: {{ section.settings.grid_gap | default: 0.2 }}em;"
+			>
+				<div class="block-collection-banners__list swiper-wrapper">
+					{%- for handle in collection_handles -%}
+						{%- assign link_collection = collections[handle] -%}
+						{%- if link_collection -%}
+							<div class="block-collection-banners__item swiper-slide">
+								{%- render 'html-theme-card',
+								collection: link_collection,
+								layout: section.settings.card_layout,
+								image_ratio: section.settings.image_ratio,
+								columns_desktop: section.settings.columns_desktop,
+								columns_tablet: section.settings.columns_tablet,
+								columns_mobile: section.settings.columns_mobile,
+								columns_width: section.settings.width,
+								columns_gap: section.settings.grid_gap,
+								show_count: section.settings.show_product_count,
+								 heading_level: 'h2'
+								 -%}
+								 </div>
+								 {%- endif -%}
+								 {%- endfor -%}
+			</div>
+				
+				{%- if section.settings.slider_navigation -%}
+					<button type="button" class="swiper-nav swiper-nav--prev" aria-label="{{ 'accessibility.slider.previous' | t }}">
+						{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+					</button>
+					<button type="button" class="swiper-nav swiper-nav--next" aria-label="{{ 'accessibility.slider.next' | t }}">
+						{% render 'html-theme-icons', icon: 'caret', size: 16 %}
+					</button>
+				{%- endif -%}
+
+				{%- if section.settings.slider_pagination -%}
+					<div class="swiper-pagination"></div>
+				{%- endif -%}
+			</nav>
+		{%- else -%}
+			{%- comment -%} Grid mode: use semantic list {%- endcomment -%}
+			<ul class="block-collection-banners__grid" role="list" style="--grid-columns: {{ section.settings.columns_desktop | default: 4 }}; --grid-columns-tablet: {{ section.settings.columns_tablet | default: 3 }}; --grid-columns-mobile: {{ section.settings.columns_mobile | default: 2 }}; --grid-gap: {{ section.settings.grid_gap | default: 0.2 }}em;">
+				{%- for handle in collection_handles -%}
 					{%- assign link_collection = collections[handle] -%}
-					
-					<li class="block-collection-banners__item swiper-slide">
-						<a href="{{ item.url }}" class="block-collection-banners__link">
-							{%- liquid
-								assign has_image = false
-								if link_collection and link_collection.image
-									assign has_image = true
-									assign image_src = link_collection.image | image_url: width: 192
-									assign image_alt = link_collection.image.alt | default: link_collection.title | escape
-								elsif item.object.image
-									assign has_image = true
-									assign image_src = item.object.image | image_url: width: 192
-									assign image_alt = item.object.image.alt | default: item.title | escape
-								endif
+					{%- if link_collection -%}
+						<li class="block-collection-banners__item">
+							{%- render 'html-theme-card',
+								collection: link_collection,
+								layout: section.settings.card_layout,
+								image_ratio: section.settings.image_ratio,
+								columns_desktop: section.settings.columns_desktop,
+								columns_tablet: section.settings.columns_tablet,
+								columns_mobile: section.settings.columns_mobile,
+								columns_width: section.settings.width,
+								columns_gap: section.settings.grid_gap,
+								show_count: section.settings.show_product_count,
+								heading_level: 'h2'
 							-%}
-							{%- if has_image -%}
-								<img 
-									class="block-collection-banners__image" 
-									src="{{ image_src }}" 
-									alt="{{ image_alt }}"
-									width="96"
-									height="96"
-									loading="eager"
-								>
-							{%- endif -%}
-							<span class="block-collection-banners__title">{{ item.title }}</span>
-						</a>
-					</li>
+						</li>
+					{%- endif -%}
 				{%- endfor -%}
 			</ul>
-			
-			<div class="block-collection-banners__pagination swiper-pagination"></div>
-			
-			<div class="block-collection-banners__nav">
-				<button type="button" class="block-collection-banners__nav-btn block-collection-banners__nav-btn--prev swiper-button-prev" aria-label="{{ 'accessibility.slider.previous' | t }}">
-					{% render 'html-theme-icons', icon: 'caret', size: 16 %}
-				</button>
-				<button type="button" class="block-collection-banners__nav-btn block-collection-banners__nav-btn--next swiper-button-next" aria-label="{{ 'accessibility.slider.next' | t }}">
-					{% render 'html-theme-icons', icon: 'caret', size: 16 %}
-				</button>
-			</div>
-		</nav>
+		{%- endif -%}
 	</div>
 </collection-banners>
 {%- endif -%}
 
 {% style %}
-	.block-collection-banners {
-		position: relative;
-		isolation: isolate;
+	#shopify-section-{{ section.id }}.block-collection-banners {
 		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {%- if has_collections > 0 -%}{{ section.settings.padding_block | default: 2 }}em{%- else -%}0em{%- endif -%};
 	}
 
-	
+	/* Card colors and text alignment */
+	#shopify-section-{{ section.id }} .card {
+		--card-bg: {{ section.settings.card_background_color | default: 'transparent' }};
+		--card-text: {{ section.settings.card_text_color | default: 'inherit' }};
+	}
+	#shopify-section-{{ section.id }} .card__content {
+		text-align: {{ section.settings.card_text_align | default: 'left' }};
+	}
 
-	.block-collection-banners__wrapper {
+	/* Horizontal layout: center content vertically */
+	#shopify-section-{{ section.id }} .card--horizontal .card__content {
+		justify-content: center;
+	}
+
+	#shopify-section-{{ section.id }} .block-collection-banners__wrapper {
 		display: block;
 	}
-	
-	/* Background accent */
-	.block-collection-banners__wrapper::after {
-		content: '';
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: calc(50% - 1.25em);
-		bottom: 0;
-		background-color: var(--theme-color-grey);
-		z-index: -1;
-	}
 
-	.block-collection-banners__content {
-		padding-top: 1em;
-		padding-bottom: 1em;
-	}
-
-	/* Slider */
-	.block-collection-banners__slider {
-		position: relative;
-		padding-bottom: 2.5em;
-	}
-
-	.block-collection-banners__list {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
+	/* Grid layout */
+	#shopify-section-{{ section.id }} .block-collection-banners__grid {
+		display: grid;
+		grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+		gap: var(--grid-gap, 0.2em);
 		list-style: none;
 		margin: 0;
 		padding: 0;
 	}
 
-	/* Items */
-	.block-collection-banners__item {
-		flex: 0 0 auto;
-		width: 15em;
+	#shopify-section-{{ section.id }} .block-collection-banners__item {
+		display: flex;
+		min-width: 0;
+	}
+
+	@media (max-width: 60em) {
+		#shopify-section-{{ section.id }} .block-collection-banners__grid {
+			grid-template-columns: repeat(var(--grid-columns-tablet, 3), 1fr);
+		}
+	}
+
+	@media (max-width: 40em) {
+		#shopify-section-{{ section.id }} .block-collection-banners__grid {
+			grid-template-columns: repeat(var(--grid-columns-mobile, 2), 1fr);
+		}
+	}
+
+	/* Slider layout */
+	#shopify-section-{{ section.id }} .block-collection-banners__slider {
+		position: relative;
+		overflow: hidden;
+	}
+
+	#shopify-section-{{ section.id }} .block-collection-banners__list {
+		margin: 0;
+		padding: 0;
+		align-items: stretch;
+	}
+
+	#shopify-section-{{ section.id }} .block-collection-banners__slider .swiper-slide {
 		height: auto;
 	}
 
-	.block-collection-banners__link {
-		display: flex;
-		flex-direction: row;
-		align-items: stretch;
-		gap: 0;
-		height: 100%;
-		text-decoration: none;
-		background-color: {{ section.settings.item_background_color }};
-		color: {{ section.settings.item_text_color }};
-		transition: opacity 150ms ease;
-	}
-
-	.block-collection-banners__link:hover {
-		opacity: 0.9;
-	}
-
-	.block-collection-banners__image {
-		flex: 0 0 80px;
-		width: 80px;
-		aspect-ratio:2/3;
-		min-height:100%;
-		/* height: 100%;
-		min-height: 80px; */
-		object-fit: cover;
-	}
-
-	.block-collection-banners__title {
-		flex: 1 1 auto;
-		display: flex;
-		align-items: center;
-		padding: 0.75em 1em;
-		font-family: var(--theme-font-family-serif);
-		font-size: 0.95em;
-		font-weight: 400;
-		line-height: 1.3;
-		text-align: left;
-	}
-
-	/* Pagination */
-	.block-collection-banners__pagination {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		display: flex;
+	/* When all slides fit: center and hide controls */
+	#shopify-section-{{ section.id }} .block-collection-banners__slider.swiper--all-visible .swiper-wrapper {
 		justify-content: center;
-		gap: 0.5em;
-		padding: 0.5em;
 	}
 
-	.block-collection-banners__pagination .swiper-pagination-bullet {
-		width: 0.5em;
-		height: 0.25em;
-		border-radius: 0;
-		background-color: var(--theme-color-brown);
-		opacity: 0.3;
-		border: none;
-		outline: none;
-		box-shadow: none;
-	}
-
-	.block-collection-banners__pagination .swiper-pagination-bullet:focus,
-	.block-collection-banners__pagination .swiper-pagination-bullet:focus-visible {
-		outline: none;
-		box-shadow: none;
-	}
-
-	.block-collection-banners__pagination .swiper-pagination-bullet::before,
-	.block-collection-banners__pagination .swiper-pagination-bullet::after {
+	#shopify-section-{{ section.id }} .block-collection-banners__slider.swiper--all-visible .swiper-nav,
+	#shopify-section-{{ section.id }} .block-collection-banners__slider.swiper--all-visible .swiper-pagination {
 		display: none;
-	}
-
-	.block-collection-banners__pagination .swiper-pagination-bullet-active {
-		width: 1.5em;
-		opacity: 1;
-		background-color: {{ section.settings.item_background_color }};
-	}
-
-	/* Navigation buttons */
-	.block-collection-banners__nav {
-		display: none;
-	}
-
-	.block-collection-banners__nav-btn {
-		position: absolute;
-		top: calc(50% - 1.25em);
-		z-index: 10;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 2.5em;
-		height: 2.5em;
-		padding: 0.5em;
-		border: none;
-		background-color: var(--theme-color-white);
-		color: {{ section.settings.item_background_color }};
-		cursor: pointer;
-		transition: background-color 150ms ease, color 150ms ease;
-	}
-
-	.block-collection-banners__nav-btn:hover {
-		background-color: {{ section.settings.item_background_color }};
-		color: var(--theme-color-white);
-	}
-
-	.block-collection-banners__nav-btn--prev {
-		left: 1em;
-	}
-
-	.block-collection-banners__nav-btn--prev svg {
-		transform: rotate(90deg);
-	}
-
-	.block-collection-banners__nav-btn--next {
-		right: 1em;
-	}
-
-	.block-collection-banners__nav-btn--next svg {
-		transform: rotate(-90deg);
-	}
-
-	.block-collection-banners__nav-btn.swiper-button-disabled {
-		opacity: 0.3;
-		cursor: not-allowed;
-	}
-
-	/* Hide default Swiper navigation styles */
-	.block-collection-banners__nav-btn::after {
-		display: none;
-	}
-
-	/* Show nav buttons on hover (desktop) */
-	@media (min-width: 768px) {
-		.block-collection-banners__slider:hover .block-collection-banners__nav {
-			display: block;
-		}
 	}
 {% endstyle %}
 
-{% javascript %}
+{%- if is_slider -%}
+<script>
 	class CollectionBanners extends HTMLElement {
 		constructor() {
 			super();
@@ -299,48 +241,70 @@
 			const swiperEl = this.querySelector('[data-collection-banners-slider]');
 			if (!swiperEl || typeof Swiper === 'undefined') return;
 
+			const self = this;
+			const fontSize = parseFloat(getComputedStyle(swiperEl).fontSize);
+			const gapPx = (parseFloat(getComputedStyle(swiperEl).getPropertyValue('--grid-gap')) || 0.2) * fontSize;
+
 			this.swiper = new Swiper(swiperEl, {
 				direction: 'horizontal',
-				loop: false,
-				slidesPerView: 'auto',
-				slidesPerGroup: 1,
-				spaceBetween: 12,
+				slidesPerView: {{ section.settings.columns_mobile | default: 2 }},
+				spaceBetween: gapPx,
 				grabCursor: true,
 				mousewheel: {
 					forceToAxis: true,
 					releaseOnEdges: true
 				},
+				{%- if section.settings.slider_autoplay -%}
+				autoplay: {
+					delay: {{ section.settings.slider_autoplay_speed | default: 5 | times: 1000 }},
+					disableOnInteraction: false,
+					pauseOnMouseEnter: true
+				},
+				rewind: true,
+				{%- endif -%}
 				pagination: {
 					el: swiperEl.querySelector('.swiper-pagination'),
 					clickable: true
 				},
 				navigation: {
-					nextEl: swiperEl.querySelector('.swiper-button-next'),
-					prevEl: swiperEl.querySelector('.swiper-button-prev')
+					nextEl: swiperEl.querySelector('.swiper-nav--next'),
+					prevEl: swiperEl.querySelector('.swiper-nav--prev')
+				},
+				breakpoints: {
+					640: {
+						slidesPerView: {{ section.settings.columns_tablet | default: 3 }}
+					},
+					960: {
+						slidesPerView: {{ section.settings.columns_desktop | default: 4 }}
+					}
 				},
 				on: {
-					init: (swiper) => this.updateSlidesPerGroup(swiper),
-					resize: (swiper) => this.updateSlidesPerGroup(swiper)
+					init: (swiper) => self.updateSliderState(swiper),
+					resize: (swiper) => self.updateSliderState(swiper)
 				}
 			});
 		}
 
-		updateSlidesPerGroup(swiper) {
-			const visibleSlides = this.getFullyVisibleSlides(swiper);
-			swiper.params.slidesPerGroup = visibleSlides > 0 ? visibleSlides : 1;
-			swiper.update();
-		}
-
-		getFullyVisibleSlides(swiper) {
-			const wrapperRect = swiper.wrapperEl.getBoundingClientRect();
-			let count = 0;
-			swiper.slides.forEach((slide) => {
-				const rect = slide.getBoundingClientRect();
-				if (rect.left >= wrapperRect.left && rect.right <= wrapperRect.right) {
-					count++;
+		updateSliderState(swiper) {
+			const slidesCount = swiper.slides.length;
+			const slidesPerView = swiper.params.slidesPerView;
+			const allFit = slidesCount <= slidesPerView;
+			
+			swiper.el.classList.toggle('swiper--all-visible', allFit);
+			
+			if (allFit) {
+				if (swiper.autoplay && swiper.autoplay.running) {
+					swiper.autoplay.stop();
 				}
-			});
-			return count > 0 ? count : 1;
+			} else {
+				swiper.params.slidesPerGroup = Math.floor(slidesPerView);
+				{%- if section.settings.slider_autoplay -%}
+				if (swiper.autoplay && !swiper.autoplay.running) {
+					swiper.autoplay.start();
+				}
+				{%- endif -%}
+				swiper.update();
+			}
 		}
 
 		disconnectedCallback() {
@@ -352,7 +316,8 @@
 	}
 
 	customElements.define('collection-banners', CollectionBanners);
-{% endjavascript %}
+</script>
+{%- endif -%}
 
 {% schema %}
 {
@@ -370,7 +335,49 @@
 		{
 			"type": "link_list",
 			"id": "menu",
-			"label": "Menu"
+			"label": "Menu",
+			"info": "Select the menu containing collection hierarchy. Sub-collections are auto-detected based on current page."
+		},
+		{
+			"type": "header",
+			"content": "Collection card"
+		},
+		{
+			"type": "select",
+			"id": "card_layout",
+			"label": "Card layout",
+			"options": [
+				{ "value": "vertical", "label": "Vertical" },
+				{ "value": "horizontal", "label": "Horizontal" }
+			],
+			"default": "horizontal"
+		},
+		{
+			"type": "select",
+			"id": "image_ratio",
+			"label": "Image ratio",
+			"options": [
+				{ "value": "portrait", "label": "Portrait (2:3)" },
+				{ "value": "square", "label": "Square (1:1)" },
+				{ "value": "landscape", "label": "Landscape (3:2)" }
+			],
+			"default": "portrait"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_product_count",
+			"label": "Show product count",
+			"default": false
+		},
+		{
+			"type": "select",
+			"id": "card_text_align",
+			"label": "Card text alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" }
+			],
+			"default": "left"
 		},
 		{
 			"type": "header",
@@ -381,11 +388,106 @@
 			"id": "width",
 			"label": "Width",
 			"options": [
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
 			],
-			"default": "align"
+			"default": "is-align"
+		},
+		{
+			"type": "range",
+			"id": "columns_desktop",
+			"label": "Columns (desktop)",
+			"min": 2,
+			"max": 6,
+			"step": 1,
+			"default": 4
+		},
+		{
+			"type": "range",
+			"id": "columns_tablet",
+			"label": "Columns (tablet)",
+			"min": 2,
+			"max": 4,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "columns_mobile",
+			"label": "Columns (mobile)",
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "grid_gap",
+			"label": "Gap",
+			"min": 0,
+			"max": 2,
+			"step": 0.1,
+			"default": 0.2,
+			"unit": "em"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 2,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Display"
+		},
+		{
+			"type": "select",
+			"id": "display_mode",
+			"label": "Display mode",
+			"options": [
+				{ "value": "grid", "label": "Grid" },
+				{ "value": "slider", "label": "Slider" }
+			],
+			"default": "slider"
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_navigation",
+			"label": "Show navigation arrows",
+			"info": "Slider only",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_pagination",
+			"label": "Show pagination",
+			"info": "Slider only",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_autoplay",
+			"label": "Autoplay",
+			"info": "Slider only. Includes rewind.",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "slider_autoplay_speed",
+			"label": "Autoplay speed",
+			"info": "Slider only",
+			"min": 2,
+			"max": 10,
+			"step": 1,
+			"default": 5,
+			"unit": "s"
 		},
 		{
 			"type": "header",
@@ -394,20 +496,32 @@
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
-			"id": "item_background_color",
-			"label": "Item background",
-			"default": "#0f1f38"
+			"id": "text_color",
+			"label": "Text"
 		},
 		{
 			"type": "color",
-			"id": "item_text_color",
-			"label": "Item text",
-			"default": "#ffffff"
+			"id": "card_background_color",
+			"label": "Card background"
+		},
+		{
+			"type": "color",
+			"id": "card_text_color",
+			"label": "Card text"
+		},
+		{
+			"type": "header",
+			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "header",
@@ -415,7 +529,7 @@
 		},
 		{
 			"type": "paragraph",
-			"content": "This section automatically displays child collections based on the current collection's position in the selected menu."
+			"content": "Automatically displays child collections based on the current collection's position in the selected menu. Navigation and pagination auto-hide when all items fit."
 		}
 	],
 	"presets": [

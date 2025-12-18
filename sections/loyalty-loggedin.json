@@ -1,0 +1,40 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "custom.loyalty_loggedin",
+  "name": "Loyalty (ingelogd)",
+  "sections": {
+    "account": {
+      "type": "block-loyalty-account",
+      "blocks": {
+        "toki_loyalty_block_recharge_4zLxTj": {
+          "type": "shopify://apps/toki-loyalty/blocks/block-recharge/22635295-e17c-4ef6-b61c-f95d0a982eaf",
+          "settings": {
+            "designId": ""
+          }
+        }
+      },
+      "block_order": [
+        "toki_loyalty_block_recharge_4zLxTj"
+      ],
+      "settings": {
+        "width": "is-align",
+        "padding_block": 3,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    }
+  },
+  "order": [
+    "account"
+  ]
+}

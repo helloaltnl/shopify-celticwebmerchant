@@ -94,6 +94,146 @@
 	scrollDetect();
 })();
 
+// ============================================================================
+// THEME MEDIA SYSTEM
+// ============================================================================
+// Consolidated scripts for html-theme-media-* snippets
+// Replaces inline <script> blocks for better performance
+// ============================================================================
+(() => {
+	function initThemeMedia() {
+		// Native video (interactive)
+		document.querySelectorAll('[data-video-wrapper]:not([data-external-video])').forEach(wrapper => {
+			if (wrapper.dataset.initialized) return;
+			wrapper.dataset.initialized = 'true';
+			
+			const playBtn = wrapper.querySelector('[data-video-play]');
+			const video = wrapper.querySelector('[data-video]');
+			
+			if (!playBtn || !video) return;
+			
+			playBtn.addEventListener('click', () => {
+				wrapper.classList.add('is-playing');
+				video.play();
+			});
+			
+			video.addEventListener('ended', () => {
+				wrapper.classList.remove('is-playing');
+			});
+			
+			video.addEventListener('pause', () => {
+				if (video.ended) wrapper.classList.remove('is-playing');
+			});
+		});
+		
+		// External video (YouTube/Vimeo - interactive)
+		document.querySelectorAll('[data-external-video]').forEach(wrapper => {
+			if (wrapper.dataset.initialized) return;
+			wrapper.dataset.initialized = 'true';
+			
+			const playBtn = wrapper.querySelector('[data-video-play]');
+			const iframeWrapper = wrapper.querySelector('[data-iframe-wrapper]');
+			const host = wrapper.dataset.host;
+			const videoId = wrapper.dataset.videoId;
+			
+			if (!playBtn || !iframeWrapper || !videoId) return;
+			
+			playBtn.addEventListener('click', () => {
+				let iframeSrc = '';
+				
+				if (host === 'youtube') {
+					iframeSrc = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+				} else if (host === 'vimeo') {
+					iframeSrc = `https://player.vimeo.com/video/${videoId}?autoplay=1`;
+				}
+				
+				if (iframeSrc) {
+					iframeWrapper.innerHTML = `<iframe src="${iframeSrc}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen loading="lazy"></iframe>`;
+					wrapper.classList.add('is-playing');
+				}
+			});
+		});
+		
+		// Background video (lazy load sources)
+		document.querySelectorAll('[data-background-video]').forEach(video => {
+			if (video.dataset.initialized) return;
+			video.dataset.initialized = 'true';
+			
+			// Get parent container that should receive is-video-playing class
+			const parentContainer = video.closest('.marketing-cover, .theme-media');
+			
+			// Helper to mark video as playing
+			const markPlaying = () => {
+				if (parentContainer) parentContainer.classList.add('is-video-playing');
+			};
+			
+			// Native video element with data-src sources
+			if (video.tagName === 'VIDEO') {
+				const sources = video.querySelectorAll('source[data-src]');
+				if (sources.length > 0) {
+					sources.forEach(source => {
+						source.src = source.dataset.src;
+					});
+					video.load();
+					
+					// Mark as playing when video actually starts
+					video.addEventListener('playing', () => {
+						video.classList.add('is-loaded');
+						markPlaying();
+					}, { once: true });
+				}
+			}
+			
+			// External video background (YouTube/Vimeo iframe)
+			if (video.classList.contains('theme-media__iframe-wrapper--background')) {
+				const host = video.dataset.host;
+				const videoId = video.dataset.videoId;
+				
+				if (host && videoId) {
+					let iframeSrc = '';
+					
+					if (host === 'youtube') {
+						iframeSrc = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`;
+					} else if (host === 'vimeo') {
+						iframeSrc = `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1&loop=1&background=1`;
+					}
+					
+					if (iframeSrc) {
+						video.innerHTML = `<iframe src="${iframeSrc}" allow="autoplay; encrypted-media" loading="lazy"></iframe>`;
+						setTimeout(markPlaying, 500);
+					}
+				}
+			}
+		});
+		
+		// 3D Model
+		document.querySelectorAll('[data-model-wrapper]').forEach(wrapper => {
+			if (wrapper.dataset.initialized) return;
+			wrapper.dataset.initialized = 'true';
+			
+			const playBtn = wrapper.querySelector('[data-model-play]');
+			const model = wrapper.querySelector('[data-model]');
+			
+			if (!playBtn) return;
+			
+			playBtn.addEventListener('click', () => {
+				wrapper.classList.add('is-active');
+				if (model) model.removeAttribute('reveal');
+			});
+		});
+	}
+	
+	// Init on DOMContentLoaded
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initThemeMedia);
+	} else {
+		initThemeMedia();
+	}
+	
+	// Re-init on section render (for theme editor)
+	document.addEventListener('shopify:section:load', initThemeMedia);
+})();
+
 // Read more grid
 (() => {
 	const SEL = 'ul[data-readmore="grid"]';

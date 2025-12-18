@@ -10,7 +10,7 @@
 {
   "sections": {
     "main": {
-      "type": "main-login",
+      "type": "main-account-login",
       "settings": {}
     }
   },

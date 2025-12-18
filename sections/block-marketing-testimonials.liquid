@@ -1,114 +1,250 @@
+{%- comment -%}
+============================================================================
+BLOCK-MARKETING-TESTIMONIALS
+============================================================================
+Testimonial/quote section with grid and slider layouts.
+
+FEATURES:
+- Display modes: Grid, Slider
+- Responsive column settings
+- Quote styles: Minimal, Boxed, Accent border
+- Star ratings (0-5)
+- Author photo support
+- Swiper integration for slider mode
+
+ACCESSIBILITY:
+- Grid mode: <ul role="list"> with <li> for proper list semantics
+- Slider mode: <div> elements (Swiper manipulates DOM, breaking list semantics)
+
+DEPENDENCIES:
+- html-marketing-headline snippet
+- html-marketing-quote snippet
+- Swiper.js (loaded in theme head)
+- Global .swiper utilities from theme-ux.scss
+============================================================================
+{%- endcomment -%}
+
 {%- liquid
 	assign has_heading = false
 	if section.settings.heading != blank or section.settings.subheading != blank
 		assign has_heading = true
 	endif
+	
+	assign display_mode = section.settings.display_mode | default: 'grid'
+	assign is_slider = false
+	if display_mode == 'slider'
+		assign is_slider = true
+	endif
 -%}
 
-<div class="block-marketing-testimonials__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}">
-	{%- if section.settings.heading != blank -%}
+<div class="block-marketing-testimonials__content {{ section.settings.width }}{% if section.settings.custom_class != blank %} {{ section.settings.custom_class }}{% endif %}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor }}"{% endif %}>
+	{%- if has_heading -%}
 		{%- render 'html-marketing-headline',
 			heading: section.settings.heading,
 			subheading: section.settings.subheading,
-			alignment: 'center'
+			alignment: section.settings.text_align,
+			size: 'medium'
 		-%}
 	{%- endif -%}
-	
-	<ul class="block-marketing-testimonials__grid block-marketing-testimonials__grid--{{ section.settings.layout }}{% if has_heading %} block-marketing-testimonials__grid--has-heading{% endif %}" role="list">
-		{%- for block in section.blocks -%}
-			<li class="block-marketing-testimonials__item" {{ block.shopify_attributes }}>
-				{%- render 'html-marketing-quote',
-					quote: block.settings.quote,
-					author: block.settings.author,
-					author_title: block.settings.author_title,
-					author_image: block.settings.author_image,
-					rating: block.settings.rating,
-					alignment: section.settings.alignment,
-					style: section.settings.quote_style
-				-%}
-			</li>
-		{%- endfor -%}
-	</ul>
+
+	{%- if is_slider -%}
+		{%- comment -%} Slider mode: use divs (Swiper manipulates DOM) {%- endcomment -%}
+		<div class="block-marketing-testimonials__slider swiper" id="swiper-{{ section.id }}" style="--grid-gap: {{ section.settings.grid_gap | default: 1.5 }}em;">
+			<div class="swiper-wrapper">
+				{%- for block in section.blocks -%}
+					<div class="block-marketing-testimonials__item swiper-slide" {{ block.shopify_attributes }}>
+						{%- render 'html-marketing-quote',
+							quote: block.settings.quote,
+							author: block.settings.author,
+							author_title: block.settings.author_title,
+							author_image: block.settings.author_image,
+							rating: block.settings.rating,
+							alignment: section.settings.alignment,
+							style: section.settings.quote_style
+						-%}
+					</div>
+				{%- endfor -%}
+			</div>
+			{%- if section.settings.slider_navigation -%}
+				<button class="swiper-nav swiper-nav--prev swiper-nav--chevron" aria-label="{{ 'accessibility.previous' | t }}">
+					{%- render 'html-theme-icons', icon: 'chevron-left' -%}
+				</button>
+				<button class="swiper-nav swiper-nav--next swiper-nav--chevron" aria-label="{{ 'accessibility.next' | t }}">
+					{%- render 'html-theme-icons', icon: 'chevron-right' -%}
+				</button>
+			{%- endif -%}
+			{%- if section.settings.slider_pagination -%}
+				<div class="swiper-pagination"></div>
+			{%- endif -%}
+		</div>
+	{%- else -%}
+		{%- comment -%} Grid mode: use semantic list {%- endcomment -%}
+		<ul class="block-marketing-testimonials__grid" role="list" style="--grid-columns: {{ section.settings.columns_desktop | default: 2 }}; --grid-columns-tablet: {{ section.settings.columns_tablet | default: 2 }}; --grid-columns-mobile: {{ section.settings.columns_mobile | default: 1 }}; --grid-gap: {{ section.settings.grid_gap | default: 1.5 }}em;">
+			{%- for block in section.blocks -%}
+				<li class="block-marketing-testimonials__item" {{ block.shopify_attributes }}>
+					{%- render 'html-marketing-quote',
+						quote: block.settings.quote,
+						author: block.settings.author,
+						author_title: block.settings.author_title,
+						author_image: block.settings.author_image,
+						rating: block.settings.rating,
+						alignment: section.settings.alignment,
+						style: section.settings.quote_style
+					-%}
+				</li>
+			{%- endfor -%}
+		</ul>
+	{%- endif -%}
 </div>
 
 {% style %}
+	/* Section */
 	#shopify-section-{{ section.id }}.block-marketing-testimonials {
-		background-color: {{ section.settings.background_color | default: '#ffffff' }};
-		color: {{ section.settings.text_color | default: '#111111' }};
-		padding-block: 3em;
+		background-color: {{ section.settings.background_color }};
+		color: {{ section.settings.text_color }};
+		padding-block: {{ section.settings.padding_block }}em;
 	}
 
+	/* Grid layout */
 	#shopify-section-{{ section.id }} .block-marketing-testimonials__grid {
 		display: grid;
-		gap: 2em;
+		grid-template-columns: repeat(var(--grid-columns, 2), 1fr);
+		gap: var(--grid-gap, 1.5em);
 		list-style: none;
 		margin: 0;
 		padding: 0;
 	}
 
-	.block-marketing-testimonials__grid--has-heading {
-		margin-block-start: 2em;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-testimonials__grid--single {
-		grid-template-columns: 1fr;
-		max-width: 50em;
-		margin-inline: auto;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-testimonials__grid--single.block-marketing-testimonials__grid--has-heading {
-		margin-block-start: 2em;
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-testimonials__grid--two-column {
-		grid-template-columns: repeat(2, 1fr);
-	}
-
-	#shopify-section-{{ section.id }} .block-marketing-testimonials__grid--three-column {
-		grid-template-columns: repeat(3, 1fr);
-	}
-
-	.block-marketing-testimonials__grid--carousel {
-		display: flex;
-		overflow-x: auto;
-		scroll-snap-type: x mandatory;
-		-webkit-overflow-scrolling: touch;
-		gap: 2em;
-		padding-block-end: 1em;
-	}
-
-	.block-marketing-testimonials__grid--carousel .block-marketing-testimonials__item {
-		flex: 0 0 80%;
-		scroll-snap-align: start;
-	}
-
-	.block-marketing-testimonials__item {
+	#shopify-section-{{ section.id }} .block-marketing-testimonials__item {
 		margin: 0;
+		height: 100%;
 	}
 
-	@media (min-width: 750px) {
-		.block-marketing-testimonials__grid--carousel .block-marketing-testimonials__item {
-			flex: 0 0 45%;
+	@media (max-width: 60em) {
+		#shopify-section-{{ section.id }} .block-marketing-testimonials__grid {
+			grid-template-columns: repeat(var(--grid-columns-tablet, 2), 1fr);
 		}
 	}
 
-	@media (max-width: 989px) {
-		#shopify-section-{{ section.id }} .block-marketing-testimonials__grid--three-column {
-			grid-template-columns: repeat(2, 1fr);
+	@media (max-width: 40em) {
+		#shopify-section-{{ section.id }} .block-marketing-testimonials__grid {
+			grid-template-columns: repeat(var(--grid-columns-mobile, 1), 1fr);
 		}
 	}
 
-	@media (max-width: 749px) {
-		#shopify-section-{{ section.id }} .block-marketing-testimonials__grid--two-column,
-		#shopify-section-{{ section.id }} .block-marketing-testimonials__grid--three-column {
-			grid-template-columns: 1fr;
-		}
+	/* Slider layout */
+	#shopify-section-{{ section.id }} .block-marketing-testimonials__slider {
+		position: relative;
+		overflow: hidden;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-testimonials__slider .swiper-wrapper {
+		align-items: stretch;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-testimonials__slider .swiper-slide {
+		height: auto;
+	}
+
+	/* When all slides fit: center and hide controls */
+	#shopify-section-{{ section.id }} .block-marketing-testimonials__slider.swiper--all-visible .swiper-wrapper {
+		justify-content: center;
+	}
+
+	#shopify-section-{{ section.id }} .block-marketing-testimonials__slider.swiper--all-visible .swiper-nav,
+	#shopify-section-{{ section.id }} .block-marketing-testimonials__slider.swiper--all-visible .swiper-pagination {
+		display: none;
 	}
 {% endstyle %}
 
+{%- if is_slider -%}
+<script>
+	(function() {
+		function initTestimonialsSwiper() {
+			const swiperEl = document.getElementById('swiper-{{ section.id }}');
+			if (!swiperEl || typeof Swiper === 'undefined') return;
+			
+			if (swiperEl.swiper) swiperEl.swiper.destroy();
+
+			// Convert em to px using computed font-size
+			const fontSize = parseFloat(getComputedStyle(swiperEl).fontSize);
+			const gapEm = parseFloat('{{ section.settings.grid_gap | default: 1.5 }}');
+			const gapPx = gapEm * fontSize;
+
+			const config = {
+				slidesPerView: {{ section.settings.columns_mobile | default: 1 }},
+				spaceBetween: gapPx,
+				{%- if section.settings.slider_navigation -%}
+				navigation: {
+					prevEl: swiperEl.querySelector('.swiper-nav--prev'),
+					nextEl: swiperEl.querySelector('.swiper-nav--next')
+				},
+				{%- endif -%}
+				{%- if section.settings.slider_pagination -%}
+				pagination: {
+					el: swiperEl.querySelector('.swiper-pagination'),
+					clickable: true
+				},
+				{%- endif -%}
+				{%- if section.settings.slider_autoplay -%}
+				autoplay: {
+					delay: {{ section.settings.slider_autoplay_speed | default: 5 | times: 1000 }},
+					disableOnInteraction: false,
+					pauseOnMouseEnter: true
+				},
+				rewind: true,
+				{%- endif -%}
+				breakpoints: {
+					640: {
+						slidesPerView: {{ section.settings.columns_tablet | default: 2 }}
+					},
+					960: {
+						slidesPerView: {{ section.settings.columns_desktop | default: 2 }}
+					}
+				},
+				on: {
+					init: updateSliderState,
+					resize: updateSliderState
+				}
+			};
+
+			function updateSliderState(swiper) {
+				const slidesCount = swiper.slides.length;
+				const slidesPerView = swiper.params.slidesPerView;
+				const allFit = slidesCount <= slidesPerView;
+				
+				swiperEl.classList.toggle('swiper--all-visible', allFit);
+				
+				if (allFit) {
+					if (swiper.autoplay && swiper.autoplay.running) {
+						swiper.autoplay.stop();
+					}
+				} else {
+					swiper.params.slidesPerGroup = Math.floor(slidesPerView);
+					{%- if section.settings.slider_autoplay -%}
+					if (swiper.autoplay && !swiper.autoplay.running) {
+						swiper.autoplay.start();
+					}
+					{%- endif -%}
+					swiper.update();
+				}
+			}
+
+			new Swiper(swiperEl, config);
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initTestimonialsSwiper);
+		} else {
+			initTestimonialsSwiper();
+		}
+	})();
+</script>
+{%- endif -%}
+
 {% schema %}
 {
-	"name": "Marketing testimonials",
+	"name": "Testimonials",
 	"tag": "section",
 	"class": "block-marketing-testimonials",
 	"disabled_on": {
@@ -130,32 +266,18 @@
 			"label": "Subheading"
 		},
 		{
+			"type": "select",
+			"id": "text_align",
+			"label": "Header alignment",
+			"options": [
+				{ "value": "left", "label": "Left" },
+				{ "value": "center", "label": "Center" }
+			],
+			"default": "center"
+		},
+		{
 			"type": "header",
-			"content": "Layout"
-		},
-		{
-			"type": "select",
-			"id": "width",
-			"label": "Width",
-			"options": [
-				{ "value": "alignsmall", "label": "Narrow" },
-				{ "value": "align", "label": "Regular" },
-				{ "value": "alignwide", "label": "Wide" },
-				{ "value": "alignfull", "label": "Full" }
-			],
-			"default": "alignwide"
-		},
-		{
-			"type": "select",
-			"id": "layout",
-			"label": "Layout",
-			"options": [
-				{ "value": "single", "label": "Single column" },
-				{ "value": "two-column", "label": "Two columns" },
-				{ "value": "three-column", "label": "Three columns" },
-				{ "value": "carousel", "label": "Carousel" }
-			],
-			"default": "two-column"
+			"content": "Review card"
 		},
 		{
 			"type": "select",
@@ -180,23 +302,137 @@
 		},
 		{
 			"type": "header",
+			"content": "Layout"
+		},
+		{
+			"type": "select",
+			"id": "width",
+			"label": "Width",
+			"options": [
+				{ "value": "is-align-narrow", "label": "Narrow" },
+				{ "value": "is-align-small", "label": "Small" },
+				{ "value": "is-align", "label": "Regular" },
+				{ "value": "is-align-wide", "label": "Wide" },
+				{ "value": "is-align-full", "label": "Full" }
+			],
+			"default": "is-align-wide"
+		},
+		{
+			"type": "range",
+			"id": "columns_desktop",
+			"label": "Columns (desktop)",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "columns_tablet",
+			"label": "Columns (tablet)",
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 2
+		},
+		{
+			"type": "range",
+			"id": "columns_mobile",
+			"label": "Columns (mobile)",
+			"min": 1,
+			"max": 3,
+			"step": 1,
+			"default": 1
+		},
+		{
+			"type": "range",
+			"id": "grid_gap",
+			"label": "Grid gap",
+			"min": 0,
+			"max": 3,
+			"step": 0.5,
+			"default": 1.5,
+			"unit": "em"
+		},
+		{
+			"type": "range",
+			"id": "padding_block",
+			"label": "Vertical padding",
+			"min": 0,
+			"max": 6,
+			"step": 0.5,
+			"default": 3,
+			"unit": "em"
+		},
+		{
+			"type": "header",
+			"content": "Display"
+		},
+		{
+			"type": "select",
+			"id": "display_mode",
+			"label": "Display mode",
+			"options": [
+				{ "value": "grid", "label": "Grid" },
+				{ "value": "slider", "label": "Slider" }
+			],
+			"default": "grid"
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_navigation",
+			"label": "Show navigation",
+			"info": "Slider only",
+			"default": true
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_pagination",
+			"label": "Show pagination",
+			"info": "Slider only",
+			"default": false
+		},
+		{
+			"type": "checkbox",
+			"id": "slider_autoplay",
+			"label": "Autoplay",
+			"info": "Slider only. Includes rewind.",
+			"default": false
+		},
+		{
+			"type": "range",
+			"id": "slider_autoplay_speed",
+			"label": "Autoplay speed",
+			"info": "Slider only",
+			"min": 2,
+			"max": 10,
+			"step": 1,
+			"default": 5,
+			"unit": "s"
+		},
+		{
+			"type": "header",
 			"content": "Colors"
 		},
 		{
 			"type": "color",
 			"id": "background_color",
-			"label": "Background",
-			"default": "#ffffff"
+			"label": "Background"
 		},
 		{
 			"type": "color",
 			"id": "text_color",
-			"label": "Text",
-			"default": "#111111"
+			"label": "Text"
 		},
 		{
 			"type": "header",
 			"content": "Advanced"
+		},
+		{
+			"type": "text",
+			"id": "anchor",
+			"label": "Anchor",
+			"info": "ID for scroll links (without #)"
 		},
 		{
 			"type": "text",

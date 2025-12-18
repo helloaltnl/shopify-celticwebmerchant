@@ -105,6 +105,9 @@
     "filtering": {
       "title": "Filtrera och sortera",
       "button": "Filter",
+      "filters": "Filter",
+      "active_filters": "Aktiva filter",
+      "remove_filter": "Ta bort filter",
       "apply": "Tillämpa",
       "clear": "Rensa",
       "clear_all": "Rensa alla",
