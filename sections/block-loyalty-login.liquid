@@ -56,6 +56,13 @@ Shown when customer is not logged in.
 
 	#shopify-section-{{ section.id }} .block-loyalty-login__button {
 		display: inline-block;
+		{%- if section.settings.button_background_color != blank %}
+		background-color: {{ section.settings.button_background_color }};
+		border-color: {{ section.settings.button_background_color }};
+		{%- endif %}
+		{%- if section.settings.button_text_color != blank %}
+		color: {{ section.settings.button_text_color }};
+		{%- endif %}
 	}
 {% endstyle %}
 
@@ -128,6 +135,16 @@ Shown when customer is not logged in.
 			"type": "color",
 			"id": "text_color",
 			"label": "Text"
+		},
+		{
+			"type": "color",
+			"id": "button_background_color",
+			"label": "Button background"
+		},
+		{
+			"type": "color",
+			"id": "button_text_color",
+			"label": "Button text"
 		},
 		{
 			"type": "header",

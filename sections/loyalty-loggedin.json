@@ -14,7 +14,29 @@
     "account": {
       "type": "block-loyalty-account",
       "blocks": {
-        "toki_loyalty_block_recharge_4zLxTj": {
+        "toki_loyalty_block_expanded_wallet_pTMztd": {
+          "type": "shopify://apps/toki-loyalty/blocks/block-expanded-wallet/22635295-e17c-4ef6-b61c-f95d0a982eaf",
+          "settings": {
+            "designId": ""
+          }
+        }
+      },
+      "block_order": [
+        "toki_loyalty_block_expanded_wallet_pTMztd"
+      ],
+      "settings": {
+        "width": "is-align",
+        "padding_block": 0,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "176600329544ef0c7b": {
+      "type": "apps",
+      "blocks": {
+        "toki_loyalty_block_recharge_kHzjd6": {
           "type": "shopify://apps/toki-loyalty/blocks/block-recharge/22635295-e17c-4ef6-b61c-f95d0a982eaf",
           "settings": {
             "designId": ""
@@ -22,11 +44,124 @@
         }
       },
       "block_order": [
-        "toki_loyalty_block_recharge_4zLxTj"
+        "toki_loyalty_block_recharge_kHzjd6"
       ],
       "settings": {
         "width": "is-align",
+        "padding_block": 0,
+        "background_color": "rgba(0,0,0,0)",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "176589072910d836f7": {
+      "type": "apps",
+      "settings": {
+        "width": "is-align",
+        "padding_block": 0,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "176589073416e55dc1": {
+      "type": "apps",
+      "settings": {
+        "width": "is-align",
+        "padding_block": 0,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_articles_htHmLB": {
+      "type": "block-marketing-articles",
+      "blocks": {
+        "blog_Lgaf4U": {
+          "type": "blog",
+          "settings": {
+            "blog": "challenges"
+          }
+        }
+      },
+      "block_order": [
+        "blog_Lgaf4U"
+      ],
+      "name": "Articles",
+      "settings": {
+        "heading": "Actieve challenges",
+        "subheading": "",
+        "text_align": "center",
+        "card_layout": "vertical",
+        "show_image": true,
+        "image_ratio": "landscape",
+        "show_blog_title": true,
+        "show_date": false,
+        "show_excerpt": true,
+        "show_cta": true,
+        "articles_per_blog": 4,
+        "max_articles": 12,
+        "random_mode": false,
+        "width": "is-align-wide",
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": 2,
+        "grid_gap": 0.5,
         "padding_block": 3,
+        "display_mode": "grid",
+        "slider_navigation": true,
+        "slider_pagination": false,
+        "slider_autoplay": false,
+        "slider_autoplay_speed": 5,
+        "background_color": "",
+        "text_color": "",
+        "card_background_color": "",
+        "card_text_color": "",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "17660030543ba4ac57": {
+      "type": "apps",
+      "blocks": {
+        "toki_loyalty_block_refer_a_friend_kenLWf": {
+          "type": "shopify://apps/toki-loyalty/blocks/block-refer-a-friend/22635295-e17c-4ef6-b61c-f95d0a982eaf",
+          "settings": {
+            "designId": "0c05e0e2-c899-4a23-804b-e335894c1638"
+          }
+        }
+      },
+      "block_order": [
+        "toki_loyalty_block_refer_a_friend_kenLWf"
+      ],
+      "settings": {
+        "width": "is-align-small",
+        "padding_block": 3,
+        "background_color": "#ffffff",
+        "text_color": "#111111",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "176600330072888587": {
+      "type": "apps",
+      "blocks": {
+        "toki_loyalty_block_zero_party_data_module_J3mWbk": {
+          "type": "shopify://apps/toki-loyalty/blocks/block-zero-party-data-module/22635295-e17c-4ef6-b61c-f95d0a982eaf",
+          "settings": {
+            "designId": ""
+          }
+        }
+      },
+      "block_order": [
+        "toki_loyalty_block_zero_party_data_module_J3mWbk"
+      ],
+      "settings": {
+        "width": "is-align",
+        "padding_block": 0,
         "background_color": "#ffffff",
         "text_color": "#111111",
         "anchor": "",
@@ -35,6 +170,12 @@
     }
   },
   "order": [
-    "account"
+    "account",
+    "176600329544ef0c7b",
+    "176589072910d836f7",
+    "176589073416e55dc1",
+    "block_marketing_articles_htHmLB",
+    "17660030543ba4ac57",
+    "176600330072888587"
   ]
 }

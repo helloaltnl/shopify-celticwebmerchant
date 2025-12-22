@@ -8,34 +8,28 @@
   FEATURES:
   - Auto-detects which policy to show based on URL
   - Consistent typography and layout
-  - Uses shop.* policy objects
+  - Uses shop.policies array to find matching policy by URL
 
   AVAILABLE POLICIES:
-  - /policies/privacy-policy → shop.privacy_policy
-  - /policies/refund-policy → shop.refund_policy
-  - /policies/terms-of-service → shop.terms_of_service
-  - /policies/shipping-policy → shop.shipping_policy
-  - /policies/subscription-policy → shop.subscription_policy
-  - /policies/legal-notice → shop.legal_notice
+  - /policies/privacy-policy
+  - /policies/refund-policy
+  - /policies/terms-of-service
+  - /policies/shipping-policy
+  - /policies/subscription-policy
+  - /policies/legal-notice
+  - /policies/contact-information
   ============================================================================
 {%- endcomment -%}
 
 {%- liquid
   assign current_policy = nil
   
-  if request.path contains '/privacy-policy'
-    assign current_policy = shop.privacy_policy
-  elsif request.path contains '/refund-policy'
-    assign current_policy = shop.refund_policy
-  elsif request.path contains '/terms-of-service'
-    assign current_policy = shop.terms_of_service
-  elsif request.path contains '/shipping-policy'
-    assign current_policy = shop.shipping_policy
-  elsif request.path contains '/subscription-policy'
-    assign current_policy = shop.subscription_policy
-  elsif request.path contains '/legal-notice'
-    assign current_policy = shop.legal_notice
-  endif
+  for policy in shop.policies
+    if request.path contains policy.url
+      assign current_policy = policy
+      break
+    endif
+  endfor
 -%}
 
 {%- if current_policy != blank -%}

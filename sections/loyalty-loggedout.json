@@ -11,22 +11,92 @@
   "type": "custom.loyalty_loggedout",
   "name": "Loyalty (uitgelogd)",
   "sections": {
+    "block_marketing_cover_WEEKmb": {
+      "type": "block-marketing-cover",
+      "name": "Cover",
+      "settings": {
+        "subheading": "spaar punten met ons loyalty programma",
+        "heading": "Mijn account",
+        "text": "",
+        "image": "shopify://shop_images/Dec2025_-_Banners_Tribe_v2.webp",
+        "focus_x": 65,
+        "focus_y": 35,
+        "overlay": "medium",
+        "loading": "eager",
+        "fetchpriority": "auto",
+        "width": "is-align-full",
+        "height": "small",
+        "text_position": "center",
+        "text_alignment": "center",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
     "login": {
       "type": "block-loyalty-login",
       "settings": {
-        "heading": "Log in om je beloningen te bekijken",
-        "text": "<p>Log in op je account om je spaarpunten te bekijken, beloningen te verzilveren en je voortgang te volgen.</p><p>(uitgelogd)</p>",
-        "button_text": "",
+        "heading": "Word lid van onze community & spaar exclusieve kortingen",
+        "text": "<p>Log in om je spaarpunten te bekijken of maak snel een account aan!</p>",
+        "button_text": "Inloggen",
         "width": "is-align",
         "padding_block": 4,
-        "background_color": "#ffffff",
-        "text_color": "#111111",
+        "background_color": "#0f1f38",
+        "text_color": "#ffffff",
+        "anchor": "",
+        "custom_class": ""
+      }
+    },
+    "block_marketing_articles_nDUabL": {
+      "type": "block-marketing-articles",
+      "blocks": {
+        "blog_Braxk7": {
+          "type": "blog",
+          "settings": {
+            "blog": "challenges"
+          }
+        }
+      },
+      "block_order": [
+        "blog_Braxk7"
+      ],
+      "name": "Articles",
+      "settings": {
+        "heading": "Actieve challenges",
+        "subheading": "",
+        "text_align": "center",
+        "card_layout": "vertical",
+        "show_image": true,
+        "image_ratio": "landscape",
+        "show_blog_title": true,
+        "show_date": false,
+        "show_excerpt": true,
+        "show_cta": true,
+        "articles_per_blog": 4,
+        "max_articles": 12,
+        "random_mode": false,
+        "width": "is-align-wide",
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": 2,
+        "grid_gap": 0.5,
+        "padding_block": 3,
+        "display_mode": "grid",
+        "slider_navigation": true,
+        "slider_pagination": false,
+        "slider_autoplay": false,
+        "slider_autoplay_speed": 5,
+        "background_color": "",
+        "text_color": "",
+        "card_background_color": "",
+        "card_text_color": "",
         "anchor": "",
         "custom_class": ""
       }
     }
   },
   "order": [
-    "login"
+    "block_marketing_cover_WEEKmb",
+    "login",
+    "block_marketing_articles_nDUabL"
   ]
 }
